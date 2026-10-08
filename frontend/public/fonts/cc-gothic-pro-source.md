@@ -1,0 +1,2 @@
+Locally supplied font copied unchanged from CapCut cache effect 7513804525145230609/06623195a4f755e0984b7387809bc5aa/font.ttf. Font name table identifies CC-GothicPro Regular.
+Reference effect 7582898059068067088 content.json selects this font and local_2F3F1C3C: black fill, strokes RGB (1,.97,.56), (.13,.73,.79), (.95,.05,.83), widths .06/.12/.18. Triple Gothic uses these colors and proportional widths in the shared renderer. Local addition only.

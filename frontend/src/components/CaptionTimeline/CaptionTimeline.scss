@@ -1,0 +1,37 @@
+.caption-timing-scroll { overflow-x:auto; padding-bottom:7px; scrollbar-width:thin; scrollbar-color:#b1c7ea transparent; }
+.caption-timing-track { position:relative; height:65px; min-width:100%; }
+.caption-timing-clip { position:absolute; top:3px; height:56px; min-width:8px; border:1px solid #3568bf20; border-radius:7px; background:#f7faff; box-sizing:border-box;
+  &.active { background:#edf3fd; border-color:#3568bf65; }
+}
+.subtitle-app .caption-timing-select { width:100%; height:100%; padding:7px 12px 7px 6px; background:transparent; border:0; text-align:left; overflow:hidden; cursor:pointer;
+  small, span { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  small { font-size:9px; color:#84909f; } span { font-size:11px; color:#53647c; margin-top:6px; }
+}
+.subtitle-app .caption-timing-resize { position:absolute; right:-3px; top:0; height:100%; width:10px; padding:0; border:0; background:transparent; cursor:ew-resize; touch-action:none; z-index:2;
+  &::after { content:''; position:absolute; width:3px; height:20px; left:3px; top:18px; border-radius:3px; background:#3568bf60; }
+  &:hover::after, &:focus-visible::after { background:#3568bf; }
+}
+.caption-timing-track { height:77px; }
+.caption-timing-clip { top:26px; height:45px; }
+.subtitle-app .caption-timing-select { cursor:grab; touch-action:none; &:active {cursor:grabbing;} }
+.subtitle-app .caption-timing-resize { right:-4px; width:14px; height:100%; cursor:ew-resize;
+  &::after { top:3px; bottom:3px; height:auto; width:4px; left:5px; }
+}
+.caption-inline-times { position:absolute; bottom:calc(100% + 4px); left:0; display:flex; gap:3px; z-index:4; }
+.subtitle-app .caption-inline-times input { width:48px; height:21px; padding:2px 4px; border:1px solid #3568bf25; border-radius:4px; background:white; font-size:10px; color:#718198; }
+.caption-timing-track { height:55px; }
+.caption-timing-clip { top:3px; height:46px; }
+.caption-timing-clip.active { z-index:3; }
+.caption-inline-times { top:3px; bottom:auto; left:5px; right:10px; gap:2px; }
+.subtitle-app .caption-inline-times input { width:50%; min-width:0; height:19px; padding:1px 2px; font-size:9px; appearance:textfield; -moz-appearance:textfield; }
+.caption-inline-times input::-webkit-inner-spin-button, .caption-inline-times input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+.subtitle-app .caption-timing-clip.active .caption-timing-select { padding-top:21px; }
+.subtitle-app .caption-timing-clip.active .caption-timing-select span { margin-top:0; }
+.subtitle-app .caption-timing-resize-start { left:-4px; right:auto; }
+
+.subtitle-app .caption-timing-resize::after { width:1px; left:6px; background:#3568bf48; }
+.subtitle-app .caption-timing-select { padding-left:11px; }
+.caption-inline-times { left:10px; right:10px; gap:4px; }
+.subtitle-app .caption-inline-times input { border:1px solid transparent; border-radius:4px; padding-left:4px; }
+.subtitle-app .caption-inline-times input:focus,
+.subtitle-app .caption-inline-times input:focus-visible { outline:none; box-shadow:none; border-color:transparent; background:#f8fbff; }

@@ -1,0 +1,8 @@
+import {useEffect,useState} from 'react';
+import {apiJson} from '../lib/api';
+export function SocialLogin({context='login'}:{context?:'login'|'connect'}){
+ const [providers,setProviders]=useState<{id:string;enabled:boolean}[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{void apiJson<{providers:typeof providers}>('/api/auth/social/providers').then(data=>setProviders(data.providers)).catch(()=>setError('Društvena prijava trenutno nije dostupna.'));},[]);
+ const button=(provider:{id:string;enabled:boolean})=><button type="button" key={provider.id} disabled={busy||!provider.enabled} title={provider.enabled?'': 'Povezivanje prijave je u pripremi'} onClick={async()=>{setBusy(true);setError('');try{const data=await apiJson<{url:string}>(`/api/auth/social/${provider.id}/start`,{method:'POST'});window.location.assign(data.url);}catch{setBusy(false);setError('Prijava nije pokrenuta. Pokušaj ponovo.');}}}><b aria-hidden="true">{({google:'G',facebook:'f',linkedin:'in',microsoft:'M',twitter:'X'} as Record<string,string>)[provider.id]}</b>{context==='connect'?'Poveži putem':'Nastavi putem'} {({google:'Googlea',facebook:'Facebooka',linkedin:'LinkedIna',microsoft:'Microsofta / Outlooka',twitter:'X-a / Twittera'} as Record<string,string>)[provider.id]}{!provider.enabled&&<small>U pripremi</small>}</button>;
+ return <div className="social-login">{context==='login'&&<span className="social-login-label">Ili nastavi putem</span>}{providers.filter(p=>p.enabled).map(button)}{providers.some(p=>!p.enabled)&&<details className="social-login-more"><summary>Ostale mogućnosti prijave <span aria-hidden="true">⌄</span></summary><div>{providers.filter(p=>!p.enabled).map(button)}</div></details>}{error&&<p role="alert">{error}</p>}</div>;
+}

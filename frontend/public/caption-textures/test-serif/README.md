@@ -1,0 +1,3 @@
+Reference assets supplied by user from effect 7530525762835746109. face.png = original 1753262778103.png; smoke.png = original 1753262758668.png.
+Testni Serif uses the faint face PNG as an immediately visible full-opacity base, then fades the stronger smoke PNG from zero to 80 percent above it. Glyph-masked smoke stays fixed in size and changes opacity only. Font remains Playfair Display with #30333b text and #d7deef highlight. These are canvas adaptations of the supplied references, not execution of CapCut code.
+Shared previews/exports await textures. Renderer regression tests cover the base at time zero and stronger final composite.

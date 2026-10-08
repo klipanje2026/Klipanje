@@ -1,0 +1,28 @@
+// Edita brand identity; independent of selectable editor themes and caption palettes.
+$brand: #2ED3D3;
+$brand-hover: #24bcbc;
+$brand-soft: #e7fafa;
+$brand-ink: #075e63;
+// UI palette. Caption colors are separate: config/captions/colors.ts.
+$ink: #182331;
+$muted: #74808f;
+$accent: #3568bf;
+$accent-hover: #28539d;
+$accent-soft: #edf3fb;
+$line: #e3e9ef;
+$surface: #f6f8fa;
+$white: #fff;
+$content: 1400px;
+$font: 'Manrope Variable', sans-serif;
+
+// Shared outer edges for the slider, process section and footer.
+@mixin wide-shell {
+  width: min(1560px, calc(100% - 96px));
+  margin-inline: auto;
+  @media (max-width: 799px) { width: calc(100% - 48px); }
+  @media (max-width: 519px) { width: calc(100% - 40px); }
+}
+
+@mixin mobile {
+  @media (max-width: 700px) { @content; }
+}

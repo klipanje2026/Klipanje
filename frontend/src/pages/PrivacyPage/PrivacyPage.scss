@@ -1,0 +1,10 @@
+@use '../../styles/tokens' as *;
+.privacy-page .public-hero small {font-size:11px;color:$muted;}
+.privacy-layout {display:grid;grid-template-columns:220px minmax(0,1fr);gap:64px;align-items:start;}
+.privacy-layout > nav {position:sticky;top:28px;display:grid;gap:4px;border-left:1px solid #3568bf20;padding-left:14px;}
+.privacy-layout > nav a {padding:9px 0;font-size:12px;color:$muted;}.privacy-layout > nav a:hover {color:$accent;}
+.privacy-layout section {padding:0 0 27px;margin-bottom:27px;border-bottom:1px solid #3568bf14;scroll-margin-top:28px;}
+.privacy-layout h2 {margin:0 0 15px;font-size:22px;font-weight:500;letter-spacing:-.4px;}
+.privacy-layout p {font-size:14px;line-height:1.9;color:$muted;margin:0 0 14px;}.privacy-layout p:last-child {margin-bottom:0;}
+.privacy-layout article a {color:$accent;text-decoration:underline;text-underline-offset:3px;}
+@media(max-width:760px){.privacy-layout {grid-template-columns:1fr;gap:30px;}.privacy-layout > nav {position:static;grid-template-columns:1fr 1fr;}}

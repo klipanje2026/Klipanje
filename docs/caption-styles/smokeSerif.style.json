@@ -1,0 +1,95 @@
+{
+  "$schema": "../skills/ae-caption-style/references/style-spec.schema.json",
+  "schemaVersion": 1,
+  "id": "smokeSerif",
+  "name": "Smoky Serif",
+  "status": "implemented",
+  "source": {
+    "file": "24.09.2026_13.26.33_REC.mp4",
+    "sha256": "e5264ccacc586567a198fd67b211f711133fe554b32fa9eeaee69e0bc7e19117",
+    "format": "mp4",
+    "compositionId": null,
+    "extraction": "reference video and accompanying instructions",
+    "aeVersion": null,
+    "notes": [
+      "Supplied short preview shows paired uppercase serif text with cool smoky glow. Closest cached visual match: effect 7530525762835746109, compared with warm variant 7530525085745139005. Read effectStyle.json: textured face, six textured shadow layers, pale strokes. Reconstructed as deterministic canvas glow/wisps with Playfair Display; exact CapCut display name and original font not confirmed. No cached scripts or proprietary textures copied."
+    ]
+  },
+  "text": {
+    "sourceTextIncluded": false,
+    "slots": [
+      {
+        "id": "caption",
+        "contentSource": "user-caption",
+        "layerIds": [],
+        "emptyBehavior": "hide",
+        "notes": [
+          "User caption text in configurable batches; no literal reference text."
+        ]
+      }
+    ]
+  },
+  "canvas": {
+    "widthPx": null,
+    "heightPx": null,
+    "frameRateNumerator": null,
+    "frameRateDenominator": null,
+    "pixelAspect": null,
+    "durationSeconds": null,
+    "displayStartSeconds": null,
+    "colorSpace": null,
+    "linearLight": null,
+    "bitsPerChannel": null
+  },
+  "coverage": {
+    "typography": "unknown",
+    "layout": "unknown",
+    "colors": "unknown",
+    "strokes": "unknown",
+    "shadows": "unknown",
+    "boxes": "unknown",
+    "motion": "unknown",
+    "textAnimators": "unknown",
+    "compositing": "unknown",
+    "threeD": "unknown",
+    "dependencies": "unknown"
+  },
+  "dependencies": [],
+  "evidence": [],
+  "layers": [],
+  "motion": {
+    "phases": [],
+    "tracks": []
+  },
+  "adaptation": {
+    "layoutPolicy": null,
+    "timingPolicy": null,
+    "shortSegmentPolicy": null,
+    "longTextPolicy": null,
+    "colorAssignmentPolicy": null,
+    "boxSizingPolicy": null,
+    "missingWordTimingsPolicy": null,
+    "aspectRatioPolicy": null,
+    "notes": [
+      "Pravila prilagodbe novom tekstu su odvojena od izmjerenih vrijednosti originala."
+    ]
+  },
+  "edita": {
+    "mode": "new-style",
+    "styleKey": "smokeSerif",
+    "baseStyleKey": null,
+    "settings": {},
+    "mappings": [],
+    "requiredExtensions": [],
+    "changedFiles": [],
+    "limitations": [
+      "Supplied short preview shows paired uppercase serif text with cool smoky glow. Closest cached visual match: effect 7530525762835746109, compared with warm variant 7530525085745139005. Read effectStyle.json: textured face, six textured shadow layers, pale strokes. Reconstructed as deterministic canvas glow/wisps with Playfair Display; exact CapCut display name and original font not confirmed. No cached scripts or proprietary textures copied.",
+      "Local validation explicitly skipped at user request. CI deployment checks remain enabled."
+    ]
+  },
+  "validation": {
+    "status": "not-run",
+    "evidenceIds": [],
+    "checks": []
+  }
+}

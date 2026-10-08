@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "colorSpace": "sRGB",
+  "notes": "HEX vrijednosti su osnovne boje i akcenti, ne svi osvijetljeni pikseli. Canvas palete se mijenjaju u navedenim izvornim datotekama. Three.js palete mijenjaju se preko colors/setPalette ili kontrola u pregledu.",
+  "styles": [
+    {"id":"impact","name":"Satin Impact","engine":"canvas","source":"Edita-Motion-Pack/src/captions.mjs","palette":{"font":"#e9d5aa","secondaryFont":"#d3dae0","depth":"#121c24","accent":"#9e8c68","highlight":"#fff5db","panel":"#2d3b45","background":["#18222b","#10181f","#0a1016"]}},
+    {"id":"fold","name":"Slate Fold","engine":"canvas","source":"Edita-Motion-Pack/src/captions.mjs","palette":{"font":"#101e2d","secondaryFont":"#e5e9ee","panel":["#a9c6da","#8dafc6","#7397b2"],"fold":"#4d6d85","accent":"#89a7be","background":["#18222b","#10181f","#0a1016"]}},
+    {"id":"strata","name":"STRATA","engine":"canvas","source":"Edita-Motion-Pack/src/strata.mjs","palette":{"font":["#c2d1dc","#fbfbf1","#b6c6d0","#6a8497","#e7edf0","#fbf8e9","#819bac"],"border":"#f1f6f2","depth":["#b57e55","#536877"],"accent":"#b7844d","shadow":"#000000","background":["#1e2a34","#101820","#080e14"]}},
+    {"id":"contour","name":"Contour Recoil","engine":"canvas","source":"Edita-Motion-Pack/src/contour-recoil.mjs","palette":{"font":["#f5f4ef","#c5c7c5"],"border":"#e5e8e6","highlight":"#f7f8f3","shadow":"#000000","background":["#26292b","#16191b","#0d1012"]}},
+    {"id":"mosaic","name":"Mosaic Current","engine":"canvas","source":"Edita-Motion-Pack/src/mosaic.mjs","palette":{"font":["#b3b4b0","#e8e9e5","#fafbf7"],"shadow":"#000000","background":["#24282c","#0a1015"]},"note":"Boje pločica računaju se prema osvjetljenju; HEX vrijednosti predstavljaju raspon."},
+    {"id":"water","name":"Waterform","engine":"canvas","source":"Edita-Motion-Pack/src/elements.mjs","palette":{"surface":"#0d3b53","rim":"#65abc9","specular":"#ffffff","ripple":"#84cbd9","background":["#080d12","#111820"]},"note":"Proceduralni shader u grani !lava; nijanse se računaju iz dubine i normala."},
+    {"id":"lava","name":"Lavaflow","engine":"canvas","source":"Edita-Motion-Pack/src/elements.mjs","palette":{"crust":"#130f0e","hot":"#ff2603","hottest":"#ffbc2a","glow":"#be2500","background":["#080d12","#111820"]},"note":"Proceduralni shader u grani lava; nijanse se računaju iz žara i kore."},
+    {"id":"silk","name":"Silk Torsion","engine":"three.js","source":"three-title-lab/effects.js","colors":{"font":"#e7e8e6","side":"#65717a","border":"#f3f5ef","shadow":"#000000","background":"#111820"}},
+    {"id":"crystal","name":"Crystal Flux","engine":"three.js","source":"three-title-lab/effects.js","colors":{"font":"#d4e0e8","side":"#94a8b8","border":"#f3f5ef","shadow":"#000000","background":"#111820"}}
+  ]
+}

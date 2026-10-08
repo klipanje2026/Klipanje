@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+const load=async path=>import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText).toString('base64')}`);
+const {filterCss,transitionState,drawSceneEffects,sceneEffectStyle}=await load('frontend/src/lib/scene-effects.ts');
+const filter={id:'mono',start:5,end:7,strength:100};
+assert.equal(filterCss(filter,4.99),'none');assert.equal(filterCss(filter,7),'none');assert.match(filterCss(filter,5),/grayscale\(1\)/);
+assert.match(filterCss({...filter,strength:0},6),/grayscale\(0\)/);
+assert.equal(transitionState({id:'fade',duration:2},.5,1).opacity,.5);
+assert.equal(transitionState({id:'fade',duration:2},1,1).opacity,1);
+const calls=[];const ctx={globalAlpha:1,save(){calls.push('save')},restore(){calls.push('restore')},translate(){},scale(){},beginPath(){},rect(){calls.push('clipRect')},clip(){calls.push('clip')},arc(){}};
+drawSceneEffects(ctx,{filter,transition:{id:'wipe-left',duration:1}},5,.5,10,0,0,100,100,()=>calls.push('draw'));
+assert.deepEqual(calls,['save','clipRect','clip','draw','restore']);assert.equal(ctx.filter,sceneEffectStyle({filter},5,5,10).filter);
+const {splitLinked}=await load('frontend/src/lib/linked-clips.ts');const clip={id:'v',assetId:'a',type:'video',start:0,inPoint:0,outPoint:10,layer:0,filter,transition:{id:'fade',duration:1}};
+const split=splitLinked([clip],clip,[4]);assert.ok(split[0].transition);assert.equal(split[1].transition,undefined);assert.deepEqual(split[1].filter,filter);
+assert.deepEqual(JSON.parse(JSON.stringify(clip)).filter,filter);
+console.log('Scene effects: interval boundaries, strength, duration clamp, preview/export filter parity and split persistence passed.');

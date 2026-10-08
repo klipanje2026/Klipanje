@@ -1,0 +1,10 @@
+{
+  "duration": 9,
+  "cues": [
+    { "start": 0.22, "end": 1.90, "lead": "TVOJA", "text": "PORUKA", "effect": "slam", "color": "lime", "seed": 1 },
+    { "start": 1.90, "end": 3.05, "text": "ZASLUŽUJE", "effect": "whip", "color": "ice", "seed": 2 },
+    { "start": 3.05, "end": 4.90, "text": "PAŽNJU", "effect": "bounce", "color": "pink", "seed": 3 },
+    { "start": 4.90, "end": 6.75, "lead": "KOJA", "text": "POKREĆE", "effect": "whip", "color": "ice", "seed": 4 },
+    { "start": 6.75, "end": 8.75, "text": "LJUDE.", "effect": "slam", "color": "lime", "seed": 5 }
+  ]
+}

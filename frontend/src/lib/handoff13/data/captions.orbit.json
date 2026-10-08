@@ -1,0 +1,15 @@
+{
+  "duration": 18,
+  "cues": [
+    { "start": 0.25, "end": 2.00, "lead": "TVOJA", "text": "PORUKA", "motion": "orbit", "tone": "acid" },
+    { "start": 2.00, "end": 3.60, "lead": "IMA SVOJ", "text": "RITAM.", "motion": "wave", "tone": "coral" },
+    { "start": 3.60, "end": 5.15, "text": "PRIVUČE", "motion": "tunnel", "tone": "violet" },
+    { "start": 5.15, "end": 7.00, "text": "PAŽNJU.", "motion": "pinwheel", "tone": "acid" },
+    { "start": 7.00, "end": 8.60, "text": "POKRENE", "motion": "wave", "tone": "coral" },
+    { "start": 8.60, "end": 10.40, "text": "IDEJU.", "motion": "orbit", "tone": "violet" },
+    { "start": 10.40, "end": 12.20, "lead": "I", "text": "OSTANE", "motion": "tunnel", "tone": "acid" },
+    { "start": 12.20, "end": 14.00, "lead": "U", "text": "GLAVI.", "motion": "pinwheel", "tone": "coral" },
+    { "start": 14.00, "end": 15.80, "text": "TVOJ", "motion": "orbit", "tone": "violet" },
+    { "start": 15.80, "end": 17.75, "text": "POTEZ.", "motion": "pinwheel", "tone": "acid" }
+  ]
+}

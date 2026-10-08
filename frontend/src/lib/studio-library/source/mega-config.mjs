@@ -1,0 +1,23 @@
+const mxPal=(label,bg,bg2,colors,side,edge,accent)=>({label,bg,bg2,colors,side,edge,accent,ink:'#101027'});
+export const MegaStyles=Object.freeze({
+ gloss:{name:'GLOSS CLUB',genre:'Beauty · gel lak i sjaj',font:'gloss',uppercase:false,tilt:-.035,leading:1.90,depth:.39,metal:.12,rough:.20,palettes:{
+  cherry:mxPal('Cherry Glaze','#3a1035','#6b194e',['#ff28a8','#ff76d3','#ff715a'],'#820956','#fff0f7','#73ffe8'),berry:mxPal('Berry Ice','#231041','#462381',['#b336ff','#ff3a9b','#6bddff'],'#551c96','#faeaff','#6ffff0'),peach:mxPal('Peach Soda','#47162b','#7e303b',['#ff8249','#ffe06c','#ff277c'],'#9b2941','#fff5d5','#b7ffe9'),rose:mxPal('Electric Rose','#180d4a','#351479',['#ff28ae','#28dfff','#a362ff'],'#7c147e','#ffefff','#f5ff6c')},sentences:[
+ 'Danas biram boju koja podigne cijeli look, malo sjaja na usnama i onu energiju zbog koje i običan dan postane moj mali osobni runway.',
+ 'Nije stvar u savršenoj rutini, nego u detaljima koji mi daju samopouzdanje, od rumenila do osmijeha koji nosim sa sobom cijelog dana.']},
+ pixel:{name:'PIXEL RUSH',genre:'Gaming · neon i oklopljena slova',font:'pixel',uppercase:true,tilt:0,leading:1.85,depth:.34,metal:.40,rough:.28,palettes:{
+  lime:mxPal('Cyber Lime','#071d27','#103842',['#c6ff00','#09efc7','#e9fdff'],'#075d66','#bdfff1','#ff49b8'),violet:mxPal('Arcade Violet','#150f34','#322661',['#9378ff','#20d8ff','#ff309e'],'#43158b','#e8d8ff','#d6ff45'),lava:mxPal('Lava Score','#271427','#543040',['#ff6222','#ffd422','#23edc7'],'#941b3e','#fff2c2','#c396ff'),ice:mxPal('Zero Ice','#101d41','#143b67',['#1cdaff','#d9faff','#9874ff'],'#0a6597','#c8fdff','#ff58c3')},sentences:[
+ 'Još jedan meč, dobra ekipa, brza reakcija i onaj trenutak kada sve sjedne na mjesto pa cijeli lobby zna da smo upravo promijenili igru.',
+ 'Nismo imali najlakši početak, ali smo ostali zajedno, pročitali svaki potez protivnika i okrenuli rezultat baš onda kada je izgledalo da je sve gotovo.']},
+ acid:{name:'ACID RIBBON',genre:'Lifestyle · acid naljepnice i print',font:'acid',uppercase:true,tilt:-.045,leading:1.82,depth:.29,metal:.03,rough:.49,palettes:{
+  toxic:mxPal('Toxic Punch','#35104e','#64196d',['#c9ff13','#ff40ad','#b891ff'],'#541283','#ffffff','#61ffe1'),heat:mxPal('Heatwave','#4a1027','#772035',['#ffbe1c','#ff318e','#64f33c'],'#98193d','#fff1b6','#6fdcff'),noise:mxPal('Blue Noise','#11185b','#343792',['#a4ff15','#ff58d4','#28dfff'],'#202683','#f6ffe1','#ff846d'),raspberry:mxPal('Raspberry Rush','#471342','#81265d',['#ffd81a','#38dfff','#ff56b7'],'#a32170','#fff4e4','#b9ff55')},sentences:[
+ 'Patike su spremne, playlista glasna, a grad je naš teren za male avanture, spontane fotke i planove koji nastanu tek usput, bez puno razmišljanja.',
+ 'Ne treba mi savršen raspored za dobar dan, samo omiljena jakna, nekoliko dobrih ljudi i dovoljno hrabrosti da skrenem s poznate ulice.']},
+ jelly:{name:'AQUA JELLY',genre:'Beauty i lifestyle · vodeni gel',font:'jelly',uppercase:false,tilt:.025,leading:1.86,depth:.44,metal:.02,rough:.15,palettes:{
+  pool:mxPal('Pool Party','#06323d','#126b76',['#28efd5','#30bbff','#ff6bc6'],'#09647b','#e9fffb','#ffd165'),gum:mxPal('Bubblegum Pool','#28134b','#4b2889',['#ff4bb3','#36eacf','#996dff'],'#62319f','#fff3ff','#e4ff82'),float:mxPal('Orange Float','#152d54','#31578e',['#ff9055','#38efc7','#ffdf61'],'#b54b64','#fff7d9','#fd8dc4'),sorbet:mxPal('Lime Sorbet','#183d3b','#386856',['#b6ef25','#2ee3c6','#ff65ab'],'#477837','#f9ffe4','#c5b6ff')},sentences:[
+ 'Malo mora u glavi, hladan sok u ruci i dovoljno vremena da svaki mali trenutak izgleda kao kadar iz mog omiljenog ljetnog videa s odmora.',
+ 'Danas usporavam ritam, hvatam sunce između oblaka i biram male stvari koje poprave raspoloženje prije nego što uopšte shvatim koliko su mi trebale.']},
+ holo:{name:'HOLO FLARE',genre:'Fancy pop · holo folija i retro dubina',font:'holo',uppercase:false,tilt:-.025,leading:1.86,depth:.35,metal:.72,rough:.18,palettes:{
+  night:mxPal('Holo Nights','#1d123f','#3b2764',['#27d4ff','#ff4fbc','#a16bff'],'#53288e','#f1ffff','#f4ff7a'),circuit:mxPal('Rose Circuit','#211334','#42214a',['#ff56b7','#34e6b3','#a275ff'],'#943c84','#ffedff','#ffd575'),laser:mxPal('Violet Laser','#24105e','#502898',['#9c72ff','#27dfff','#ff389b'],'#4829a0','#eeedff','#e6ff76'),solar:mxPal('Solar Chrome','#182039','#394164',['#ff9654','#c9ee3b','#929aff'],'#8857a1','#fffaec','#8ffff2')},sentences:[
+ 'Promijeni playlistu, obuci svoju najluđu kombinaciju i ponesi taj sjaj kroz grad, jer danas želim da svaki kadar ima vlastitu energiju i svoj ritam.',
+ 'Volim kada se boje sudare, kada obična šetnja postane mali spot i kada se osmijeh pojavi prije nego što kamera stigne uhvatiti trenutak.']}
+});

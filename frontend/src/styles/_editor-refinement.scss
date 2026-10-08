@@ -1,0 +1,113 @@
+@mixin styles {
+  :root { --timeline-live:#66d7d7; --timeline-selected:#9abfff; --timeline-head:#5de0df; --seek-accent:#5f91e9; --seek-knob:#fff; }
+  /* One preview component in both editors. Canvas keeps its native portrait ratio. */
+  :is(.subtitle-app.subtitle-editor-page,.video-studio-app) .shared-style-picker {
+    padding:0; margin:0; border:0!important; background:transparent!important; min-height:0;
+    .subtitle-template-library { display:flex; flex-direction:column; gap:14px; min-height:0; padding:0; border:0; background:transparent; }
+    .subtitle-style-categories { display:flex; flex-wrap:wrap; gap:6px; margin:0; padding:0; }
+    .subtitle-style-categories button { min-height:29px; padding:5px 9px; border:0; border-radius:7px; font-size:12px; background:var(--ui-raised); color:var(--ui-text); }
+    .subtitle-style-categories button.active { background:#3568bf; color:#fff; }
+    .subtitle-template-grid { display:grid; flex:1; min-height:0; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; align-content:start; margin:0; padding:2px 6px 8px 2px; border:0; height:auto; max-height:none; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#77859b88 transparent; }
+    .subtitle-style-card { min-width:0; border:0; padding:0; }
+    .subtitle-style-card>button { display:block; position:relative; width:100%; height:auto; min-height:0; padding:0; border:0!important; border-radius:12px; background:transparent!important; overflow:hidden; box-shadow:none; transition:box-shadow .15s; }
+    .subtitle-style-card>button.active { box-shadow:0 0 0 2px #5897f2; }
+    .subtitle-style-card>button:hover { box-shadow:0 0 0 2px #5897f280; }
+    .subtitle-style-demo { position:relative; display:block; width:100%; height:auto; aspect-ratio:9/16; border:0; border-radius:12px; overflow:hidden; background:#172130 url('/images/home/creators.png') center top / 300% auto no-repeat; }
+    canvas.subtitle-template-sample { position:absolute!important; inset:0!important; display:block!important; width:100%!important; height:100%!important; max-width:none!important; max-height:none!important; aspect-ratio:9/16; background:transparent!important; border:0; border-radius:0; object-fit:contain; }
+    .subtitle-style-demo-label { position:absolute; top:8px; left:8px; z-index:2; padding:4px 6px; color:#fff; background:#101827b8; font-size:10px; border:0; border-radius:5px; }
+    .subtitle-style-demo-format { display:none; }
+    .subtitle-style-card small { position:absolute; z-index:2; left:0; right:0; bottom:0; padding:22px 10px 11px; color:#fff!important; background:linear-gradient(transparent,#090e18e8)!important; font-size:12px; font-weight:600; text-align:left; }
+  }
+  .subtitle-app.subtitle-editor-page .subtitle-inspector-panel { padding:14px 12px; }
+  .subtitle-app.subtitle-editor-page .subtitle-style-panel { padding:0; }
+  .shared-style-picker .subtitle-style-summary { display:flex; justify-content:space-between; align-items:center; flex:none; gap:12px; }
+  .shared-style-picker .subtitle-style-summary strong { font-size:14px!important; }
+  .shared-style-picker .subtitle-style-summary span { color:var(--ui-text); font-size:12px; font-variant-numeric:tabular-nums; opacity:.75; }
+  .video-studio-app .video-studio-media:has(.video-caption-editor) { display:flex; flex-direction:column; overflow:hidden; padding:18px 16px; }
+  .video-studio-app .video-caption-editor { flex:1; display:flex; min-height:0; border:0; gap:16px; }
+  .video-studio-app .video-caption-tabs { flex:none; padding:4px; border:0; border-radius:10px; background:var(--ui-raised); gap:4px; }
+  .video-studio-app .video-caption-tabs button { border:0; min-height:36px; border-radius:7px; background:transparent; }
+  .video-studio-app .video-caption-tabs button[aria-pressed=true] { background:#3568bf; color:#fff; }
+  .video-studio-app .video-caption-tab-body { flex:1; display:block; overflow-y:auto; min-height:0; padding:2px 6px 10px 2px; border:0; }
+  .video-caption-tab-body>div:not(.shared-style-picker) { margin-bottom:14px; }
+  .video-studio-app .video-caption-tab-body:has(>.shared-style-picker) { display:flex; overflow:hidden; }
+  .video-studio-app .video-caption-tab-body>.shared-style-picker { display:flex; flex:1; min-height:0; }
+  .video-studio-app .shared-style-picker .subtitle-template-library { flex:1; min-height:0; }
+  :is(.video-caption-tab-body,.subtitle-inspector-panel,.caption-timing-scroll,.video-studio-track-scroll) { scrollbar-width:thin; scrollbar-color:#77859b55 transparent; scrollbar-gutter:stable; }
+  :is(.video-caption-tab-body,.subtitle-inspector-panel)::-webkit-scrollbar { width:7px; }
+  :is(.video-caption-tab-body,.subtitle-inspector-panel)::-webkit-scrollbar-thumb { background:#77859b66; border:2px solid transparent; background-clip:padding-box; border-radius:10px; }
+
+  /* A single quiet dock, rather than nested outlined boxes. */
+  .subtitle-app.subtitle-editor-page {
+    .subtitle-bottom-dock { border:0!important; box-shadow:none; background:var(--ui-panel)!important; padding:10px 12px 6px; border-radius:14px; }
+    .subtitle-under-video-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; padding:0 0 8px; border:0!important; background:transparent!important; }
+    .subtitle-editor-bar { flex:0 1 175px; width:auto; max-width:175px; min-width:100px; margin:0; padding:0; border:0!important; box-shadow:none!important; background:transparent!important; }
+    .subtitle-editor-bar button { background:transparent!important; border:0!important; }
+    .subtitle-control-groups { flex:1 1 680px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:9px 14px; min-width:0; }
+    .subtitle-control-groups>div { margin:0; width:auto; }
+    .subtitle-control-groups .subtitle-tools-top { order:0; }
+    .subtitle-control-groups .subtitle-playback { order:1; padding-inline:14px; border-inline:1px solid var(--ui-border); }
+    .subtitle-control-groups .subtitle-tools-bottom { order:2; }
+    .subtitle-timeline { margin:0; padding:0; border:0!important; border-radius:0; box-shadow:none; background:transparent!important; }
+    .subtitle-timeline-head { border:0; padding:0 0 3px; font-size:12px; }
+    .caption-timing-track { border:0; background:transparent; }
+    .caption-timing-clip { background:color-mix(in srgb,var(--ui-accent-button,#4364ad) 28%,transparent)!important; border:1px solid transparent!important; color:#fff; box-shadow:none; }
+    .caption-timing-clip.active { background:color-mix(in srgb,var(--ui-accent-button,#324c8b) 38%,transparent)!important; box-shadow:inset 0 0 0 1px #b4c9ff; }
+    .caption-timing-clip.at-playhead { border-color:var(--timeline-live)!important; box-shadow:0 0 0 1px var(--timeline-live); }
+    .caption-timing-select :is(span,small) { color:#fff!important; }
+    .caption-timing-select small { opacity:.8; }
+    .caption-inline-times input { color:#fff!important; background:#233963!important; border:0; }
+    .subtitle-preview-area { position:relative; display:flex; flex-direction:column; flex:1 1 0; min-height:0; min-width:0; gap:10px; }
+    .subtitle-preview-actions { position:static; display:flex; flex-direction:row; align-items:stretch; justify-content:flex-end; align-self:flex-end; width:min(100%,436px); padding:0 0 5px; gap:8px; }
+    .subtitle-preview-actions :is(.subtitle-export-actions,.subtitle-continue-bottom) { flex:1 1 0; width:auto; min-width:0; display:flex; margin:0; }
+    .subtitle-preview-actions button { width:100%; min-width:0; min-height:40px; height:100%; display:flex; justify-content:flex-start; white-space:normal; text-align:left; padding:9px 14px; gap:10px; }
+    .subtitle-preview-actions button svg { width:18px; height:18px; flex:none; }
+    .subtitle-preview-panel { position:relative; container:subtitle-preview / inline-size; }
+    .subtitle-preview-notices { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:50; width:max-content; max-width:calc(100% - 32px); pointer-events:none; margin:0; }
+    .subtitle-preview-notices:empty { display:none; }
+    .subtitle-preview-notices>* { pointer-events:auto; }
+    .subtitle-status-inline,.subtitle-upload-done { padding:9px 14px; border:0; border-radius:10px; background:var(--ui-panel); box-shadow:0 4px 18px #0002; }
+  }
+  @container subtitle-preview (min-width:1000px) {
+    .subtitle-app.subtitle-editor-page .subtitle-preview-actions { position:absolute; z-index:5; right:0; bottom:6px; width:214px; padding:0; flex-direction:column; }
+    .subtitle-app.subtitle-editor-page .subtitle-preview-actions :is(.subtitle-export-actions,.subtitle-continue-bottom) { flex:none; }
+    .subtitle-app.subtitle-editor-page .subtitle-preview-area.is-landscape .subtitle-preview-stage { padding-right:234px; }
+  }
+  @media(max-width:760px) {
+    .subtitle-app.subtitle-editor-page {
+      .subtitle-editor-shell { display:flex; flex-direction:column; overflow:auto; }
+      .subtitle-preview-panel { order:0; flex:none; overflow:visible; }
+      .subtitle-preview-area { flex:none; }
+      .subtitle-preview-stage { flex:none; height:clamp(240px,45dvh,440px); }
+      .subtitle-inspector { order:1; flex:none; height:65dvh; min-height:360px; }
+    }
+  }
+  /* Playback progress and selection have different visual treatments. */
+  :is(.subtitle-app,.video-studio-app) .studio-player-controls { border:0!important; background:var(--ui-panel)!important; padding:10px 12px 7px; box-shadow:0 3px 15px #0000000d; }
+  :is(.subtitle-app,.video-studio-app) .studio-player-seek { appearance:none; height:5px; border:0; border-radius:99px; background:linear-gradient(to right,#5f91e9 0 var(--seek-percent,0%),var(--ui-border) var(--seek-percent,0%) 100%); }
+  :is(.subtitle-app,.video-studio-app) .studio-player-seek::-webkit-slider-thumb { appearance:none; width:12px; height:12px; border-radius:50%; background:var(--seek-knob); border:3px solid var(--seek-accent); box-shadow:0 1px 4px #0003; }
+  :is(.subtitle-app,.video-studio-app) .studio-player-seek::-moz-range-thumb { width:7px; height:7px; border-radius:50%; background:var(--seek-knob); border:3px solid var(--seek-accent); }
+  .video-studio-app .video-studio-track>button.active { outline:2px solid #77aaff; outline-offset:-2px; }
+  .video-studio-app .video-studio-track>button.at-playhead { border:2px solid var(--timeline-live)!important; box-shadow:inset 0 0 0 1px #07121d88; }
+  .video-studio-app .video-studio-track>button.selected-clip::before { content:''; position:absolute; inset:0; border:2px solid var(--timeline-selected); border-radius:inherit; z-index:3; pointer-events:none; }
+  .video-studio-app .video-filmstrip img { flex:1 1 0; width:0; object-fit:cover; }
+  .video-studio-app .video-studio-playhead,.caption-playhead { width:2px; background:var(--timeline-head)!important; box-shadow:0 0 0 1px #10232e66; }
+  .video-studio-app .video-studio-playhead::before,.caption-playhead::before { width:10px; height:12px; left:-4px; top:0; border:0; border-radius:3px 3px 5px 5px; background:var(--timeline-head)!important; box-shadow:0 1px 5px #0003; }
+  @media(min-width:761px) {
+    .editor-layout:has(.subtitle-editor-page) .workspace-sidebar:not(.is-open),.editor-layout:has(.video-studio-app) .workspace-sidebar:not(.is-open) { width:76px; flex:0 0 76px; padding:18px 12px; }
+    .editor-layout:has(.subtitle-editor-page) .workspace-sidebar:not(.is-open) nav a,.editor-layout:has(.video-studio-app) .workspace-sidebar:not(.is-open) nav a { padding:12px; margin:0; width:100%; }
+  }
+  @media(max-width:1100px) { .subtitle-app.subtitle-editor-page .subtitle-control-groups { flex-basis:100%; } }
+  .video-studio-app .video-studio-timeline { display:flex; flex-direction:column; flex:none; height:clamp(175px,30vh,310px); max-height:none; overflow:hidden; }
+  .video-studio-app .video-studio-timeline-head,.video-studio-app .video-caption-timing { flex:none; }
+  .video-studio-app .video-studio-track-scroll { flex:1; min-height:0; max-height:none; overflow:auto; }
+  .video-studio-app .video-studio-main .studio-player { border:0; background:var(--ui-stage); }
+  :is(.subtitle-app.subtitle-editor-page,.video-studio-app) .shared-style-picker .subtitle-style-categories { position:sticky; top:0; z-index:4; padding:0 0 8px; background:var(--ui-panel); }
+
+  @container (min-width:1150px) {
+    .subtitle-app.subtitle-editor-page .subtitle-under-video-tools { display:grid; grid-template-columns:140px minmax(0,1fr) 140px; gap:10px; }
+    .subtitle-app.subtitle-editor-page .subtitle-editor-bar { grid-column:1; grid-row:1; max-width:140px; }
+    .subtitle-app.subtitle-editor-page .subtitle-control-groups { grid-column:2; grid-row:1; }
+  }
+
+}

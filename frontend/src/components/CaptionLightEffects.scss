@@ -1,0 +1,23 @@
+:root[data-theme][data-palette] .editor-layout .subtitle-customize-panel .caption-basics-workspace {
+ .caption-light-effects {gap:12px;}
+ .caption-light-fields {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
+ .caption-light-fields>label {display:grid;grid-template-rows:28px 34px;gap:5px;min-width:0;font-size:10px;font-weight:400;color:var(--ui-muted);}
+ .caption-light-fields>label>span {align-self:end;}
+ .caption-light-fields :is(input,.edita-native-color) {min-width:0;width:100%;height:34px;box-sizing:border-box;}
+ .caption-light-effects>small {color:var(--ui-muted);font-size:10px;line-height:1.5;}
+
+ .caption-light-effects .caption-effect-choices button>span {font-size:9px;}
+}
+
+:root[data-theme][data-palette] .editor-layout .caption-basics-workspace :is(.caption-light-fields,.caption-line-fields,.caption-outline-edit-row)>.settings-popover {display:grid;grid-template-rows:28px 34px;gap:5px;min-width:0;margin:0;}
+:root[data-theme][data-palette] .editor-layout .caption-basics-workspace :is(.caption-light-fields,.caption-line-fields,.caption-outline-edit-row)>.settings-popover>span {align-self:end;color:var(--ui-muted);font-size:10px;}
+:root[data-theme][data-palette] .editor-layout .caption-basics-workspace :is(.caption-light-fields,.caption-line-fields,.caption-outline-edit-row) .settings-popover>.language-dropdown-trigger {height:34px;min-width:0;padding:5px;}
+
+:root[data-theme][data-palette] .editor-layout .subtitle-customize-panel .caption-basics-workspace .caption-depth-effects {
+ .caption-depth-heading {display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;min-height:30px;}
+ .caption-depth-heading input {width:14px;height:14px;margin:0;accent-color:var(--ui-accent-button);}
+ .caption-texture-categories {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;}
+ .caption-texture-categories>button {width:100%;min-width:0;background:var(--ui-accent-button)!important;color:white!important;border-color:var(--ui-accent-button);font-size:10px;padding:8px 5px;transition:filter .4s,box-shadow .4s;}
+ .caption-texture-categories>button:hover {filter:brightness(1.1);}
+ .caption-texture-categories>button[aria-pressed=true] {box-shadow:inset 0 0 0 2px #ffffffaa;}
+}

@@ -1,0 +1,218 @@
+{
+  "$schema": "../skills/ae-caption-style/references/style-spec.schema.json",
+  "schemaVersion": 1,
+  "id": "aeArtbrushSticker",
+  "name": "Artbrush Sticker",
+  "status": "implemented",
+  "source": {
+    "file": "Preset Titles.aep",
+    "sha256": "9e009ff2b45e335b4b06fef8490d8d46147e48b16066bb8b3fd82beca739815c",
+    "format": "aep",
+    "compositionId": null,
+    "extraction": "reference-measurement",
+    "aeVersion": null,
+    "notes": [
+      "AEP binary identity recorded only. After Effects unavailable; no composition or animation properties extracted. Implementation follows supplied screenshot and user instructions."
+    ]
+  },
+  "text": {
+    "sourceTextIncluded": false,
+    "slots": [
+      {
+        "id": "caption",
+        "contentSource": "user-caption",
+        "layerIds": [
+          "text-main"
+        ],
+        "emptyBehavior": "hide",
+        "notes": [
+          "Korisnikov tekst dolazi iz Edita segmenta. Strukturu slotova prilagoditi stvarnom predlošku."
+        ]
+      }
+    ]
+  },
+  "canvas": {
+    "widthPx": null,
+    "heightPx": null,
+    "frameRateNumerator": null,
+    "frameRateDenominator": null,
+    "pixelAspect": null,
+    "durationSeconds": null,
+    "displayStartSeconds": null,
+    "colorSpace": null,
+    "linearLight": null,
+    "bitsPerChannel": null
+  },
+  "coverage": {
+    "typography": "partial",
+    "layout": "partial",
+    "colors": "partial",
+    "strokes": "partial",
+    "shadows": "partial",
+    "boxes": "unknown",
+    "motion": "partial",
+    "textAnimators": "unknown",
+    "compositing": "unknown",
+    "threeD": "unknown",
+    "dependencies": "partial"
+  },
+  "dependencies": [
+    {
+      "id": "font",
+      "kind": "font",
+      "name": "ArtBrush Medium",
+      "version": "001.001",
+      "status": "available",
+      "replacement": null,
+      "notes": [
+        "Bundled user-supplied Artbrush.ttf; family and PostScript name ArtBrush from font name table. Diacritics coverage not verified."
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "reference",
+      "kind": "screenshot",
+      "artifact": "work/aep/aeArtbrushSticker/reference.png",
+      "timeSeconds": null,
+      "description": "User supplied static orange brush lettering, white stroke and dark offset silhouette."
+    },
+    {
+      "id": "design",
+      "kind": "design-decision",
+      "artifact": null,
+      "timeSeconds": null,
+      "description": "User requested ArtBrush and simultaneous pairs of words. Fade duration and stroke dimensions designed for Edita, not extracted from AE."
+    }
+  ],
+  "layers": [
+    {
+      "id": "text-main",
+      "sourceLayerId": null,
+      "kind": "text",
+      "order": 0,
+      "parentId": null,
+      "matteLayerId": null,
+      "slotId": "caption",
+      "inSeconds": null,
+      "outSeconds": null,
+      "timeStretchPercent": null,
+      "timeRemapTrackId": null,
+      "properties": [
+        {
+          "path": "typography.fontFamily",
+          "sourcePath": [],
+          "value": "ArtBrush",
+          "units": "family",
+          "origin": "designed",
+          "evidenceIds": [
+            "design"
+          ],
+          "note": "User-selected supplied font."
+        },
+        {
+          "path": "fill.colors",
+          "sourcePath": [],
+          "value": "#d77725",
+          "units": "sRGB",
+          "origin": "inferred",
+          "evidenceIds": [
+            "reference"
+          ],
+          "note": "Estimated orange from screenshot, editable."
+        },
+        {
+          "path": "strokes",
+          "sourcePath": [],
+          "value": [
+            {
+              "color": "#ffffff",
+              "width": 2.4
+            },
+            {
+              "color": "#080808",
+              "width": 2.1
+            }
+          ],
+          "units": "Edita font-relative widths",
+          "origin": "designed",
+          "evidenceIds": [
+            "reference"
+          ],
+          "note": "Two stroke passes approximate screenshot."
+        },
+        {
+          "path": "shadows",
+          "sourcePath": [],
+          "value": {
+            "offsetYEm": 0.13,
+            "haloBlurEm": 0.3
+          },
+          "units": "font-relative",
+          "origin": "designed",
+          "evidenceIds": [
+            "reference"
+          ],
+          "note": "Black offset silhouette and soft white halo."
+        },
+        {
+          "path": "motion.revealGroupSize",
+          "sourcePath": [],
+          "value": 2,
+          "units": "words",
+          "origin": "designed",
+          "evidenceIds": [
+            "design"
+          ],
+          "note": "Pairs enter together at the first word timestamp; prior pairs remain visible."
+        }
+      ]
+    }
+  ],
+  "motion": {
+    "phases": [],
+    "tracks": []
+  },
+  "adaptation": {
+    "layoutPolicy": "Wrap editable caption text to video width; shared 75% vertical default.",
+    "timingPolicy": "Pair words by index, start each pair at its first word timestamp, fade 0.14 seconds.",
+    "shortSegmentPolicy": "Use available segment duration.",
+    "longTextPolicy": "Wrap naturally; previous pairs remain.",
+    "colorAssignmentPolicy": "User-selected orange face, white inner and black outer stroke.",
+    "boxSizingPolicy": null,
+    "missingWordTimingsPolicy": "Distribute words uniformly through segment.",
+    "aspectRatioPolicy": "Font and outlines scale relative to canvas width.",
+    "notes": [
+      "No original AE timing measurements available."
+    ]
+  },
+  "edita": {
+    "mode": "renderer-extension",
+    "styleKey": "aeArtbrushSticker",
+    "baseStyleKey": null,
+    "settings": {
+      "revealGroupSize": 2,
+      "reveal": "fade"
+    },
+    "mappings": [],
+    "requiredExtensions": [
+      "Shared word reveal batching",
+      "Layered Artbrush stroke/shadow drawing"
+    ],
+    "changedFiles": [
+      "frontend/src/lib/caption-renderer.ts",
+      "frontend/src/config/captions/presets.ts",
+      "frontend/src/config/captions/fonts.ts",
+      "frontend/src/components/CaptionSettingsPanel.tsx",
+      "backend/studio/caption_presets.py"
+    ],
+    "limitations": [
+      "Not an exact AEP conversion: composition, easing, timing, effects and plugins unknown. Screenshot appearance approximated. No reference animation supplied."
+    ]
+  },
+  "validation": {
+    "status": "not-run",
+    "evidenceIds": [],
+    "checks": []
+  }
+}

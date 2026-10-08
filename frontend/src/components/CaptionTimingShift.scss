@@ -1,0 +1,18 @@
+.caption-timing-shift {margin:10px 0;padding:10px;border:0;border-radius:8px;font:inherit;color:inherit;
+ summary {border:0;box-shadow:none;cursor:pointer;font-weight:600;font-size:12px;}
+ p,small {font-size:11px;line-height:1.5;}
+ .caption-shift-presets,.caption-shift-custom {display:flex;gap:6px;margin:8px 0;align-items:center;}
+ button {flex:1;min-width:0;padding:6px;font:inherit;font-size:12px;cursor:pointer;border-radius:5px;}
+ .caption-shift-custom label {display:flex;gap:4px;align-items:center;flex:1;min-width:0;}
+ input {width:100%;min-width:0;font:inherit;color:inherit;background:transparent;}
+}
+
+
+:root[data-theme][data-palette] .caption-timing-shift {padding:0;margin:12px 0 22px;}
+:root[data-theme][data-palette] .caption-timing-shift summary {padding:0;min-height:0;background:none;border:0;}
+:root[data-theme][data-palette] .caption-timing-shift button {min-height:26px;height:26px;padding:3px 6px;font-size:11px;line-height:18px;}
+:root[data-theme][data-palette] :is(.subtitle-caption-file-actions,.caption-file-actions) {margin-top:20px;}
+:root[data-theme][data-palette] :is(.subtitle-caption-file-actions,.caption-file-actions,.subtitle-find-tools,.caption-find-tools) :is(button,input:not([hidden])) {min-height:28px;height:28px;box-sizing:border-box;padding:3px 8px;font-size:11px;line-height:20px;}
+
+.caption-recognize-again {font:inherit;font-size:11px;padding:5px 9px;margin-bottom:10px;border:1px solid var(--ui-border);border-radius:7px;background:var(--ui-panel);color:var(--ui-text);cursor:pointer;}
+.project-background-error {display:flex;align-items:center;gap:8px;max-width:100%;padding:7px 10px;border-radius:8px;background:var(--ui-panel);color:var(--ui-text);font-size:11px;}

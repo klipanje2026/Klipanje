@@ -1,0 +1,40 @@
+@use '../../styles/tokens' as *;
+.workspace-projects { display:flex; flex-direction:column; gap:22px; flex:1; min-height:180px; margin-top:28px; overflow:hidden; }
+.workspace-project-section-head { display:flex; align-items:center; justify-content:space-between; padding:0 10px 10px; }
+.workspace-project-section-head button { display:flex; align-items:center; gap:12px; border:0; background:none; padding:5px 0; color:$ink; font:650 12px $font; cursor:pointer; }
+.workspace-project-section-head small { color:#8e9bab; font-size:10px; font-weight:500; }
+.workspace-project-section-head .workspace-expand { padding:0; width:24px; height:24px; justify-content:center; border:1px solid $line; border-radius:7px; color:$muted; font-size:17px; }
+.workspace-project-section-head button:hover { color:$accent; }
+.workspace-project-list { overflow:auto; min-height:0; }
+.workspace-project-list > p { margin:4px 12px 10px; font-size:10px; line-height:1.9; color:$muted; }
+.workspace-project-row { position:relative; border:1px solid transparent; border-radius:11px; padding:10px 9px; margin-bottom:5px; }
+.workspace-project-row:hover { background:$surface; border-color:$line; }
+.workspace-project-row.active { background:$accent-soft; }
+.workspace-project-main { display:flex; align-items:center; gap:9px; text-decoration:none; color:$ink; min-width:0; }
+.workspace-project-main > span:last-child { min-width:0; flex:1; }
+.workspace-project-main strong { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; font-weight:600; padding-right:2px; }
+.workspace-project-main small { font-size:9px; color:$muted; display:block; margin-top:4px; }
+.workspace-project-icon { width:30px; height:33px; background:$accent-soft; color:$accent; border:1px solid #dfE8f5; border-radius:8px; display:grid; place-items:center; flex:none; }
+.workspace-project-icon svg { width:16px; }
+.workspace-project-actions { display:flex; justify-content:flex-end; gap:5px; margin-top:5px; }
+.workspace-project-actions button,.workspace-project-actions a { width:23px; height:21px; display:grid; place-items:center; border:1px solid $line; background:white; color:$muted; border-radius:5px; cursor:pointer; }
+.workspace-project-actions svg { width:12px; height:12px; }
+.workspace-project-actions a:hover { color:$accent; border-color:$accent; }
+.workspace-project-actions button:hover { color:#bc4859; border-color:#e1b9c0; }
+.workspace-project-actions button:disabled { opacity:.4; cursor:wait; }
+.workspace-saved-section { flex:none; }
+.workspace-recent-section { flex:1; min-height:0; display:flex; flex-direction:column; }
+.workspace-projects.expanded-saved .workspace-saved-section { flex:1; min-height:0; display:flex; flex-direction:column; }
+.workspace-projects.expanded-saved .workspace-recent-section { flex:none; border-top:1px solid $line; padding-top:10px; }
+.workspace-projects.expanded-saved #workspace-recent-list { display:none; }
+.workspace-projects.expanded-recent .workspace-saved-section .workspace-project-list { display:none; }
+.workspace-projects.expanded-recent .workspace-saved-section { border-bottom:1px solid $line; }
+.workspace-project-error { font-size:11px; color:#a83346; padding:8px; }
+.workspace-project-error button { display:block; border:0; background:none; color:$accent; font:inherit; padding:8px 0; cursor:pointer; }
+.workspace-sidebar:has(.workspace-projects) { overflow:hidden; }
+.workspace-sidebar:has(.workspace-projects) .workspace-sidebar-foot { padding-top:15px; flex:none; }
+.workspace-project-section-head .workspace-expand { border-color:transparent; border-radius:7px; color:#7488a2; width:27px; height:27px; }
+.workspace-project-section-head .workspace-expand:hover,.workspace-project-section-head .workspace-expand:focus-visible { border-color:#3568bf40; background:#edf3fb; color:#3568bf; }
+.workspace-expand .studio-icon { width:16px; height:16px; transition:transform .18s; }
+.workspace-expand[aria-expanded=true] .studio-icon { transform:rotate(180deg); }
+.workspace-recent-section { border-top:1px solid #3568bf26; padding-top:18px; }

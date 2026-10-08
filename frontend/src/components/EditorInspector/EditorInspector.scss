@@ -1,0 +1,52 @@
+.subtitle-inspector { min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border-left: 1px solid #dfe0e7; background: #fff; }
+.subtitle-inspector-tabs { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; border-bottom: 1px solid #e8e7ef; padding: 10px 12px; background: #fafafe; }
+.subtitle-inspector-tabs button { min-width: 0; min-height: 42px; padding: 7px 4px; border: 0; border-radius: 9px; background: transparent; color: #666474; font-size: 14px; font-weight: 700; cursor: pointer; }
+.subtitle-inspector-tabs button[aria-selected="true"] { background: #ebe5ff; color: #5834d4; box-shadow: inset 0 0 0 1px #dcd0ff; }
+.subtitle-inspector-tabs button:hover { background: #f0ecfc; }
+.subtitle-inspector-body { flex: 1; min-height: 0; min-width: 0; overflow: hidden; }
+.subtitle-inspector .subtitle-style-panel, .subtitle-inspector .subtitle-customize-panel, .subtitle-inspector .subtitle-voice-panel, .subtitle-inspector .subtitle-transcript-panel { width: 100%; margin: 0; border: 0; border-radius: 0; padding: 18px; }
+.subtitle-inspector .subtitle-style-panel { height: 100%; display: flex; flex-direction: column; gap: 14px; }
+.subtitle-inspector .panel-styles { overflow: hidden; }
+.subtitle-inspector .subtitle-template-library { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.subtitle-inspector .subtitle-style-categories { flex: none; gap: 6px; margin-bottom: 14px; }
+.subtitle-inspector .subtitle-style-categories button { min-height: 32px; padding: 0 10px; font-size: 13px; }
+.subtitle-inspector .subtitle-template-grid { flex: 1; min-height: 0; max-height: none; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 10px; scrollbar-width: thin; }
+.subtitle-inspector .subtitle-template-grid button { padding: 6px 6px 10px; background: #f5f4f8; border-radius: 11px; }
+.subtitle-inspector .subtitle-template-grid button.active { background: #f1ecff; }
+.subtitle-inspector .subtitle-template-grid button > small { font-size: 14px; line-height: 1.3; min-height: 2.6em; display: grid; place-items: center; }
+.subtitle-inspector .subtitle-template-sample { aspect-ratio: 9 / 4; }
+.subtitle-inspector .subtitle-style-panel > div:first-child small, .subtitle-inspector .subtitle-customize-head small, .subtitle-inspector .subtitle-transcript-head small { font-size: 12px; }
+.subtitle-inspector .subtitle-style-panel > div:first-child strong, .subtitle-inspector .subtitle-customize-head strong { font-size: 18px; }
+.subtitle-inspector .subtitle-customize-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 14px; }
+.subtitle-inspector .subtitle-size-control { grid-column: 1 / -1; }
+.subtitle-inspector .subtitle-duo-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 14px 10px; gap: 14px; }
+.subtitle-inspector .subtitle-duo-controls label:has(select) { grid-column: 1 / -1; }
+.subtitle-inspector .subtitle-duo-glow-toggle { grid-column: 1 / -1; }
+.subtitle-inspector .subtitle-style-save { flex-direction: column; }
+.subtitle-inspector .subtitle-style-save button { min-height: 40px; }
+.subtitle-inspector .subtitle-voice-head { align-items: flex-start; flex-direction: column; gap: 10px; }
+.subtitle-inspector .subtitle-voice-tabs button { padding: 8px 4px; font-size: 14px; }
+.subtitle-inspector .subtitle-voice-picker { grid-template-columns: minmax(0, 1fr) auto; }
+.subtitle-inspector .subtitle-voice-picker label { min-width: 0; }
+.subtitle-inspector .subtitle-voice-settings { grid-template-columns: 1fr; }
+.subtitle-inspector .subtitle-voice-settings label, .subtitle-inspector .subtitle-voice-picker label { font-size: 14px; }
+.subtitle-inspector .subtitle-voice-action, .subtitle-inspector .subtitle-voice-test-row, .subtitle-inspector .subtitle-narrator-row { align-items: stretch; flex-direction: column; }
+.subtitle-inspector .subtitle-voice-test-row select { width: 100%; min-width: 0; }
+.subtitle-inspector .subtitle-generated-audio { grid-template-columns: minmax(0, 1fr); }
+.subtitle-inspector .subtitle-segment-list { max-height: none; overflow: visible; }
+.subtitle-inspector .subtitle-segment-list article { grid-template-columns: 22px minmax(0, 1fr) 28px; }
+.subtitle-inspector .subtitle-segment-list textarea { font-size: 16px; }
+.subtitle-inspector .subtitle-time-inputs input { height: 32px; width: 74px; font-size: 12px; }
+.subtitle-inspector .subtitle-review-note, .subtitle-inspector .subtitle-sync-tools span, .subtitle-inspector .subtitle-find-tools input, .subtitle-inspector .subtitle-transcript-head em { font-size: 12px; }
+.subtitle-inspector .subtitle-sync-tools button, .subtitle-inspector .subtitle-find-tools button { min-height: 34px; font-size: 13px; }
+.subtitle-inspector .subtitle-find-tools { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.subtitle-inspector .subtitle-find-tools button { grid-column: 1 / -1; }
+@media (max-width: 760px) {
+  .subtitle-inspector { border-left: 0; border-top: 1px solid #dedde7; padding-bottom: env(safe-area-inset-bottom); }
+}
+@media (max-width: 760px) {
+  .subtitle-inspector-tabs { padding: 6px 12px; }
+}
+@media (max-width: 760px) {
+  .subtitle-inspector-tabs button { min-height: 38px; }
+}

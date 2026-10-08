@@ -1,0 +1,52 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+const code=ts.transpileModule(readFileSync('frontend/src/lib/video-overlays.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {createOverlay,restoreOverlays,drawOverlays,overlayPresets,resizeOverlay,overlayMotion,rotatedOverlayAngle,shadowRgba}=await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
+const item=createOverlay(overlayPresets[0],9,10);
+assert.equal(item.start,9);assert.equal(item.end,10);
+assert.deepEqual(restoreOverlays(JSON.parse(JSON.stringify([item]))),[item]);
+assert.deepEqual(restoreOverlays(undefined),[]);
+assert.deepEqual(restoreOverlays([{...item,width:NaN},{...item,end:8}]),[]);
+const calls=[];const ctx=new Proxy({canvas:{width:1280,height:720}},{get:(o,k)=>k==='measureText'?(text)=>({width:text.length*12}):k in o?o[k]:(...args)=>calls.push([k,...args]),set:(o,k,v)=>{o[k]=v;return true;}});
+drawOverlays(ctx,[item],8);assert.equal(calls.length,0);
+drawOverlays(ctx,[item],10);assert.equal(calls.length,0);
+drawOverlays(ctx,[item],9.5);assert.ok(calls.some(c=>c[0]==='fillText'));assert.equal(calls.filter(c=>c[0]==='save').length,calls.filter(c=>c[0]==='restore').length);
+console.log('Overlay persistence, validation and time boundaries passed.');
+
+const box={...item,x:50,y:50,width:40,height:20,rotation:0};
+const right=resizeOverlay(box,'e',100,0,1000,500);
+assert.equal(right.width,50);assert.equal(right.x,55);assert.equal(right.x-right.width/2,box.x-box.width/2);
+const left=resizeOverlay(box,'w',100,0,1000,500);
+assert.equal(left.width,30);assert.equal(left.x,55);assert.equal(left.x+left.width/2,box.x+box.width/2);
+const rotated=resizeOverlay({...box,rotation:90},'e',0,100,1000,500);
+assert.equal(rotated.width,50);assert.equal(rotated.y,60);
+assert.ok(resizeOverlay(box,'w',9999,0,1000,500).width>0);
+console.log('Resize preserves opposite edges and supports rotation.');
+
+const presetCode=ts.transpileModule(readFileSync('frontend/src/lib/text-presets.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {applyTextEffect,textEffects}=await import(`data:text/javascript;base64,${Buffer.from(presetCode).toString('base64')}`);
+const styled=applyTextEffect({...box,text:'Moja priča',fontSize:54},textEffects.find(p=>p.id==='neon'));
+assert.equal(styled.text,'Moja priča');assert.equal(styled.fontSize,54);assert.equal(styled.start,box.start);assert.equal(styled.width,box.width);assert.equal(styled.glow,true);
+assert.deepEqual(restoreOverlays(JSON.parse(JSON.stringify([styled]))),[styled]);
+console.log('Text effects preserve content, timing, geometry and saved style.');
+
+const animated={...box,animation:'rise',animationDuration:1};
+assert.equal(overlayMotion(animated,animated.start).alpha,0);
+assert.equal(overlayMotion(animated,animated.start+1).y,0);
+assert.equal(overlayMotion(animated,animated.start+1).alpha,1);
+assert.ok(overlayMotion(animated,animated.start+.5).y>0);
+const typewriter={...animated,text:'Čao 🌟',animation:'typewriter'};
+assert.equal(overlayMotion(typewriter,typewriter.start+1).characters,Array.from(typewriter.text).length);
+assert.equal(overlayMotion({...animated,animation:'none'},animated.start).alpha,1);
+console.log('Animation timing and Unicode typewriter boundaries passed.');
+
+assert.equal(rotatedOverlayAngle(0,0,Math.PI/2),90);
+assert.equal(rotatedOverlayAngle(170,0,Math.PI/2),-100);
+assert.equal(shadowRgba('#ff8000',50),'rgba(255,128,0,0.5)');
+const painted={...box,text:'Shadow',animation:'none',shadowDistance:10,shadowAngle:-90,shadowOpacity:30,shadowColor:'#000000',background:'#ffffff',backgroundOpacity:25,letterSpacing:4};
+drawOverlays(ctx,[painted],9.5);
+assert.ok(Math.abs(ctx.shadowOffsetX)<.001);assert.equal(ctx.shadowOffsetY,-10);
+assert.equal(ctx.shadowColor,'rgba(0,0,0,0.3)');assert.equal(ctx.letterSpacing,'4px');
+assert.deepEqual(restoreOverlays(JSON.parse(JSON.stringify([painted]))),[painted]);
+console.log('Rotation, shadow angle/opacity and text spacing passed.');

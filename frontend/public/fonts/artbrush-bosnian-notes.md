@@ -1,0 +1,1 @@
+Derived from the user-supplied artbrush.ttf. Added č/ć/š/ž/đ and uppercase equivalents from the original c/C/s/S/z/Z/d/D and v/apostrophe/hyphen outlines; original file preserved. Rebuild with scripts/extend-artbrush-font.py and fontTools. Original usage rights continue to apply.

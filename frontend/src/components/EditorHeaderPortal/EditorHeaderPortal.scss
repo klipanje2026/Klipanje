@@ -1,0 +1,55 @@
+@use '../../styles/tokens' as *;
+.workspace-header-project { flex:1; min-width:0; }
+.workspace-header-project .project-toolbar { padding:0; border:0; background:transparent; flex-wrap:nowrap; gap:9px; }
+.workspace-header-project .project-toolbar label { min-width:0; }
+.workspace-header-project .project-toolbar input { width:190px; max-width:100%; background:$surface; }
+.workspace-header-project .project-toolbar button { white-space:nowrap; }
+.workspace-header-project .project-toolbar .project-feedback { position:absolute; top:76px; left:50%; transform:translateX(-50%); z-index:40; max-width:80vw; background:white; border:1px solid $line; padding:10px 16px; border-radius:10px; box-shadow:0 8px 20px #18233112; font-size:11px; }
+.workspace-header-project:empty { display:none; }
+.workspace-header-action:empty { display:none; }
+.workspace-header-action button { display:flex; align-items:center; gap:9px; border:1px solid #d6e3f5; background:$accent-soft; color:$accent; border-radius:10px; padding:12px 16px; font:650 12px $font; cursor:pointer; white-space:nowrap; }
+.workspace-header-action button:hover:enabled { background:#dfeafb; }
+.workspace-header-action button:disabled { opacity:.5; cursor:not-allowed; }
+.workspace-header:has(.workspace-header-project:not(:empty)) { gap:22px; }
+.workspace-header:has(.workspace-header-project:not(:empty)) .workspace-header-caption { display:none; }
+@media(max-width:1150px) { .workspace-header-project .project-toolbar .project-copy { display:none; } .workspace-header:has(.workspace-header-project:not(:empty)) .workspace-profile-trigger > span:not(.workspace-avatar) { display:none; } .workspace-header-project .project-toolbar input { width:150px; } }
+@media(max-width:800px) { .workspace-header:has(.workspace-header-project:not(:empty)) { height:auto; min-height:118px; flex-wrap:wrap; padding-block:12px; gap:10px; } .workspace-header-project { order:5; flex-basis:100%; } .workspace-header-action { margin-left:auto; } .workspace-header-project .project-toolbar input { width:100%; } .workspace-header-project .project-toolbar label { flex:1; width:auto; } .workspace-header-project .project-toolbar .project-feedback { top:118px; } .workspace-header-action button { padding:9px; font-size:10px; } .workspace-header-action svg { width:17px; } }
+
+// Match the video panel edge: main sidebar + editor tools + preview padding.
+@media(min-width:1101px) {
+  .workspace-header:has(.workspace-header-action:not(:empty)) {
+    display:grid; gap:16px;
+    grid-template-columns:calc(220px + 210px + 28px - 32px - 16px) minmax(0,1fr) auto auto;
+  }
+  .workspace-header:has(.workspace-header-action:not(:empty)) .workspace-header-project .project-toolbar { gap:8px; }
+  .workspace-header:has(.workspace-header-action:not(:empty)) .workspace-header-project input { width:150px; }
+}
+@media(min-width:1101px) and (max-width:1500px) {
+  .workspace-header:has(.workspace-header-action:not(:empty)) .project-copy { display:none; }
+  .workspace-header:has(.workspace-header-action:not(:empty)) .workspace-profile-trigger > span:not(.workspace-avatar) { display:none; }
+}
+
+// Explicit areas keep the account navigation from pushing the editor action into a new row.
+@media(min-width:1101px) {
+  .workspace-header:has(.workspace-header-action:not(:empty)) {
+    grid-template-columns:auto minmax(180px,1fr) auto auto auto auto !important;
+    grid-template-areas:"logo project nav profile theme action";gap:12px;
+  }
+  .workspace-logo{grid-area:logo;}.workspace-header-project{grid-area:project;}
+  .workspace-billing-nav{grid-area:nav;}.workspace-profile{grid-area:profile;}.workspace-header-action{grid-area:action;}
+  .workspace-header:has(.workspace-header-action:not(:empty)) .workspace-header-project{padding-left:24px;}
+}
+@media(max-width:1100px) {
+  .workspace-header:has(.workspace-header-action:not(:empty)) {display:flex;flex-wrap:wrap;height:auto;min-height:84px;padding-block:12px;gap:10px;}
+  .workspace-header:has(.workspace-header-action:not(:empty)) .workspace-header-project{order:5;flex-basis:100%;}
+  .workspace-header:has(.workspace-header-action:not(:empty)) .workspace-header-action{order:6;margin-left:0;}
+}
+
+@media(min-width:651px) and (max-width:1100px) {
+  .workspace-header:has(.workspace-header-action:not(:empty)) .workspace-header-project{flex:1 0 calc(100% - 260px);}
+  .workspace-header:has(.workspace-header-action:not(:empty)) .workspace-header-action{flex:0 0 auto;}
+}
+
+.workspace-theme-slot { grid-area:theme; display:flex; align-items:center; justify-content:center; flex:none; }
+.workspace-header { padding-top:8px; }
+.workspace-profile-trigger > .studio-icon, .video-ratio-picker > button > .studio-icon:last-child { position:relative; top:2px; }

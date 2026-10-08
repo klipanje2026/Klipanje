@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "engine": "three.js",
+  "style": "silk",
+  "colors": {
+    "font": "#e7e8e6",
+    "side": "#65717a",
+    "border": "#f3f5ef",
+    "shadow": "#000000",
+    "background": "#111820"
+  },
+  "duration": 7.2
+}

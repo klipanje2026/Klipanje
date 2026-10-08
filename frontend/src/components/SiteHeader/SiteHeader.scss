@@ -1,0 +1,28 @@
+@use '../../styles/tokens' as *;
+.home-header {
+  width: min($content, calc(100% - 96px)); margin: auto; min-height: 80px;
+  display: flex; align-items: center; justify-content: space-between; gap: 32px;
+}
+.home-logo { display: flex; align-items: center; font-size: 33px; font-weight: 750; letter-spacing: -1.7px; }
+.home-logo-mark { background: $brand; color: $white; width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; margin-right: 10px; font-size: 30px; padding-bottom: 3px; font-weight: 700; }
+.home-logo-dot { color: $brand; }
+.home-navigation { display: flex; align-items: center; gap: 31px; font-size: 15px; font-weight: 550; }
+.home-navigation a:hover, .home-login:hover { color: $brand-ink; }
+.home-header-actions { display: flex; align-items: center; gap: 26px; font-size: 14px; }
+.home-menu-toggle { display: none; }
+@media (max-width: 900px) { .home-header { gap: 18px; } .home-navigation { gap: 18px; } .home-login { display: none; } }
+@include mobile {
+  .home-header { width: calc(100% - 36px); min-height: 70px; flex-wrap: wrap; gap: 14px; }
+  .home-logo { font-size: 25px; }
+  .home-menu-toggle { display: grid; place-items: center; background: transparent; border: 0; margin-left: auto; width: 40px; height: 40px; cursor: pointer; }
+  .home-header-actions .home-button { padding: 0 14px; min-height: 40px; font-size: 12px; gap: 6px; }
+  .home-header-actions .studio-icon { width: 16px; }
+  .home-navigation { display: none; order: 4; width: 100%; padding: 8px 0 22px; justify-content: center; }
+  .home-navigation.is-open { display: flex; }
+}
+
+@media (max-width: 420px) { .home-header { gap: 8px; } .home-logo { font-size: 23px; } .home-logo-mark { width: 31px; height: 31px; font-size: 25px; margin-right: 7px; } .home-header-actions .home-button { padding-inline: 10px; font-size: 11px; } }
+
+.edita-brand-mark { display:block; flex-shrink:0; width:40px; height:40px; margin-right:10px; object-fit:contain; }
+.workspace-logo .edita-brand-mark { width:36px; height:36px; margin-right:9px; }
+@media(max-width:420px){.home-logo .edita-brand-mark {width:31px;height:31px;margin-right:7px;}}

@@ -1,0 +1,5 @@
+import {LanguageDropdown} from './LanguageDropdown/LanguageDropdown';
+import {setPreviewQuality,usePreviewQuality,type PreviewQuality} from '../lib/preview-quality';
+import './PreviewQualityPicker.scss';
+const options=[{value:'720',label:'720p · brži pregled'},{value:'1080',label:'1080p · Full HD'},{value:'original',label:'Original · puna kvaliteta'}];
+export function PreviewQualityPicker(){const value=usePreviewQuality();return <div className="preview-quality-picker"><LanguageDropdown label="Kvalitet pregleda" hideLabel triggerTitle={`Kvalitet pregleda · ${options.find(option=>option.value===value)?.label??value}`} value={value} onChange={v=>setPreviewQuality(v as PreviewQuality)} icon={<><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4M7 8v5m4-5v5M7 10.5h4m4-2.5v5h1a2.5 2.5 0 0 0 0-5z"/></svg><span className="preview-quality-caption">Kvalitet</span></>} options={options}/></div>;}

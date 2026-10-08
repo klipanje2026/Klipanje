@@ -1,0 +1,57 @@
+@mixin styles {
+ :root {--announcement-height:0px;}
+ .announcement-spacer {height:var(--announcement-height);flex:none;}
+ .announcement-global {position:fixed;inset:0 0 auto;z-index:650;}
+ :root[data-theme][data-palette] .announcement-strip {
+  display:flex;align-items:center;gap:12px;min-height:44px;padding:10px clamp(14px,2vw,28px);box-sizing:border-box;
+  background:var(--ui-panel);color:var(--ui-text);border-bottom:1px solid var(--ui-accent);font:400 11px/1.5 'Manrope Variable',sans-serif;
+  box-shadow:0 2px 12px #001d2612;
+  &.tone-update {background:color-mix(in srgb,var(--ui-accent-button) 12%,var(--ui-panel));}
+  &.tone-maintenance {border-bottom-color:#be9144;background:color-mix(in srgb,#be9144 10%,var(--ui-panel));}
+  .announcement-icon {display:grid;place-items:center;color:var(--ui-accent);flex:none;}
+  .studio-icon {width:16px;height:16px;}
+  .announcement-copy {display:flex;align-items:baseline;gap:10px;flex:1;min-width:0;flex-wrap:wrap;overflow-wrap:anywhere;}
+  strong {font-size:11px;font-weight:650;color:var(--ui-text);}
+  .announcement-copy>span {white-space:pre-line;color:var(--ui-text);}
+  button {display:grid;place-items:center;width:28px;height:28px;min-height:28px;flex:none;padding:5px;border:0;border-radius:6px;color:var(--ui-text);background:transparent;cursor:pointer;}
+  button:hover {background:var(--ui-raised);}
+  button:focus-visible {outline:2px solid var(--ui-accent);outline-offset:2px;}
+  &.is-preview {border:1px solid var(--ui-border);border-bottom-color:var(--ui-accent);border-radius:8px;box-shadow:none;padding:12px;}
+  &.is-preview button {opacity:.55;cursor:default;}
+ }
+ :root[data-theme][data-palette] .editor-layout {height:calc(100dvh - var(--announcement-height));}
+ :root[data-theme][data-palette] :is(.account-page,.app-status-page) {min-height:calc(100dvh - var(--announcement-height));}
+ :root[data-theme][data-palette] .admin-announcements {
+  .admin-section-header {align-items:center;}
+  .admin-section-header h2 {margin:0 0 5px;}
+  .admin-section-header p {margin:0;font-size:11px;}
+  .announcement-compose {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;padding:22px;border:1px solid var(--page-line);border-radius:12px;background:var(--page-card);margin-bottom:24px;}
+  form {display:grid;gap:14px;min-width:0;}
+  h3 {font-size:13px;font-weight:600;margin:0 0 12px;}
+  form h3 {margin:0;}
+  label {display:grid;gap:6px;font-size:11px;min-width:0;}
+  input,select,textarea {box-sizing:border-box;width:100%;min-width:0;min-height:36px;padding:9px 11px;font:400 11px/1.5 'Manrope Variable',sans-serif;border:1px solid var(--ui-border);border-radius:7px;background:var(--ui-panel);color:var(--ui-text);}
+  textarea {resize:vertical;}
+  label small {text-align:right;font-size:10px;color:var(--ui-muted);}
+  .announcement-form-row {display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  form>button {justify-self:start;background:var(--ui-accent-button);color:#052f39;border-color:transparent;}
+  .announcement-preview {min-width:0;}
+  .announcement-preview>span {display:block;margin:0 0 14px;font-size:9px;letter-spacing:1.3px;color:var(--ui-muted);}
+  .announcement-preview>p {font-size:11px;line-height:1.7;max-width:400px;}
+  .announcement-feedback {padding:10px 14px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-raised);font-size:11px;}
+  .announcement-list {display:grid;gap:12px;}
+  .announcement-list article {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;padding:20px;border:1px solid var(--page-line);border-radius:12px;background:var(--page-card);}
+  .announcement-list h3 {margin:8px 0 5px;overflow-wrap:anywhere;}
+  .announcement-list p {font-size:11px;line-height:1.7;white-space:pre-line;overflow-wrap:anywhere;margin:0 0 6px;}
+  .announcement-list small {font-size:10px;color:var(--ui-muted);}
+  .announcement-status {font-size:9px;font-weight:600;color:var(--ui-muted);}
+  .announcement-status.is-active {color:var(--ui-accent);}
+  .announcement-actions {max-width:300px;}
+  .announcement-confirm {padding-top:12px;}
+  .announcement-confirm button {margin:6px 8px 0 0;}
+  .announcement-publish {background:var(--ui-accent-button);color:#052f39;border-color:transparent;}
+  .announcement-empty {padding:24px;text-align:center;border:1px dashed var(--ui-border);border-radius:10px;font-size:11px;}
+  @media(max-width:850px) {.announcement-compose {grid-template-columns:minmax(0,1fr);}.announcement-list article {grid-template-columns:minmax(0,1fr);gap:12px;}}
+  @media(max-width:500px) {.announcement-form-row {grid-template-columns:minmax(0,1fr);}}
+ }
+}

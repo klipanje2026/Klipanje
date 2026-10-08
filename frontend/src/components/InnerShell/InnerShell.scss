@@ -1,0 +1,4 @@
+.back-home { color: var(--ink-soft); font-size: 13px; font-weight: 800; }
+@media (max-width: 640px) {
+  .back-home { display: none; }
+}

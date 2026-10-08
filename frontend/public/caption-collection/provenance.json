@@ -1,0 +1,118 @@
+{
+  "archive": "svi-titlovi-kolekcija.zip",
+  "imported": "2026-10-02",
+  "files": [
+    {
+      "file": "catalog.json",
+      "sha256": "03c1330c73722cb2e38833a507e847214dd70b6a471241acedf8d046a332ed49"
+    },
+    {
+      "file": "assets/fonts.css",
+      "sha256": "1012182b7e352d6c49ad6b3bb6df2e303a0e2c52e276da07b6bfdc0efcddcd56"
+    },
+    {
+      "file": "assets/three-0.169.0.js",
+      "sha256": "2f46fe54d980c7aa88b5c4fd936ce37d48f8c5da8417419a5610ca64cb930fd7"
+    },
+    {
+      "file": "source/hyper-fonts.js",
+      "sha256": "7fbae9e433b765134e43f7d1c3ae28c4501dd4b8e2e1cf9b4343139779830521"
+    },
+    {
+      "file": "source/hyper-palettes.js",
+      "sha256": "8e25cddaed745ef9d441d96d35d2348e8d35fd80be91b2799d761eb537d0c9f3"
+    },
+    {
+      "file": "source/hyper-material.js",
+      "sha256": "c634aa185c30bb8b0fd457b6fc79ac47c4134a3c690f9aff4354938d7246a708"
+    },
+    {
+      "file": "source/hyper-renderer.js",
+      "sha256": "442405925c7e2188ef5e74f6cc5f0b395bf96405cab8d777e25c6cb97dd992b4"
+    },
+    {
+      "file": "source/hyper-marks-renderer.js",
+      "sha256": "47f755d569a59756d3f626a4ca6cb83f9059b7c921de529a484a01314087206d"
+    },
+    {
+      "file": "source/juice-material.js",
+      "sha256": "1139283af21b51a1e25458e5f886aa30f12acd0185b8216e1b506bf58d8587db"
+    },
+    {
+      "file": "source/juice-renderer.js",
+      "sha256": "801c9634f88c959e426526e2a3582027672812caeb8bac60782fc61e7fcd1df3"
+    },
+    {
+      "file": "source/noir-material.js",
+      "sha256": "c72c2d07355226bbfd8b04ddb02bdec177b79f960fae9967c1d7d21e31a576a0"
+    },
+    {
+      "file": "source/noir-renderer.js",
+      "sha256": "82f9e2e95e47cae301b4a223ce115eadd24df7b097bbbc72408379fbff9b047e"
+    },
+    {
+      "file": "source/rift-effects.js",
+      "sha256": "ad5bc4d481f11c8286293ad9f3459793770a94d1aef53780f0eed30238f8662a"
+    },
+    {
+      "file": "source/rift-material.js",
+      "sha256": "9147df0766f055045e2716985ab9d63bdcf71ea472981e34f6758a51ef4f6f74"
+    },
+    {
+      "file": "source/rift-renderer.js",
+      "sha256": "276973b5c0adce466cdfbb6e8ecd4b2ea06ff8cdcf4523b4b4a517d48624bdda"
+    },
+    {
+      "file": "source/titanium-font.js",
+      "sha256": "65388f677a224d68fb8579eba756298c838f2844fa4e0bd76a6f8e68a0bf5dbf"
+    },
+    {
+      "file": "source/titanium-material.js",
+      "sha256": "633e5aa8d334ab08e0137c5c5db578b66981c0e3eadb605236a7474092fa2d5f"
+    },
+    {
+      "file": "source/titanium-renderer.js",
+      "sha256": "55f85ff4fe1f4944953f1506f3b95ba62b38cac27edb826c25bb2f529388d261"
+    },
+    {
+      "file": "source/paper-renderer.js",
+      "sha256": "3c75c17e9eb50faf3650cf0ff87979f0d419952de77e9877a7530588cd1033df"
+    },
+    {
+      "file": "source/fusion-renderer.js",
+      "sha256": "f591dfce0a205f8ae7a10702e0d432c5fbed16e8e6857314a13c882324ebd04e"
+    },
+    {
+      "file": "source/forged.js",
+      "sha256": "986552b12f6ef4dad27d6fb20cc3473cf9a5c8d3afb24b80c9704c35d210e35a"
+    },
+    {
+      "file": "source/prism-bloom.js",
+      "sha256": "66d1b123ecb8ff1664471d72d113223061472209d5625242c23a42300966b1f8"
+    },
+    {
+      "file": "source/ink-riot.js",
+      "sha256": "601de4dc17b37f299c4a89882da9d241c1f60d77a8a5d59647550390e0aceace"
+    },
+    {
+      "file": "source/porcelain-flow.js",
+      "sha256": "c0ac34822107d1d5ea2b27cf675a147b99f139f5bfb37b913ab9bbe6ba396a38"
+    },
+    {
+      "file": "source/laser-trace.js",
+      "sha256": "fccf6522327d8a3b09c8ac2b22a2431ed5c625809533316f3437c50afab720ed"
+    },
+    {
+      "file": "source/velvet-pulse.js",
+      "sha256": "799b4fe345ae8c702eb27381caee25e6c399a7cdfa55be29be96fde9348d7a7a"
+    },
+    {
+      "file": "source/magma-core.js",
+      "sha256": "5f0679d1827d7c804e45761cacca8c027d58bf41776424e49b1bc0ef646e5e44"
+    },
+    {
+      "file": "source/abyssal-pearl.js",
+      "sha256": "971baaa6d7266038283597041bcdb954a2a228a1c56decc3cfad0b593f5fee53"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+.subtitle-app .subtitle-playback {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  button { display:flex; align-items:center; gap:6px; height:32px; padding:0 12px; border:1px solid #3568bf25; border-radius:8px; background:white; color:#78869a; font:inherit; font-size:11px; cursor:pointer; }
+  button:hover:not(:disabled) { color:#3568bf; background:#f2f7ff; }
+  button:disabled { opacity:.4; cursor:default; }
+  svg { width:13px; height:13px; fill:currentColor; }
+  kbd { font:inherit; font-size:10px; color:#9ba6b6; margin-left:4px; }
+  small { color:#84909f; font-size:11px; }
+}

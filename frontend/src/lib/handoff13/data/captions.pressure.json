@@ -1,0 +1,10 @@
+{
+  "duration": 9,
+  "cues": [
+    { "start": 0.22, "end": 1.90, "lead": "tvoja", "text": "poruka", "material": "ivory", "pressure": 1 },
+    { "start": 1.90, "end": 3.05, "text": "zaslužuje", "material": "ivory", "pressure": 0.85 },
+    { "start": 3.05, "end": 4.90, "text": "PAŽNJU", "material": "orange", "pressure": 1.3 },
+    { "start": 4.90, "end": 6.75, "lead": "koja", "text": "pokreće", "material": "ivory", "pressure": 1.1 },
+    { "start": 6.75, "end": 8.75, "text": "ljude.", "material": "orange", "pressure": 1.15 }
+  ]
+}

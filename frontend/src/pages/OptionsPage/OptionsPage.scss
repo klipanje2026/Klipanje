@@ -1,0 +1,7 @@
+@use '../../styles/tokens' as *;
+.options-page { min-height:100%; padding:60px clamp(24px,5vw,80px); background:$surface; color:$ink; font-family:$font; }
+.options-page-icon { display:grid; place-items:center; width:52px; height:52px; border:1px solid #dbe6f5; border-radius:15px; background:$accent-soft; color:$accent; }
+.options-page h1 { font-size:36px; letter-spacing:-1px; margin:24px 0 12px; }
+.options-page p { color:$muted; font-size:14px; }
+.options-page > div { padding:28px; margin:30px 0; border:1px solid $line; border-radius:16px; background:white; color:$muted; font-size:13px; max-width:700px; }
+.options-page > a { display:inline-flex; align-items:center; gap:14px; color:$accent; text-decoration:none; font-size:13px; font-weight:600; }

@@ -1,3 +1,25 @@
 .env
 .env.*
 !.env.example
+
+# Local dependencies, private data, and source archives
+.venv/
+.local/
+**/node_modules/
+**/__pycache__/
+*.py[cod]
+*.sqlite3
+*.sqlite3-*
+*.tsbuildinfo
+*.zip
+*.pem
+*.key
+backend/media/
+backend/staticfiles/
+frontend/dist/
+coverage/
+outputs/
+work/
+backups/
+*.log
+LOCAL_CHANGES.md

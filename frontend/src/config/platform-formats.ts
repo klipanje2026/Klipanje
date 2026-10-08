@@ -1,0 +1,5 @@
+/** Shared preview guides and actual output ratios for both editors. */
+export const socialFormats=[{id:'tiktok',label:'TikTok'},{id:'instagram',label:'Instagram Reels'},{id:'facebook',label:'Facebook Reels'},{id:'youtube',label:'YouTube Shorts'},{id:'story',label:'Instagram Story'}];
+export const isSocialFormat=(value:string)=>socialFormats.some(format=>format.id===value);
+export const customFormats=[{id:'original',ratio:0,label:'Originalni omjer',hint:'Izvorni video'},{id:'16:9',ratio:16/9,label:'16:9',hint:'YouTube'},{id:'4:3',ratio:4/3,label:'4:3',hint:'Klasični video'},{id:'2:1',ratio:2,label:'2:1',hint:'Široki kadar'},{id:'9:16',ratio:9/16,label:'9:16',hint:'TikTok · Reels · Shorts'},{id:'1:1',ratio:1,label:'1:1',hint:'Instagram objave'},{id:'3:4',ratio:3/4,label:'3:4',hint:'Uspravni kadar'},{id:'4:5',ratio:4/5,label:'4:5',hint:'Društvene mreže'}];
+export const platformFormatOptions=[...socialFormats.map(f=>({value:f.id,group:'Social media',label:`${f.label} · 9:16`})),...customFormats.map(f=>({value:f.id,group:'Custom',label:f.id==='original'?f.label:`${f.label} · ${f.hint}`}))];

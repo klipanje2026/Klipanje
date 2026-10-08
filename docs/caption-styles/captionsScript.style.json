@@ -1,0 +1,95 @@
+{
+  "$schema": "../skills/ae-caption-style/references/style-spec.schema.json",
+  "schemaVersion": 1,
+  "id": "captionsScript",
+  "name": "Captions Script",
+  "status": "implemented",
+  "source": {
+    "file": "Captions.aep",
+    "sha256": "9d5ebac3326ba7b6230cd209b4656d50456779fe77db8daed1d76577a2e99103",
+    "format": "aep",
+    "compositionId": null,
+    "extraction": "reference video and accompanying instructions",
+    "aeVersion": null,
+    "notes": [
+      "Read PDF and sampled supplied video help. AE unavailable; no binary project extraction. First illustrated style reconstructed with normal text, script emphasis and glowing curved underline. Inter/Caveat substitute for the reference fonts; timings estimated."
+    ]
+  },
+  "text": {
+    "sourceTextIncluded": false,
+    "slots": [
+      {
+        "id": "caption",
+        "contentSource": "user-caption",
+        "layerIds": [],
+        "emptyBehavior": "hide",
+        "notes": [
+          "User caption text in configurable batches; no literal reference text."
+        ]
+      }
+    ]
+  },
+  "canvas": {
+    "widthPx": null,
+    "heightPx": null,
+    "frameRateNumerator": null,
+    "frameRateDenominator": null,
+    "pixelAspect": null,
+    "durationSeconds": null,
+    "displayStartSeconds": null,
+    "colorSpace": null,
+    "linearLight": null,
+    "bitsPerChannel": null
+  },
+  "coverage": {
+    "typography": "unknown",
+    "layout": "unknown",
+    "colors": "unknown",
+    "strokes": "unknown",
+    "shadows": "unknown",
+    "boxes": "unknown",
+    "motion": "unknown",
+    "textAnimators": "unknown",
+    "compositing": "unknown",
+    "threeD": "unknown",
+    "dependencies": "unknown"
+  },
+  "dependencies": [],
+  "evidence": [],
+  "layers": [],
+  "motion": {
+    "phases": [],
+    "tracks": []
+  },
+  "adaptation": {
+    "layoutPolicy": null,
+    "timingPolicy": null,
+    "shortSegmentPolicy": null,
+    "longTextPolicy": null,
+    "colorAssignmentPolicy": null,
+    "boxSizingPolicy": null,
+    "missingWordTimingsPolicy": null,
+    "aspectRatioPolicy": null,
+    "notes": [
+      "Pravila prilagodbe novom tekstu su odvojena od izmjerenih vrijednosti originala."
+    ]
+  },
+  "edita": {
+    "mode": "new-style",
+    "styleKey": "captionsScript",
+    "baseStyleKey": null,
+    "settings": {},
+    "mappings": [],
+    "requiredExtensions": [],
+    "changedFiles": [],
+    "limitations": [
+      "Read PDF and sampled supplied video help. AE unavailable; no binary project extraction. First illustrated style reconstructed with normal text, script emphasis and glowing curved underline. Inter/Caveat substitute for the reference fonts; timings estimated.",
+      "Local validation explicitly skipped at user request. CI deployment checks remain enabled."
+    ]
+  },
+  "validation": {
+    "status": "not-run",
+    "evidenceIds": [],
+    "checks": []
+  }
+}

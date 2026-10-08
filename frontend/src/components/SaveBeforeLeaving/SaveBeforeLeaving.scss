@@ -1,0 +1,11 @@
+@use '../../styles/tokens' as *;
+.save-before-leaving { width:min(440px,calc(100vw - 40px)); margin:auto; border:1px solid $line; border-radius:22px; padding:28px; background:white; color:$ink; font-family:$font; box-shadow:0 25px 100px #18233125; }
+.save-before-leaving::backdrop { background:#18233155; backdrop-filter:blur(4px); }
+.save-before-leaving-icon { display:grid; place-items:center; width:42px; height:42px; border-radius:12px; background:$accent-soft; color:$accent; font-size:24px; }
+.save-before-leaving h2 { font-size:22px; letter-spacing:-.7px; margin:20px 0 12px; }
+.save-before-leaving p { font-size:12px; line-height:1.8; color:$muted; }
+.save-before-leaving [role=alert] { color:#a73750; }
+.save-before-leaving > div { display:grid; gap:9px; margin-top:24px; }
+.save-before-leaving button { border:1px solid $line; border-radius:9px; padding:12px; background:white; color:$ink; font:600 12px $font; cursor:pointer; }
+.save-before-leaving .save-leaving-primary { background:$accent; color:white; border-color:$accent; }
+.save-before-leaving button:hover { filter:brightness(.97); }

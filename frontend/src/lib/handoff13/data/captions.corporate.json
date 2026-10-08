@@ -1,0 +1,267 @@
+{
+  "axis": {
+    "duration": 8,
+    "cues": [
+      {
+        "start": 0.18,
+        "end": 2.6,
+        "lead": "STRATEGIJA",
+        "headline": [
+          {
+            "text": "KOJA ",
+            "font": "condensed"
+          },
+          {
+            "text": "POKREĆE",
+            "font": "serif"
+          }
+        ],
+        "tail": "svaki naredni korak"
+      },
+      {
+        "start": 2.6,
+        "end": 5.02,
+        "lead": "MANJE BUKE",
+        "headline": [
+          {
+            "text": "VIŠE ",
+            "font": "condensed"
+          },
+          {
+            "text": "REZULTATA",
+            "font": "bold"
+          }
+        ],
+        "tail": "od ideje do efekta"
+      },
+      {
+        "start": 5.02,
+        "end": 7.44,
+        "lead": "JASAN SMJER",
+        "headline": [
+          {
+            "text": "VIDLJIV ",
+            "font": "condensed"
+          },
+          {
+            "text": "RAST",
+            "font": "serif"
+          }
+        ],
+        "tail": "za svaki novi cilj"
+      }
+    ]
+  },
+  "signature": {
+    "duration": 8,
+    "cues": [
+      {
+        "start": 0.18,
+        "end": 2.6,
+        "lead": "Svaki detalj",
+        "headline": [
+          {
+            "text": "OSTAVLJA ",
+            "font": "bold"
+          },
+          {
+            "text": "TRAG",
+            "font": "serif"
+          }
+        ],
+        "tail": "koji se pamti."
+      },
+      {
+        "start": 2.6,
+        "end": 5.02,
+        "lead": "Kad kvalitet",
+        "headline": [
+          {
+            "text": "GOVORI ",
+            "font": "bold"
+          },
+          {
+            "text": "PRVI",
+            "font": "serif"
+          }
+        ],
+        "tail": "povjerenje ostaje."
+      },
+      {
+        "start": 5.02,
+        "end": 7.44,
+        "lead": "Vaša priča",
+        "headline": [
+          {
+            "text": "IMA ",
+            "font": "bold"
+          },
+          {
+            "text": "POTPIS",
+            "font": "serif"
+          }
+        ],
+        "tail": "koji se prepoznaje."
+      }
+    ]
+  },
+  "momentum": {
+    "duration": 8,
+    "cues": [
+      {
+        "start": 0.18,
+        "end": 2.6,
+        "lead": "SPREMNI ZA",
+        "headline": [
+          {
+            "text": "SLJEDEĆI ",
+            "font": "condensed"
+          },
+          {
+            "text": "KORAK",
+            "font": "serif"
+          }
+        ],
+        "tail": "Brzina s razlogom."
+      },
+      {
+        "start": 2.6,
+        "end": 5.02,
+        "lead": "JEDNA IDEJA",
+        "headline": [
+          {
+            "text": "POKREĆE ",
+            "font": "condensed"
+          },
+          {
+            "text": "SVE",
+            "font": "bold"
+          }
+        ],
+        "tail": "Ne čekaj trenutak."
+      },
+      {
+        "start": 5.02,
+        "end": 7.44,
+        "lead": "OVO JE",
+        "headline": [
+          {
+            "text": "TVOJ ",
+            "font": "condensed"
+          },
+          {
+            "text": "MOMENT",
+            "font": "serif"
+          }
+        ],
+        "tail": "Vrijeme je za rast."
+      }
+    ]
+  },
+  "ledger": {
+    "duration": 8,
+    "cues": [
+      {
+        "start": 0.18,
+        "end": 2.6,
+        "lead": "01 / FOKUS",
+        "headline": [
+          {
+            "text": "SVAKA ",
+            "font": "bold"
+          },
+          {
+            "text": "ODLUKA",
+            "font": "mono"
+          }
+        ],
+        "tail": "počinje jasnim uvidom"
+      },
+      {
+        "start": 2.6,
+        "end": 5.02,
+        "lead": "02 / RAST",
+        "headline": [
+          {
+            "text": "BROJEVI ",
+            "font": "bold"
+          },
+          {
+            "text": "GOVORE",
+            "font": "mono"
+          }
+        ],
+        "tail": "rezultati ostaju"
+      },
+      {
+        "start": 5.02,
+        "end": 7.44,
+        "lead": "03 / PREDNOST",
+        "headline": [
+          {
+            "text": "VIDI ",
+            "font": "bold"
+          },
+          {
+            "text": "DALJE",
+            "font": "mono"
+          }
+        ],
+        "tail": "djeluj pametnije"
+      }
+    ]
+  },
+  "signal": {
+    "duration": 8,
+    "cues": [
+      {
+        "start": 0.18,
+        "end": 2.6,
+        "lead": "Pravi signal",
+        "headline": [
+          {
+            "text": "U PRAVOM ",
+            "font": "condensed"
+          },
+          {
+            "text": "TRENUTKU",
+            "font": "serif"
+          }
+        ],
+        "tail": "svijet primijeti"
+      },
+      {
+        "start": 2.6,
+        "end": 5.02,
+        "lead": "Manje riječi",
+        "headline": [
+          {
+            "text": "JAČA ",
+            "font": "condensed"
+          },
+          {
+            "text": "PORUKA",
+            "font": "serif"
+          }
+        ],
+        "tail": "precizno i jasno"
+      },
+      {
+        "start": 5.02,
+        "end": 7.44,
+        "lead": "Vaš brend",
+        "headline": [
+          {
+            "text": "OSTAJE ",
+            "font": "condensed"
+          },
+          {
+            "text": "U FOKUSU",
+            "font": "serif"
+          }
+        ],
+        "tail": "i nakon skrola"
+      }
+    ]
+  }
+}

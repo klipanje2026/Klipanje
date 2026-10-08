@@ -1,0 +1,309 @@
+{
+  "duration": 18,
+  "cues": [
+    {
+      "start": 0.25,
+      "end": 3.25,
+      "rows": [
+        {
+          "y": -95,
+          "at": 0,
+          "until": 2.86,
+          "runs": [
+            {
+              "text": "TVOJA PORUKA",
+              "font": "sans"
+            }
+          ],
+          "motion": "rise",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 35,
+          "at": 0.26,
+          "until": 1.48,
+          "runs": [
+            {
+              "text": "zaslužuje pažnju.",
+              "font": "serif"
+            }
+          ],
+          "motion": "rise",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 35,
+          "at": 1.5,
+          "until": 2.86,
+          "runs": [
+            {
+              "text": "pokreće priču.",
+              "font": "serif"
+            }
+          ],
+          "motion": "sweep",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 170,
+          "at": 1.82,
+          "until": 2.86,
+          "runs": [
+            {
+              "text": "baš sada",
+              "font": "hand"
+            }
+          ],
+          "motion": "pop",
+          "exit": "lift",
+          "align": "right"
+        }
+      ]
+    },
+    {
+      "start": 3.25,
+      "end": 6.15,
+      "rows": [
+        {
+          "y": -70,
+          "at": 0,
+          "until": 2.78,
+          "runs": [
+            {
+              "text": "Svaka ",
+              "font": "sans"
+            },
+            {
+              "text": "riječ",
+              "font": "serif"
+            }
+          ],
+          "motion": "sweep",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 55,
+          "at": 0.32,
+          "until": 1.45,
+          "runs": [
+            {
+              "text": "ima težinu.",
+              "font": "sans"
+            }
+          ],
+          "motion": "rise",
+          "exit": "lift",
+          "align": "right"
+        },
+        {
+          "y": 55,
+          "at": 1.48,
+          "until": 2.78,
+          "runs": [
+            {
+              "text": "ima ritam.",
+              "font": "hand"
+            }
+          ],
+          "motion": "pop",
+          "exit": "lift",
+          "align": "right"
+        }
+      ]
+    },
+    {
+      "start": 6.15,
+      "end": 9.1,
+      "rows": [
+        {
+          "y": -135,
+          "at": 0,
+          "until": 2.84,
+          "runs": [
+            {
+              "text": "ČIST POKRET.",
+              "font": "sans"
+            }
+          ],
+          "motion": "rise",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": -10,
+          "at": 0.27,
+          "until": 2.84,
+          "runs": [
+            {
+              "text": "SNAŽAN",
+              "font": "sans"
+            }
+          ],
+          "motion": "rise",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 125,
+          "at": 0.53,
+          "until": 2.84,
+          "runs": [
+            {
+              "text": "karakter.",
+              "font": "serif"
+            }
+          ],
+          "motion": "sweep",
+          "exit": "slide",
+          "align": "left"
+        }
+      ]
+    },
+    {
+      "start": 9.1,
+      "end": 12.05,
+      "rows": [
+        {
+          "y": -85,
+          "at": 0,
+          "until": 2.82,
+          "runs": [
+            {
+              "text": "Malo ",
+              "font": "sans"
+            },
+            {
+              "text": "stila.",
+              "font": "serif"
+            }
+          ],
+          "motion": "sweep",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 55,
+          "at": 0.45,
+          "until": 2.82,
+          "runs": [
+            {
+              "text": "Puno ",
+              "font": "sans"
+            },
+            {
+              "text": "stava.",
+              "font": "hand"
+            }
+          ],
+          "motion": "pop",
+          "exit": "drop",
+          "align": "right"
+        }
+      ]
+    },
+    {
+      "start": 12.05,
+      "end": 15.05,
+      "rows": [
+        {
+          "y": -110,
+          "at": 0,
+          "until": 2.86,
+          "runs": [
+            {
+              "text": "TVOJA IDEJA",
+              "font": "sans"
+            }
+          ],
+          "motion": "rise",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 30,
+          "at": 0.25,
+          "until": 1.47,
+          "runs": [
+            {
+              "text": "ulazi sa stavom.",
+              "font": "serif"
+            }
+          ],
+          "motion": "sweep",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 30,
+          "at": 1.5,
+          "until": 2.86,
+          "runs": [
+            {
+              "text": "ostaje u glavi.",
+              "font": "serif"
+            }
+          ],
+          "motion": "sweep",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 170,
+          "at": 1.88,
+          "until": 2.86,
+          "runs": [
+            {
+              "text": "i nakon izlaza",
+              "font": "hand"
+            }
+          ],
+          "motion": "pop",
+          "exit": "lift",
+          "align": "right"
+        }
+      ]
+    },
+    {
+      "start": 15.05,
+      "end": 17.8,
+      "rows": [
+        {
+          "y": -85,
+          "at": 0,
+          "until": 2.63,
+          "runs": [
+            {
+              "text": "Tvoj ",
+              "font": "sans"
+            },
+            {
+              "text": "potpis.",
+              "font": "serif"
+            }
+          ],
+          "motion": "sweep",
+          "exit": "lift",
+          "align": "left"
+        },
+        {
+          "y": 65,
+          "at": 0.48,
+          "until": 2.63,
+          "runs": [
+            {
+              "text": "Tvoj pokret.",
+              "font": "hand"
+            }
+          ],
+          "motion": "pop",
+          "exit": "drop",
+          "align": "right"
+        }
+      ]
+    }
+  ]
+}

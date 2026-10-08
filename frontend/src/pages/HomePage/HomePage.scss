@@ -1,0 +1,72 @@
+@use '../../styles/tokens' as *;
+
+.home-page {
+  background: $white; color: $ink; min-height: 100vh; font-family: $font;
+  background-image: radial-gradient(ellipse 65% 360px at 50% 190px, #e7fafa 0%, transparent 100%);
+  button, input { font-family: inherit; }
+  a, button { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid $brand; outline-offset: 5px; }
+}
+.home-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 14px;
+  min-height: 52px; padding: 0 25px; border-radius: 14px; font-size: 14px; font-weight: 650;
+  white-space: nowrap; transition: background .2s, transform .2s, box-shadow .2s;
+  &--dark { background: $ink; color: $white; &:hover { background: #393047; } }
+  &--accent { background: $brand; color: $ink; box-shadow: 0 5px 14px #2ed3d326; &:hover { background: $brand-hover; transform: translateY(-2px); box-shadow: 0 8px 22px #2ed3d340; } }
+  .studio-icon { width: 20px; }
+}
+.home-hero { max-width: 1160px; margin: auto; padding: 64px 24px 36px; text-align: center; scroll-margin-top: 24px; }
+.home-title-break { display: none; }
+.home-hero h1 {
+  margin: 0 0 38px; font-size: clamp(52px, 4.8vw, 74px); line-height: 1.06; letter-spacing: -.045em; font-weight: 650;
+  span { color: $brand; }
+}
+.home-intro { color: $muted; font-size: 16px; line-height: 1.65; margin: 0; letter-spacing: -.3px; }
+.home-tool-switch {
+  display: inline-flex; padding: 5px; gap: 6px; border: 1px solid $line; border-radius: 16px; margin-top: 20px; background: #ffffffc9;
+  button { display: flex; align-items: center; gap: 10px; padding: 12px 22px; background: transparent; color: $muted; border: 0; border-radius: 11px; cursor: pointer; font-size: 14px; font-weight: 650;
+    &[aria-pressed=true] { background: $brand; color: $ink; }
+    .studio-icon { width: 19px; height: 19px; }
+  }
+}
+.home-start-panel {
+  display: flex; align-items: center; gap: 22px; border: 1px solid $line; border-radius: 23px;
+  padding: 18px 24px; max-width: 850px; margin: 16px auto 0; text-align: left; background: $white;
+  box-shadow: 0 16px 50px #18314a07, 0 3px 8px #18314a03;
+}
+.home-start-icon { background: $brand-soft; color: $brand-ink; height: 56px; width: 56px; flex-shrink: 0; border-radius: 16px; display: grid; place-items: center; }
+.home-start-copy { flex: 1; strong { font-size: 16px; font-weight: 650; } p { font-size: 13px; line-height: 1.6; color: $muted; margin: 7px 0 0; } }
+.home-how {
+  @include wide-shell; margin: 0 auto 90px; background: $surface; border: 1px solid $line;
+  border-radius: 30px; padding: 58px; display: grid; grid-template-columns: 1fr 2fr; gap: 60px; scroll-margin-top: 40px;
+}
+.home-how-heading {
+  > p { font-size: 10px; letter-spacing: 1.5px; color: $brand-ink; margin: 0 0 18px; font-weight: 700; }
+  h2 { font-size: 36px; line-height: 1.2; letter-spacing: -1.7px; font-weight: 600; margin: 0; }
+  > a { display: inline-flex; gap: 10px; align-items: center; font-size: 13px; margin-top: 26px; font-weight: 650; color: $brand-ink; padding-bottom: 8px; }
+}
+.home-how ol {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; list-style: none; margin: 0; padding: 0;
+  li > span { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: $white; border: 1px solid $brand; color: $brand-ink; font-size: 13px; }
+  h3 { font-size: 16px; font-weight: 650; margin: 23px 0 12px; }
+  p { color: $muted; font-size: 13px; line-height: 1.9; margin: 0; }
+}
+.home-footer { @include wide-shell; margin: auto; padding: 28px 0 40px; border-top: 1px solid $line; display: flex; align-items: center; gap: 32px; color: $muted; font-size: 12px; .home-logo { color: $ink; font-size: 28px; } > span { flex: 1; } small { font-size: 11px; } }
+@media (max-width: 1099px) { .home-how { padding: 35px; grid-template-columns: 1fr; gap: 35px; } }
+@include mobile {
+  .home-title-break { display: block; }
+  .home-hero { padding: 38px 20px 32px; }
+  .home-hero h1 { font-size: clamp(39px, 9vw, 54px); margin: 0 0 28px; }
+  .home-intro { font-size: 15px; }
+  .home-desktop-break { display: none; }
+  .home-tool-switch { margin-top: 18px; button { font-size: 12px; padding: 11px 17px; } }
+  .home-start-panel { flex-wrap: wrap; gap: 10px; padding: 16px; border-radius: 20px; .home-button { width: 100%; margin-top: 8px; } }
+  .home-start-icon { width: 44px; height: 44px; border-radius: 12px; }
+  .home-start-copy strong { font-size: 13px; }
+  .home-start-copy p { font-size: 11px; }
+  .home-how { padding: 28px; border-radius: 22px; margin-bottom: 50px; }
+  .home-how-heading h2 { font-size: 30px; }
+  .home-how ol { gap: 26px; grid-template-columns: 1fr; li { display: grid; grid-template-columns: 44px 1fr; column-gap: 16px; > span { grid-row: span 2; } h3 { margin: 0 0 5px; } p { grid-column: 2; } } }
+  .home-footer { flex-wrap: wrap; gap: 18px; > span { flex-basis: calc(100% - 150px); } }
+}
+@media (prefers-reduced-motion: reduce) { .home-page *, .home-page *::before, .home-page *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }

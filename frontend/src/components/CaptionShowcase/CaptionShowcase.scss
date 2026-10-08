@@ -1,0 +1,24 @@
+@use '../../styles/tokens' as *;
+.caption-showcase { @include wide-shell; padding: 0 0 88px; scroll-margin-top: 32px; }
+.caption-showcase-heading { width: 100%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; h2 { color: $muted; font-size: 12px; font-weight: 600; letter-spacing: .6px; margin: 0; } }
+.caption-showcase-controls { display: flex; gap: 8px; button { background: white; border: 1px solid $line; border-radius: 50%; width: 38px; height: 38px; display: grid; place-items: center; cursor: pointer; &:hover:enabled { background: $brand-soft; border-color: $brand; color: $brand; } &:disabled { opacity: .3; cursor: default; } .studio-icon { width: 18px; } } }
+.caption-showcase-rail {
+  --visible-cards: 5;
+  --card-gap: 20px;
+  display: grid; grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--visible-cards) - 1) * var(--card-gap)) / var(--visible-cards));
+  gap: var(--card-gap); overflow-x: auto; padding: 0 0 8px;
+  scroll-snap-type: x mandatory; scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+@media (max-width: 1399px) { .caption-showcase-rail { --visible-cards: 4; } }
+@media (max-width: 1099px) { .caption-showcase-rail { --visible-cards: 3; } }
+@media (max-width: 799px) {
+  .caption-showcase { padding-bottom: 60px; }
+  .caption-showcase-rail { --visible-cards: 2; --card-gap: 16px; }
+}
+@media (max-width: 519px) {
+  .caption-showcase-rail { --visible-cards: 1; }
+}
+
+.caption-showcase-rail.is-gliding {scroll-snap-type:none;scroll-behavior:auto;}

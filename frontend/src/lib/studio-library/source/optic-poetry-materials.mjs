@@ -1,0 +1,20 @@
+export function createOpticPoetryMaterials(THREE,renderer){
+ const studio=new THREE.Scene();studio.background=new THREE.Color('#303840');const panels=[];
+ for(const [w,h,x,y,z,color,power]of [[10,3,0,6,7,'#edfff9',3],[2,12,-6,0,7,'#adc3ff',2],[3,11,7,0,8,'#ffffff',2.7],[10,1,0,-5,8,'#a9ede1',2],[12,.85,0,1.6,8,'#ffffff',2.5]]){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:new THREE.Color(color).multiplyScalar(power),side:THREE.DoubleSide,toneMapped:false}));m.position.set(x,y,z);m.lookAt(0,0,0);studio.add(m);panels.push(m);}
+ const generator=new THREE.PMREMGenerator(renderer),env=generator.fromScene(studio,.04,.1,100);generator.dispose();panels.forEach(m=>{m.geometry.dispose();m.material.dispose();});
+ const physical=(color,extra={})=>new THREE.MeshPhysicalMaterial({color,metalness:.42,roughness:.14,clearcoat:1,clearcoatRoughness:.09,envMap:env.texture,envMapIntensity:1.4,...extra});
+ function make(p,hero){
+  const face=hero?physical(p.face,{iridescence:.72,iridescenceIOR:1.3,iridescenceThicknessRange:[170,380]}):new THREE.MeshBasicMaterial({color:p.ink}),bevel=hero?physical(p.edge,{metalness:.35,roughness:.13}):new THREE.MeshBasicMaterial({color:p.ink}),side=hero?physical(p.side,{metalness:.12,roughness:.20,transparent:true,opacity:.80}):new THREE.MeshBasicMaterial({color:p.ink}),rim=new THREE.MeshBasicMaterial({color:p.second,transparent:true,opacity:.65,toneMapped:false});
+  const uniforms={progress:{value:0},base:{value:0},width:{value:1},texture:{value:.45},flow:{value:0},face:{value:new THREE.Color(p.face)},second:{value:new THREE.Color(p.second)}};
+  for(const material of [face,bevel,side]){material.onBeforeCompile=shader=>{
+   Object.assign(shader.uniforms,{opProgress:uniforms.progress,opBase:uniforms.base,opWidth:uniforms.width,opTexture:uniforms.texture,opFlow:uniforms.flow,opFace:uniforms.face,opSecond:uniforms.second});
+   shader.vertexShader='varying vec3 opWorld;varying float opHeight;varying vec3 opCamberNormal;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nopWorld=(modelMatrix*vec4(position,1.0)).xyz;opHeight=position.y;opCamberNormal=normalMatrix*vec3(0.0,-.24*(1.0-2.0*clamp(position.y,0.0,1.0)),1.0);');
+   shader.fragmentShader='varying vec3 opWorld;varying float opHeight;varying vec3 opCamberNormal;uniform float opProgress;uniform float opBase;uniform float opWidth;uniform float opTexture;uniform float opFlow;uniform vec3 opFace;uniform vec3 opSecond;\n'+shader.fragmentShader;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nfloat opX=(opWorld.x-opBase)/max(1.0,opWidth);if(opX>opProgress)discard;');
+   if(hero&&material===face){shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_begin>','#include <normal_fragment_begin>\nnormal=normalize(opCamberNormal);nonPerturbedNormal=normal;').replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb=mix(opSecond,opFace,smoothstep(-.15,1.05,opHeight));').replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nfloat opGrain=fract(sin(dot(floor(opWorld.xy*vec2(.85,2.2)),vec2(12.9898,78.233)))*43758.5453);roughnessFactor+=opTexture*(.025+opGrain*.018);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\nfloat opCut=exp(-pow((opX-opProgress+.008)*120.0,2.0))*step(opProgress,.995);totalEmissiveRadiance+=vec3(.65,.88,1.0)*opCut*.65;');}
+  };material.customProgramCacheKey=()=> 'optic-poetry-'+(hero?'hero':'support')+'-'+(material===face?'face':'wall');}
+  const all=[face,bevel,side,rim];
+  return{face,bevel,side,rim,all,uniforms,update(time,options,still){const shine=Math.max(.3,Math.min(1.6,Number(options.shine)||1));uniforms.texture.value=Math.max(0,Math.min(1,Number(options.texture)||0));uniforms.flow.value=time;if(hero){face.envMapIntensity=shine*1.65;bevel.envMapIntensity=shine*1.5;side.envMapIntensity=shine;face.envMapRotation.set(0,still?.15:.15+Math.sin(time*.55)*.11,0);}},dispose(){all.forEach(m=>m.dispose());}};
+ }
+ return{make,physical,dispose(){env.dispose();}};
+}

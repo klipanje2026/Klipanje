@@ -1,0 +1,15 @@
+{
+  "duration": 18,
+  "cues": [
+    { "start": 0.25, "end": 2.00, "lead": "TVOJA", "text": "PORUKA", "motion": "whip", "tone": "silver" },
+    { "start": 2.00, "end": 3.60, "lead": "IMA SVOJ", "text": "RITAM.", "motion": "crush", "tone": "copper" },
+    { "start": 3.60, "end": 5.15, "text": "PRIVUČE", "motion": "split", "tone": "silver" },
+    { "start": 5.15, "end": 7.00, "text": "PAŽNJU.", "motion": "slam", "tone": "inverse" },
+    { "start": 7.00, "end": 8.60, "text": "POKRENE", "motion": "whip", "tone": "silver" },
+    { "start": 8.60, "end": 10.40, "text": "IDEJU.", "motion": "split", "tone": "copper" },
+    { "start": 10.40, "end": 12.20, "lead": "I", "text": "OSTANE", "motion": "crush", "tone": "silver" },
+    { "start": 12.20, "end": 14.00, "lead": "U", "text": "GLAVI.", "motion": "slam", "tone": "inverse" },
+    { "start": 14.00, "end": 15.80, "text": "TVOJ", "motion": "split", "tone": "silver" },
+    { "start": 15.80, "end": 17.75, "text": "POTEZ.", "motion": "slam", "tone": "copper" }
+  ]
+}

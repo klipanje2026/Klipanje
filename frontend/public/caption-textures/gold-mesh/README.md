@@ -1,0 +1,3 @@
+Source supplied by user: effect 7526505338166644029, selected by caption template 7600121105537322241. Font dependency 7459652155926909456 identifies YWFT Black Slabbath.
+face.jpg = original 1751807154503.jpg; edge.jpg = original 1752385044604.jpg. Source face texture opacity 1, repeat wrap, scale 1.506. Edge texture scale .1854, angle -33 degrees; brown stroke #8f2701. Canvas adaptation repeats textures inside glyph/outline alpha. Original files unchanged; local-only use in this task.
+faceTexture: goldMesh is saved with preset settings; all caption words are rendered dynamically rather than embedding the reference word.

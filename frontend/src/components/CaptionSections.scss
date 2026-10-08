@@ -1,0 +1,63 @@
+/* Local accordion experiment; baseline is release c8f44fd. */
+:root[data-theme][data-palette] .editor-layout :is(.subtitle-inspector,.video-caption-editor) .subtitle-customize-panel .caption-sections-workspace {
+ --section-sticky-top:62px;
+ min-height:0;
+ >.caption-basics-sticky-head {top:0;padding:12px 0;border:0!important;box-shadow:none!important;z-index:43;}
+ >.caption-basics-sticky-head .caption-role-tabs {margin-bottom:0;}
+ .caption-inline-section {position:relative;margin:0 0 8px;min-width:0;border:0;background:transparent;}
+ .caption-inline-section>summary {display:flex;align-items:center;gap:8px;min-height:36px;box-sizing:border-box;padding:8px 0;cursor:pointer;list-style:none;border:0!important;border-top:1px solid var(--ui-border)!important;border-radius:0;background:var(--ui-panel)!important;color:var(--ui-text)!important;font:500 11px 'Manrope Variable',Manrope,sans-serif;box-shadow:none!important;scroll-margin-top:var(--section-sticky-top);}
+ .caption-inline-section>summary::-webkit-details-marker {display:none;}
+ .caption-inline-section>summary>svg {width:12px;height:12px;padding:3px;flex:none;box-sizing:content-box;border-radius:5px;background:var(--ui-accent-button);stroke:#fff;stroke-width:1.7;fill:none;transition:transform .15s;}
+ .caption-inline-section[open]>summary {position:sticky;top:var(--section-sticky-top);z-index:42;padding-bottom:12px;}
+ .caption-inline-section[open]>summary>svg {transform:rotate(180deg);}
+ .caption-inline-section>summary small {font-size:9px;font-weight:400;color:var(--ui-muted);}
+ .caption-inline-section>summary:focus-visible {outline:2px solid var(--ui-accent);outline-offset:2px;}
+ .caption-inline-section.is-stuck>summary::after {content:'';position:absolute;top:100%;left:0;right:0;height:6px;background:linear-gradient(to bottom,#00000020,transparent);pointer-events:none;}
+ .caption-inline-content {position:relative;padding-top:4px;}
+ .caption-section-sentinel {position:absolute;top:-40px;left:0;width:1px;height:1px;pointer-events:none;}
+ .caption-inline-content>.caption-basics-card {padding-top:8px;}
+}
+:root[data-theme][data-palette] .editor-layout .subtitle-inspector .subtitle-customize-panel .caption-sections-workspace {
+ --section-sticky-top:104px;
+ >.caption-basics-sticky-head {top:42px;}
+}
+@media(prefers-reduced-motion:reduce){.caption-inline-section>summary>svg {transition:none!important;}}
+
+:root[data-theme][data-palette] .editor-layout :is(.subtitle-inspector,.video-caption-editor) .subtitle-customize-panel .caption-sections-workspace {
+ .caption-role-tabs button::after,.caption-role-tabs button[aria-pressed=true]::after {transform:scaleX(0)!important;}
+ .caption-role-tabs button:not(:disabled):not([aria-pressed=true]):hover::after {transform:scaleX(1)!important;background:var(--ui-accent);}
+ .caption-section-shortcuts {display:flex;gap:5px;flex:none;margin-left:auto;}
+ .caption-section-shortcuts button {display:grid;place-items:center;box-sizing:border-box;width:25px;height:25px;padding:4px;border:1px solid var(--ui-border)!important;border-radius:5px;background:transparent!important;color:var(--ui-text);cursor:pointer;}
+ .caption-section-shortcuts button:is(:hover,:focus-visible) {background:var(--ui-raised)!important;border-color:var(--ui-accent)!important;}
+ .caption-section-shortcuts .studio-icon {width:15px;height:15px;}
+}
+
+:root[data-theme][data-palette] .editor-layout :is(.subtitle-inspector,.video-caption-editor) .subtitle-customize-panel .caption-sections-workspace .caption-inline-section>summary {padding-top:12px!important;padding-bottom:12px!important;}
+
+:root[data-theme][data-palette] .editor-layout :is(.subtitle-inspector,.video-caption-editor) .subtitle-customize-panel .caption-sections-workspace {
+ >.caption-basics-sticky-head {padding-top:12px!important;padding-bottom:12px!important;}
+ >.caption-basics-sticky-head .caption-role-tabs {margin:0!important;padding:0!important;}
+ .caption-section-heading-icon {display:flex;align-items:center;flex:none;color:var(--ui-accent);}
+ .caption-section-heading-icon .studio-icon {width:15px;height:15px;}
+}
+
+
+:root[data-theme][data-palette] .editor-layout :is(.subtitle-inspector,.video-caption-editor) .subtitle-customize-panel .caption-sections-workspace {
+ .caption-inline-section[data-section=style] {border:0;border-radius:0;margin:0 0 12px;background:transparent;}
+ .caption-inline-section[data-section=style]>summary {padding-left:0!important;padding-right:0!important;border-top:0!important;border-radius:0;background:var(--ui-panel)!important;font-size:13px;font-weight:700;}
+ .caption-primary-style-content {padding:0;min-width:0;}
+ .caption-style-role-tabs {display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px;}
+ .caption-style-role-tabs button {flex:1 1 90px;min-width:0;font-size:10px;}
+ .caption-show-all {display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:16px 0;padding:10px;border:1px solid var(--ui-border);border-radius:8px;background:transparent;color:var(--ui-text);font:inherit;cursor:pointer;}
+ .caption-show-all .studio-icon {width:16px;height:16px;}
+ .caption-show-all:hover {background:var(--ui-raised);}
+ .caption-section-shortcuts {flex-wrap:wrap;justify-content:flex-end;}
+}
+
+:root[data-theme][data-palette] .editor-layout :is(.subtitle-inspector,.video-caption-editor) .subtitle-customize-panel .caption-sections-workspace {
+ .caption-inline-section[data-section=style]>summary {font-size:15px;font-weight:750;color:var(--ui-accent)!important;}
+ .caption-inline-section[data-section=style] {margin-bottom:22px;}
+ .caption-show-all {background:var(--ui-accent-button)!important;color:white!important;border-color:var(--ui-accent-button)!important;font-weight:600;}
+ .caption-show-all:hover {filter:brightness(1.08);}
+ .caption-all-options {padding-top:10px;border-top:1px solid var(--ui-border);}
+}

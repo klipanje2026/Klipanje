@@ -1,0 +1,13 @@
+@use '../SubscriptionsPage/SubscriptionsPage';
+.checkout-page {max-width:1000px;margin:auto;padding:52px 24px 90px;color:#1d2b40;
+  >.billing-eyebrow{display:block;margin-top:30px;}h1{font-size:clamp(30px,4vw,44px);letter-spacing:-1.2px;margin:12px 0;}p{font-size:13px;line-height:1.8;color:#8792a3;}a{color:#76869b;font-size:12px;}h2{font-size:17px;font-weight:500;margin:0 0 22px;}
+  .checkout-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:30px;margin-top:34px;align-items:start;}
+  section{border:1px solid #3568bf20;border-radius:20px;padding:30px;background:#fff;}
+  .checkout-summary{background:linear-gradient(150deg,#f4f8ff,white 65%);}
+  .checkout-account{display:grid;gap:6px;margin:26px 0;padding:22px 0;border-block:1px solid #3568bf18;small,span{font-size:11px;color:#8792a3;}strong{font-size:14px;font-weight:500;}}
+  .checkout-price{font-size:38px;font-weight:550;small{font-size:12px;font-weight:400;color:#8792a3;}}
+  dl{margin:24px 0;div{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #3568bf18;font-size:12px;}dt{color:#8792a3;}dd{margin:0;}}
+  .checkout-confirm{width:100%;padding:14px;border:0;border-radius:11px;background:#3568bf;color:white;font:inherit;font-size:13px;cursor:pointer;transition:background .15s; &:hover{background:#2857a8;}}
+  .checkout-disclaimer{display:block;font-size:10px;line-height:1.7;color:#8792a3;margin-top:13px;text-align:center;}
+  @media(max-width:700px){.checkout-grid{grid-template-columns:1fr;}section{padding:24px;}}
+}

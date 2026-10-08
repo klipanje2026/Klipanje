@@ -1,0 +1,206 @@
+[
+  {
+    "id": "hyper-marks",
+    "name": "HYPER POP MARKS",
+    "category": "3D · Naglasci",
+    "file": "hyper-marks.html",
+    "api": "hyperMarks",
+    "art": ".hm-art",
+    "tweaks": 3
+  },
+  {
+    "id": "hyper-pop",
+    "name": "HYPER POP",
+    "category": "3D · Kinetic candy",
+    "file": "hyper-pop.html",
+    "api": "hyperPop",
+    "art": ".hp-art",
+    "tweaks": 3
+  },
+  {
+    "id": "juice-jam",
+    "name": "JUICE JAM",
+    "category": "3D · Boje i elastika",
+    "file": "juice-jam.html",
+    "api": "juiceJam",
+    "art": ".jj-art",
+    "tweaks": 3
+  },
+  {
+    "id": "prism-bloom",
+    "name": "PRISM BLOOM",
+    "category": "Dijamanti · Staklo",
+    "file": "prism-bloom.html",
+    "api": "prismBloom",
+    "art": ".pb-art",
+    "tweaks": 3
+  },
+  {
+    "id": "ink-riot",
+    "name": "INK RIOT",
+    "category": "Tinta · Brush type",
+    "file": "ink-riot.html",
+    "api": "inkRiot",
+    "art": ".ir-art",
+    "tweaks": 2
+  },
+  {
+    "id": "forged",
+    "name": "FORGED",
+    "category": "Krom · Palete boja",
+    "file": "forged.html",
+    "api": "forgedTitle",
+    "art": ".fg-art",
+    "tweaks": 3
+  },
+  {
+    "id": "atelier-noir",
+    "name": "ATELIER NOIR",
+    "category": "3D · Elegantni reljef",
+    "file": "atelier-noir.html",
+    "api": "atelierNoir",
+    "art": ".an-art",
+    "tweaks": 2
+  },
+  {
+    "id": "reality-rift",
+    "name": "REALITY RIFT",
+    "category": "3D · Fragmenti i energija",
+    "file": "reality-rift.html",
+    "api": "realityRift",
+    "art": ".rr-art",
+    "tweaks": 3
+  },
+  {
+    "id": "titanium-edge",
+    "name": "TITANIUM EDGE",
+    "category": "3D · Studijski metal",
+    "file": "titanium-edge.html",
+    "api": "titaniumEdge",
+    "art": ".te-art",
+    "tweaks": 3
+  },
+  {
+    "id": "magma-core",
+    "name": "MAGMA CORE",
+    "category": "3D · Lava i teksture",
+    "file": "magma-core.html",
+    "api": "magmaCore",
+    "art": ".mc-art",
+    "tweaks": 4
+  },
+  {
+    "id": "abyssal-pearl",
+    "name": "ABYSSAL PEARL",
+    "category": "3D · Biser i odsjaji",
+    "file": "abyssal-pearl.html",
+    "api": "abyssalPearl",
+    "art": ".ap-art",
+    "tweaks": 4
+  },
+  {
+    "id": "paper-sculpt",
+    "name": "PAPER SCULPT",
+    "category": "3D · Rezani papir",
+    "file": "paper-sculpt.html",
+    "api": "paperSculpt",
+    "art": ".ps-art",
+    "tweaks": 2
+  },
+  {
+    "id": "velvet-pulse",
+    "name": "VELVET PULSE",
+    "category": "Baršun · Mekana slova",
+    "file": "velvet-pulse.html",
+    "api": "velvetPulse",
+    "art": ".vp-art",
+    "tweaks": 3
+  },
+  {
+    "id": "porcelain-flow",
+    "name": "PORCELAIN FLOW",
+    "category": "Porculan · Zlatne pukotine",
+    "file": "porcelain-flow.html",
+    "api": "porcelainFlow",
+    "art": ".pf-art",
+    "tweaks": 3
+  },
+  {
+    "id": "laser-trace",
+    "name": "LASER TRACE",
+    "category": "Laser · Električni lukovi",
+    "file": "laser-trace.html",
+    "api": "laserTrace",
+    "art": ".lt-art",
+    "tweaks": 3
+  },
+  {
+    "id": "fusion-caps",
+    "name": "FUSION CAPS",
+    "category": "Video · SRT · Izvoz",
+    "file": "fusion-captions.html",
+    "api": "fusionCaptions",
+    "art": ".fc-preview",
+    "tweaks": 0
+  },
+  {
+    "id": "depth",
+    "name": "3D DEPTH",
+    "category": "Caption Studio · Perspektiva",
+    "file": "captions.html",
+    "api": "captionStudio",
+    "art": ".cs-variant:not([hidden]) .cs-stage",
+    "variant": 0,
+    "tweaks": 3
+  },
+  {
+    "id": "karaoke",
+    "name": "KARAOKE",
+    "category": "Caption Studio · Riječ po riječ",
+    "file": "captions.html",
+    "api": "captionStudio",
+    "art": ".cs-variant:not([hidden]) .cs-stage",
+    "variant": 1,
+    "tweaks": 3
+  },
+  {
+    "id": "cinema",
+    "name": "CINEMA",
+    "category": "Caption Studio · Zlatni naglasci",
+    "file": "captions.html",
+    "api": "captionStudio",
+    "art": ".cs-variant:not([hidden]) .cs-stage",
+    "variant": 2,
+    "tweaks": 3
+  },
+  {
+    "id": "neon",
+    "name": "NEON",
+    "category": "Caption Studio · Glow",
+    "file": "captions.html",
+    "api": "captionStudio",
+    "art": ".cs-variant:not([hidden]) .cs-stage",
+    "variant": 3,
+    "tweaks": 3
+  },
+  {
+    "id": "pop-punch",
+    "name": "POP PUNCH",
+    "category": "Caption Studio · Spring ulazak",
+    "file": "captions.html",
+    "api": "captionStudio",
+    "art": ".cs-variant:not([hidden]) .cs-stage",
+    "variant": 4,
+    "tweaks": 3
+  },
+  {
+    "id": "glass",
+    "name": "GLASS",
+    "category": "Caption Studio · Staklo",
+    "file": "captions.html",
+    "api": "captionStudio",
+    "art": ".cs-variant:not([hidden]) .cs-stage",
+    "variant": 5,
+    "tweaks": 3
+  }
+]

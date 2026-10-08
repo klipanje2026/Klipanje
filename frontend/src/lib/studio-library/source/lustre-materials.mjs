@@ -1,0 +1,16 @@
+export function createLustreMaterials(THREE,renderer){
+ const studio=new THREE.Scene();studio.background=new THREE.Color('#0e1117');const panels=[];
+ for(const [w,h,x,y,z,color,power]of [[14,2.3,0,4.6,8,'#ffffff',2.0],[14,1.2,0,-4.8,8,'#b9d8ef',1.3],[1.2,10,-6,0,7,'#ffffff',2.3],[1.8,10,7,1,8,'#7c98aa',1.1],[8,.5,0,1.2,9,'#ffffff',2.1]]){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:new THREE.Color(color).multiplyScalar(power),side:THREE.DoubleSide,toneMapped:false}));mesh.position.set(x,y,z);mesh.lookAt(0,0,0);studio.add(mesh);panels.push(mesh);}
+ const generator=new THREE.PMREMGenerator(renderer),env=generator.fromScene(studio,.035,.1,90);generator.dispose();panels.forEach(m=>{m.geometry.dispose();m.material.dispose();});
+ function make(p,hero){
+  const face=hero?new THREE.MeshPhysicalMaterial({color:p.face,metalness:1,roughness:.085,clearcoat:.16,clearcoatRoughness:.12,envMap:env.texture,envMapIntensity:1.4}):new THREE.MeshBasicMaterial({color:p.ink});
+  const bevel=new THREE.MeshPhysicalMaterial({color:hero?p.face:p.ink,metalness:.85,roughness:.20,clearcoat:1,envMap:env.texture,envMapIntensity:1.6});
+  const side=new THREE.MeshPhysicalMaterial({color:p.side,metalness:.8,roughness:.28,envMap:env.texture,envMapIntensity:.8});
+  const accent=new THREE.MeshBasicMaterial({color:p.accent,toneMapped:false}),shadow=new THREE.MeshBasicMaterial({color:'#0c1017'});
+  const uniforms={time:{value:0},shine:{value:1},texture:{value:0},width:{value:1},base:{value:new THREE.Vector2()},scale:{value:1}};
+  if(hero){face.onBeforeCompile=shader=>{Object.assign(shader.uniforms,{lcTime:uniforms.time,lcShine:uniforms.shine,lcTexture:uniforms.texture,lcWidth:uniforms.width,lcBase:uniforms.base,lcScale:uniforms.scale});shader.vertexShader='varying vec3 lcWorld;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nlcWorld=(modelMatrix*vec4(position,1.0)).xyz;');shader.fragmentShader='varying vec3 lcWorld;uniform vec2 lcBase;uniform float lcScale;uniform float lcTime;uniform float lcShine;uniform float lcTexture;uniform float lcWidth;\n'+shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nvec3 lcPosition=vec3((lcWorld.xy-lcBase)/max(1.0,lcScale),lcWorld.z);float lcGrain=fract(sin(dot(floor(lcPosition.xy*vec2(80.0,450.0)),vec2(12.9898,78.233)))*43758.5453);roughnessFactor+=lcTexture*(.055+lcGrain*.024);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\nfloat lcPhase=mod(max(0.0,lcTime-.28),3.1)/3.1;float lcSweep=exp(-pow((lcPosition.x+.3*lcPosition.y-(lcPhase*1.5-.25)*lcWidth)*12.0,2.0));totalEmissiveRadiance+=vec3(.78,.91,1.0)*lcSweep*lcShine*.35;');};face.customProgramCacheKey=()=> 'lustre-face-v2';}
+  const all=[face,bevel,side,accent,shadow];
+  return{face,bevel,side,accent,shadow,all,uniforms,update(time,options,still){const shine=Math.max(.2,Math.min(1.8,Number(options.shine)||1)),texture=Math.max(0,Math.min(1,Number(options.texture)||0));uniforms.time.value=still?1.5:time;uniforms.shine.value=shine;uniforms.texture.value=texture;if(hero){face.envMapIntensity=shine*1.2;face.envMapRotation.set(0,still?.12:.12+Math.sin(time*.5)*.11,0);}bevel.envMapIntensity=shine*1.3;},dispose(){all.forEach(m=>m.dispose());}};
+ }
+ return{make,dispose(){env.dispose();}};
+}

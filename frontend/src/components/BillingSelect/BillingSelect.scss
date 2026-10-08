@@ -1,0 +1,13 @@
+@use '../LanguageDropdown/LanguageDropdown';
+.billing-select {
+  .admin-select-value {display:flex;align-items:center;gap:8px;text-align:left;}
+  .admin-select-value svg {width:16px;height:16px;transform:none;}
+  min-width:180px;
+  .language-dropdown {display:flex;flex-direction:column;align-items:stretch;gap:7px;}
+  .language-dropdown > span {font-size:11px;color:#8792a3;text-align:left;}
+  .language-dropdown-trigger {display:flex;align-items:center;justify-content:space-between;gap:25px;width:100%;min-height:40px;padding:10px 14px;background:#fff;color:#76869b;border:1px solid #3568bf26;border-radius:10px;font-family:inherit;font-weight:400;font-size:12px;cursor:pointer;}
+  .language-dropdown-trigger:hover,.language-dropdown-trigger[aria-expanded=true] {background:#f5f8fd;border-color:#3568bf55;}
+  .language-dropdown-list {top:calc(100% + 7px);bottom:auto;left:0;right:auto;width:100%;min-width:180px;z-index:80;text-align:left;}
+  .language-dropdown-list [role=option] {color:#76869b;font-weight:400;}
+  .language-dropdown-list [aria-selected=true] {color:#3568bf;background:#edf4ff;}
+}

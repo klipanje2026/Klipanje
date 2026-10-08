@@ -1,0 +1,358 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:edita:ae-caption-style:1",
+  "title": "Edita AE caption design specification",
+  "description": "Evidence and adaptation contract, not an executable AE importer or a CaptionSettings payload. See style-spec.md for semantic and fidelity checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "name", "status", "source", "text", "canvas", "coverage", "dependencies", "evidence", "layers", "motion", "adaptation", "edita", "validation"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^ae[A-Z][A-Za-z0-9]*$" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "status": { "enum": ["template", "partial", "specified", "implemented", "verified"] },
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["file", "sha256", "format", "compositionId", "extraction", "aeVersion", "notes"],
+      "properties": {
+        "file": { "$ref": "#/$defs/nullableString" },
+        "sha256": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" },
+        "format": { "enum": ["aep", "aepx", "ae-export", "reference-only", null] },
+        "compositionId": { "$ref": "#/$defs/nullableString" },
+        "extraction": { "enum": ["none", "ae-scripting", "ae-property-inspection", "aepx-assisted", "supplied-export", "reference-measurement"] },
+        "aeVersion": { "$ref": "#/$defs/nullableString" },
+        "notes": { "$ref": "#/$defs/strings" }
+      }
+    },
+    "text": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourceTextIncluded", "slots"],
+      "properties": {
+        "sourceTextIncluded": { "const": false },
+        "slots": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "contentSource", "layerIds", "emptyBehavior", "notes"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "contentSource": { "enum": ["user-caption", "user-title", "active-word", "emphasized-word"] },
+              "layerIds": { "$ref": "#/$defs/strings" },
+              "emptyBehavior": { "enum": ["hide", "use-caption", "unknown"] },
+              "notes": { "$ref": "#/$defs/strings" }
+            }
+          }
+        }
+      }
+    },
+    "canvas": {
+      "type": "object", "additionalProperties": false,
+      "required": ["widthPx", "heightPx", "frameRateNumerator", "frameRateDenominator", "pixelAspect", "durationSeconds", "displayStartSeconds", "colorSpace", "linearLight", "bitsPerChannel"],
+      "properties": {
+        "widthPx": { "$ref": "#/$defs/nullablePositive" },
+        "heightPx": { "$ref": "#/$defs/nullablePositive" },
+        "frameRateNumerator": { "$ref": "#/$defs/nullablePositive" },
+        "frameRateDenominator": { "$ref": "#/$defs/nullablePositive" },
+        "pixelAspect": { "$ref": "#/$defs/nullablePositive" },
+        "durationSeconds": { "$ref": "#/$defs/nullablePositive" },
+        "displayStartSeconds": { "$ref": "#/$defs/nullableNumber" },
+        "colorSpace": { "$ref": "#/$defs/nullableString" },
+        "linearLight": { "type": ["boolean", "null"] },
+        "bitsPerChannel": { "enum": [8, 16, 32, null] }
+      }
+    },
+    "coverage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["typography", "layout", "colors", "strokes", "shadows", "boxes", "motion", "textAnimators", "compositing", "threeD", "dependencies"],
+      "properties": {
+        "typography": { "$ref": "#/$defs/coverage" },
+        "layout": { "$ref": "#/$defs/coverage" },
+        "colors": { "$ref": "#/$defs/coverage" },
+        "strokes": { "$ref": "#/$defs/coverage" },
+        "shadows": { "$ref": "#/$defs/coverage" },
+        "boxes": { "$ref": "#/$defs/coverage" },
+        "motion": { "$ref": "#/$defs/coverage" },
+        "textAnimators": { "$ref": "#/$defs/coverage" },
+        "compositing": { "$ref": "#/$defs/coverage" },
+        "threeD": { "$ref": "#/$defs/coverage" },
+        "dependencies": { "$ref": "#/$defs/coverage" }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "kind", "name", "version", "status", "replacement", "notes"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "kind": { "enum": ["font", "plugin", "media", "renderer", "other"] },
+          "name": { "$ref": "#/$defs/nullableString" },
+          "version": { "$ref": "#/$defs/nullableString" },
+          "status": { "enum": ["available", "missing", "replaced", "unknown"] },
+          "replacement": { "$ref": "#/$defs/nullableString" },
+          "notes": { "$ref": "#/$defs/strings" }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "kind", "artifact", "timeSeconds", "description"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "kind": { "enum": ["property-export", "property-inspection", "reference-render", "screenshot", "measurement", "design-decision", "comparison", "code-check"] },
+          "artifact": { "$ref": "#/$defs/nullableString" },
+          "timeSeconds": { "$ref": "#/$defs/nullableNumber" },
+          "description": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "layers": { "type": "array", "items": { "$ref": "#/$defs/layer" } },
+    "motion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["phases", "tracks"],
+      "properties": {
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "kind", "sourceStartSeconds", "sourceEndSeconds", "trigger", "notes"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "kind": { "enum": ["entrance", "hold", "exit", "idle", "loop"] },
+              "sourceStartSeconds": { "$ref": "#/$defs/nullableNumber" },
+              "sourceEndSeconds": { "$ref": "#/$defs/nullableNumber" },
+              "trigger": { "enum": ["segment-start", "segment-end", "word-start", "word-end", "layer-start", "unknown"] },
+              "notes": { "$ref": "#/$defs/strings" }
+            }
+          }
+        },
+        "tracks": { "type": "array", "items": { "$ref": "#/$defs/track" } }
+      }
+    },
+    "adaptation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["layoutPolicy", "timingPolicy", "shortSegmentPolicy", "longTextPolicy", "colorAssignmentPolicy", "boxSizingPolicy", "missingWordTimingsPolicy", "aspectRatioPolicy", "notes"],
+      "properties": {
+        "layoutPolicy": { "$ref": "#/$defs/nullableString" },
+        "timingPolicy": { "$ref": "#/$defs/nullableString" },
+        "shortSegmentPolicy": { "$ref": "#/$defs/nullableString" },
+        "longTextPolicy": { "$ref": "#/$defs/nullableString" },
+        "colorAssignmentPolicy": { "$ref": "#/$defs/nullableString" },
+        "boxSizingPolicy": { "$ref": "#/$defs/nullableString" },
+        "missingWordTimingsPolicy": { "$ref": "#/$defs/nullableString" },
+        "aspectRatioPolicy": { "$ref": "#/$defs/nullableString" },
+        "notes": { "$ref": "#/$defs/strings" }
+      }
+    },
+    "edita": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mode", "styleKey", "baseStyleKey", "settings", "mappings", "requiredExtensions", "changedFiles", "limitations"],
+      "properties": {
+        "mode": { "enum": ["undecided", "preset", "renderer-extension"] },
+        "styleKey": { "$ref": "#/$defs/nullableString" },
+        "baseStyleKey": { "$ref": "#/$defs/nullableString" },
+        "settings": {
+          "type": "object",
+          "description": "Only proposed runtime settings. Check current CaptionSettings and backend allowlists separately; never copy the extraction record into runtime settings."
+        },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["layerId", "sourceProperty", "classification", "targets", "conversion", "note"],
+            "properties": {
+              "layerId": { "$ref": "#/$defs/nullableString" },
+              "sourceProperty": { "type": "string", "minLength": 1 },
+              "classification": { "enum": ["native", "renderer-extension", "approximation", "unsupported", "unknown"] },
+              "targets": { "$ref": "#/$defs/strings" },
+              "conversion": { "$ref": "#/$defs/nullableString" },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "requiredExtensions": { "$ref": "#/$defs/strings" },
+        "changedFiles": { "$ref": "#/$defs/strings" },
+        "limitations": { "$ref": "#/$defs/strings" }
+      }
+    },
+    "validation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "evidenceIds", "checks"],
+      "properties": {
+        "status": { "enum": ["not-run", "partial", "passed", "failed"] },
+        "evidenceIds": { "$ref": "#/$defs/strings" },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["name", "status", "evidenceIds", "note"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "status": { "enum": ["planned", "passed", "failed", "skipped"] },
+              "evidenceIds": { "$ref": "#/$defs/strings" },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "enum": ["implemented", "verified"] } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "layers": { "minItems": 1 },
+          "text": { "properties": { "slots": { "minItems": 1 } } },
+          "edita": {
+            "properties": {
+              "mode": { "enum": ["preset", "renderer-extension"] },
+              "styleKey": { "type": "string", "minLength": 1 },
+              "changedFiles": { "minItems": 1 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "verified" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "evidence": { "minItems": 1 },
+          "validation": {
+            "properties": {
+              "status": { "const": "passed" },
+              "evidenceIds": { "minItems": 1 },
+              "checks": { "minItems": 1 }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": { "type": "string", "minLength": 1 },
+    "nullableString": { "type": ["string", "null"] },
+    "nullableNumber": { "type": ["number", "null"] },
+    "nullablePositive": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "strings": { "type": "array", "items": { "type": "string" } },
+    "coverage": { "enum": ["complete", "partial", "unknown", "not-applicable"] },
+    "origin": { "enum": ["extracted", "measured", "inferred", "designed", "unknown", "not-applicable"] },
+    "interpolation": { "enum": ["hold", "linear", "bezier", "unknown"] },
+    "numbers": { "type": "array", "items": { "type": "number" } },
+    "property": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sourcePath", "value", "units", "origin", "evidenceIds", "note"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sourcePath": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["matchName", "index"],
+            "properties": {
+              "matchName": { "$ref": "#/$defs/nullableString" },
+              "index": { "type": ["integer", "null"], "minimum": 1 }
+            }
+          }
+        },
+        "value": { "description": "Observed scalar or structured JSON. No executable source expressions or literal caption text." },
+        "units": { "type": "string", "minLength": 1 },
+        "origin": { "$ref": "#/$defs/origin" },
+        "evidenceIds": { "$ref": "#/$defs/strings" },
+        "note": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "origin": { "enum": ["unknown", "not-applicable"] } }, "required": ["origin"] },
+          "then": { "properties": { "value": { "type": "null" } } }
+        }
+      ]
+    },
+    "layer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "sourceLayerId", "kind", "order", "parentId", "matteLayerId", "slotId", "inSeconds", "outSeconds", "timeStretchPercent", "timeRemapTrackId", "properties"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "sourceLayerId": { "$ref": "#/$defs/nullableString" },
+        "kind": { "enum": ["text", "box", "shape", "precomp", "null", "camera", "light", "media", "adjustment", "other"] },
+        "order": { "type": "integer", "minimum": 0 },
+        "parentId": { "$ref": "#/$defs/nullableString" },
+        "matteLayerId": { "$ref": "#/$defs/nullableString" },
+        "slotId": { "$ref": "#/$defs/nullableString" },
+        "inSeconds": { "$ref": "#/$defs/nullableNumber" },
+        "outSeconds": { "$ref": "#/$defs/nullableNumber" },
+        "timeStretchPercent": { "$ref": "#/$defs/nullableNumber" },
+        "timeRemapTrackId": { "$ref": "#/$defs/nullableString" },
+        "properties": { "type": "array", "items": { "$ref": "#/$defs/property" } }
+      }
+    },
+    "ease": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["speed", "influence"],
+        "properties": {
+          "speed": { "type": "number" },
+          "influence": { "type": "number", "minimum": 0, "maximum": 100 }
+        }
+      }
+    },
+    "keyframe": {
+      "type": "object", "additionalProperties": false,
+      "required": ["timeSeconds", "value", "inInterpolation", "outInterpolation", "easeIn", "easeOut"],
+      "properties": {
+        "timeSeconds": { "type": "number" },
+        "value": {},
+        "inInterpolation": { "$ref": "#/$defs/interpolation" },
+        "outInterpolation": { "$ref": "#/$defs/interpolation" },
+        "easeIn": { "$ref": "#/$defs/ease" },
+        "easeOut": { "$ref": "#/$defs/ease" },
+        "spatialInTangent": { "$ref": "#/$defs/numbers" },
+        "spatialOutTangent": { "$ref": "#/$defs/numbers" },
+        "roving": { "type": ["boolean", "null"] },
+        "temporalContinuous": { "type": ["boolean", "null"] },
+        "temporalAutoBezier": { "type": ["boolean", "null"] },
+        "spatialContinuous": { "type": ["boolean", "null"] },
+        "spatialAutoBezier": { "type": ["boolean", "null"] }
+      }
+    },
+    "track": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "layerId", "propertyPath", "phaseId", "granularity", "units", "origin", "evidenceIds", "keyframes", "samples", "expression", "notes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "layerId": { "$ref": "#/$defs/id" },
+        "propertyPath": { "type": "string", "minLength": 1 },
+        "phaseId": { "$ref": "#/$defs/nullableString" },
+        "granularity": { "enum": ["layer", "block", "line", "word", "character"] },
+        "units": { "type": "string", "minLength": 1 },
+        "origin": { "$ref": "#/$defs/origin" },
+        "evidenceIds": { "$ref": "#/$defs/strings" },
+        "keyframes": { "type": "array", "items": { "$ref": "#/$defs/keyframe" } },
+        "samples": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["timeSeconds", "value"],
+            "properties": { "timeSeconds": { "type": "number" }, "value": {} }
+          }
+        },
+        "expression": {
+          "type": "object", "additionalProperties": false,
+          "required": ["present", "handling", "dependencies", "notes"],
+          "properties": {
+            "present": { "type": ["boolean", "null"] },
+            "handling": { "enum": ["none", "unresolved", "sampled", "reimplemented"] },
+            "dependencies": { "$ref": "#/$defs/strings" },
+            "notes": { "$ref": "#/$defs/strings" }
+          }
+        },
+        "notes": { "$ref": "#/$defs/strings" }
+      }
+    }
+  }
+}

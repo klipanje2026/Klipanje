@@ -1,0 +1,169 @@
+{
+  "$schema": "../skills/ae-caption-style/references/style-spec.schema.json",
+  "schemaVersion": 1,
+  "id": "dynamicGlass",
+  "name": "Dynamic Glass",
+  "status": "implemented",
+  "source": {
+    "file": "EDITA_HANDOFF_DYNAMIC_GLASS/reference/ODOBRENA_VERZIJA.mp4",
+    "sha256": "d2dcdba618a7e7173f397e2bdcca0c50483946169c7a19bd3419a9efff0a3909",
+    "format": "mp4",
+    "compositionId": null,
+    "extraction": "reference video and supplied Python source inspection",
+    "aeVersion": null,
+    "notes": [
+      "No AE project extraction. Reference-specific text, masks and footage are excluded from runtime.",
+      "Validation not run. See dynamicGlass.md for adaptation decisions and limitations."
+    ]
+  },
+  "text": {
+    "sourceTextIncluded": false,
+    "slots": [
+      {
+        "id": "caption",
+        "contentSource": "user-caption",
+        "layerIds": [
+          "text-main"
+        ],
+        "emptyBehavior": "hide",
+        "notes": [
+          "Timestamp-driven rows of user text; no literal reference text."
+        ]
+      }
+    ]
+  },
+  "canvas": {
+    "widthPx": 1080,
+    "heightPx": 1920,
+    "frameRateNumerator": 30,
+    "frameRateDenominator": 1,
+    "pixelAspect": null,
+    "durationSeconds": 5.867,
+    "displayStartSeconds": null,
+    "colorSpace": null,
+    "linearLight": null,
+    "bitsPerChannel": null
+  },
+  "coverage": {
+    "typography": "unknown",
+    "layout": "unknown",
+    "colors": "unknown",
+    "strokes": "unknown",
+    "shadows": "unknown",
+    "boxes": "unknown",
+    "motion": "unknown",
+    "textAnimators": "unknown",
+    "compositing": "unknown",
+    "threeD": "unknown",
+    "dependencies": "unknown"
+  },
+  "dependencies": [],
+  "evidence": [],
+  "layers": [
+    {
+      "id": "text-main",
+      "sourceLayerId": null,
+      "kind": "text",
+      "order": 0,
+      "parentId": null,
+      "matteLayerId": null,
+      "slotId": "caption",
+      "inSeconds": null,
+      "outSeconds": null,
+      "timeStretchPercent": null,
+      "timeRemapTrackId": null,
+      "properties": [
+        {
+          "path": "typography.fontFamily",
+          "sourcePath": [],
+          "value": "Arial Black",
+          "units": "family",
+          "origin": "extracted",
+          "evidenceIds": [],
+          "note": "Implemented approximation: bundled Montserrat 900."
+        },
+        {
+          "path": "motion.entrance",
+          "sourcePath": [],
+          "value": {
+            "duration": 0.18,
+            "scaleFrom": 0.48,
+            "overshoot": 0.16,
+            "tiltDegrees": 12
+          },
+          "units": "seconds / ratio / degrees",
+          "origin": "extracted",
+          "evidenceIds": [],
+          "note": "Adaptive duration for short rows."
+        },
+        {
+          "path": "fill.colors",
+          "sourcePath": [],
+          "value": [
+            "white",
+            "blue/cyan",
+            "orange"
+          ],
+          "units": "palette",
+          "origin": "extracted",
+          "evidenceIds": [],
+          "note": "Shared canvas gradient and moving glyph-face shine."
+        },
+        {
+          "path": "layout.rows",
+          "sourcePath": [],
+          "value": {
+            "wordsPerRow": 2,
+            "rowsPerPage": 3
+          },
+          "units": "count",
+          "origin": "designed",
+          "evidenceIds": [],
+          "note": "Replaces manually positioned demo cues with measured text layout."
+        }
+      ]
+    }
+  ],
+  "motion": {
+    "phases": [],
+    "tracks": []
+  },
+  "adaptation": {
+    "layoutPolicy": "Measured two-word rows; pages of three rows.",
+    "timingPolicy": "User word timestamps; deterministic video time.",
+    "shortSegmentPolicy": "Entrance shortened to fit.",
+    "longTextPolicy": "Fit row width and paginate.",
+    "colorAssignmentPolicy": "White support, cool middle, warm foreground.",
+    "boxSizingPolicy": null,
+    "missingWordTimingsPolicy": "Even distribution across segment duration.",
+    "aspectRatioPolicy": "Use canvas dimensions and measured glyph widths.",
+    "notes": [
+      "Pravila prilagodbe novom tekstu su odvojena od izmjerenih vrijednosti originala."
+    ]
+  },
+  "edita": {
+    "mode": "new-style",
+    "styleKey": "dynamicGlass",
+    "baseStyleKey": null,
+    "settings": {},
+    "mappings": [],
+    "requiredExtensions": [
+      "Shared Dynamic Glass caption renderer",
+      "Synchronized camera and person-mask transform"
+    ],
+    "changedFiles": [
+      "frontend/src/lib/dynamic-glass.ts",
+      "frontend/src/lib/person-mask.ts"
+    ],
+    "limitations": [
+      "Montserrat replaces Arial Black.",
+      "Automatic phrase layout, zoom schedule and person segmentation differ from manually prepared reference.",
+      "Canvas gradients and trailing copies approximate per-pixel gloss and blur."
+    ]
+  },
+  "validation": {
+    "status": "not-run",
+    "evidenceIds": [],
+    "checks": []
+  }
+}

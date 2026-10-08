@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+const gainCode=ts.transpileModule(readFileSync('frontend/src/lib/media-gain.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const gainUrl=`data:text/javascript;base64,${Buffer.from(gainCode).toString('base64')}`;
+const code=ts.transpileModule(readFileSync('frontend/src/lib/voice-playback.ts','utf8').replace("'./media-gain'",JSON.stringify(gainUrl)),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {syncVoicePlayback}=await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
+const video={currentTime:0,volume:1,playbackRate:1,paused:false,ended:false,seeking:false};
+const audio={currentTime:0,duration:4,readyState:4,paused:true,playbackRate:1,pause(){this.paused=true;},play(){this.paused=false;return Promise.resolve();}};
+const sync=()=>syncVoicePlayback(video,audio,true,2,.2);
+sync();assert.equal(audio.paused,true);assert.equal(video.volume,.2);
+video.currentTime=3;sync();assert.equal(audio.currentTime,1);assert.equal(audio.paused,false);
+video.paused=true;sync();assert.equal(audio.paused,true);
+video.currentTime=5;sync();assert.equal(audio.currentTime,3);
+video.paused=false;video.playbackRate=1.5;sync();assert.equal(audio.playbackRate,1.5);assert.equal(audio.paused,false);
+video.currentTime=6;sync();assert.equal(audio.paused,true);
+video.currentTime=1;sync();assert.equal(audio.paused,true);
+video.currentTime=3;video.seeking=true;sync();assert.equal(audio.paused,true);
+video.seeking=false;sync();assert.equal(audio.paused,false);
+syncVoicePlayback(video,audio,false,2,1);assert.equal(audio.paused,true);assert.equal(video.volume,1);
+console.log('Narration offset, pause, scrubbing, rate, end and original mix checks passed.');
+
+const gains=[];
+globalThis.AudioContext=class{state='running';destination={};createGain(){const node={gain:{value:1},connect(){}};gains.push(node);return node;}createMediaElementSource(){return {connect(){}};}resume(){return Promise.resolve();}};
+const {setMediaGain}=await import(gainUrl);
+const boosted={volume:1,paused:false};setMediaGain(boosted,1.5);assert.equal(gains.at(-1).gain.value,1.5);assert.equal(boosted.volume,1);setMediaGain(boosted,.4);assert.equal(gains.at(-1).gain.value,.4);assert.equal(gains.length,1);
+console.log('150% preview gain and subsequent reduction passed.');

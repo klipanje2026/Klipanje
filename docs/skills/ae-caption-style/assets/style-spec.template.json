@@ -1,0 +1,149 @@
+{
+  "$schema": "../references/style-spec.schema.json",
+  "schemaVersion": 1,
+  "id": "aePendingReference",
+  "name": "Novi AE stil — predložak zapisa",
+  "status": "template",
+  "source": {
+    "file": null,
+    "sha256": null,
+    "format": null,
+    "compositionId": null,
+    "extraction": "none",
+    "aeVersion": null,
+    "notes": ["Ovo nije izdvojeni stil. Popuniti iz konkretnog izvora; nepoznate vrijednosti ostaju null."]
+  },
+  "text": {
+    "sourceTextIncluded": false,
+    "slots": [
+      {
+        "id": "caption",
+        "contentSource": "user-caption",
+        "layerIds": ["text-main"],
+        "emptyBehavior": "hide",
+        "notes": ["Korisnikov tekst dolazi iz Edita segmenta. Strukturu slotova prilagoditi stvarnom predlošku."]
+      }
+    ]
+  },
+  "canvas": {
+    "widthPx": null,
+    "heightPx": null,
+    "frameRateNumerator": null,
+    "frameRateDenominator": null,
+    "pixelAspect": null,
+    "durationSeconds": null,
+    "displayStartSeconds": null,
+    "colorSpace": null,
+    "linearLight": null,
+    "bitsPerChannel": null
+  },
+  "coverage": {
+    "typography": "unknown",
+    "layout": "unknown",
+    "colors": "unknown",
+    "strokes": "unknown",
+    "shadows": "unknown",
+    "boxes": "unknown",
+    "motion": "unknown",
+    "textAnimators": "unknown",
+    "compositing": "unknown",
+    "threeD": "unknown",
+    "dependencies": "unknown"
+  },
+  "dependencies": [],
+  "evidence": [],
+  "layers": [
+    {
+      "id": "text-main",
+      "sourceLayerId": null,
+      "kind": "text",
+      "order": 0,
+      "parentId": null,
+      "matteLayerId": null,
+      "slotId": "caption",
+      "inSeconds": null,
+      "outSeconds": null,
+      "timeStretchPercent": null,
+      "timeRemapTrackId": null,
+      "properties": [
+        {
+          "path": "typography.fontFamily",
+          "sourcePath": [],
+          "value": null,
+          "units": "font family / PostScript name",
+          "origin": "unknown",
+          "evidenceIds": [],
+          "note": "Očitati font i rez; ne prepisivati naziv teksta iz sloja."
+        },
+        {
+          "path": "transform.position",
+          "sourcePath": [],
+          "value": null,
+          "units": "source pixels; coordinate space to be established",
+          "origin": "unknown",
+          "evidenceIds": [],
+          "note": "Zabilježiti anchor i parent vezu prije pretvaranja u Edita x/y."
+        },
+        {
+          "path": "fill.colors",
+          "sourcePath": [],
+          "value": null,
+          "units": "RGBA; source color space to be established",
+          "origin": "unknown",
+          "evidenceIds": [],
+          "note": "Izdvojiti sve boje/stopove i pravilo rasporeda, ne samo dvije osnovne boje."
+        },
+        {
+          "path": "shadows",
+          "sourcePath": [],
+          "value": null,
+          "units": "each shadow: color/alpha, source-pixel offset/blur/spread, blend and pass order",
+          "origin": "unknown",
+          "evidenceIds": [],
+          "note": "Nedostatak podataka ne znači da sjena ne postoji."
+        },
+        {
+          "path": "boxes",
+          "sourcePath": [],
+          "value": null,
+          "units": "source-pixel geometry, padding/radius, color/alpha and text-fit rules",
+          "origin": "unknown",
+          "evidenceIds": [],
+          "note": "Ako je box zaseban sloj, napraviti zaseban layer i njegove motion tracks."
+        },
+        {
+          "path": "threeD",
+          "sourcePath": [],
+          "value": null,
+          "units": "source geometry, camera, light and material units",
+          "origin": "unknown",
+          "evidenceIds": [],
+          "note": "Razlikovati stvarnu 3D geometriju od slojeva/sjene koji izgledaju kao dubina."
+        }
+      ]
+    }
+  ],
+  "motion": { "phases": [], "tracks": [] },
+  "adaptation": {
+    "layoutPolicy": null,
+    "timingPolicy": null,
+    "shortSegmentPolicy": null,
+    "longTextPolicy": null,
+    "colorAssignmentPolicy": null,
+    "boxSizingPolicy": null,
+    "missingWordTimingsPolicy": null,
+    "aspectRatioPolicy": null,
+    "notes": ["Pravila prilagodbe novom tekstu su odvojena od izmjerenih vrijednosti originala."]
+  },
+  "edita": {
+    "mode": "undecided",
+    "styleKey": null,
+    "baseStyleKey": null,
+    "settings": {},
+    "mappings": [],
+    "requiredExtensions": [],
+    "changedFiles": [],
+    "limitations": ["Još nije analiziran AEP i nije implementiran novi stil."]
+  },
+  "validation": { "status": "not-run", "evidenceIds": [], "checks": [] }
+}

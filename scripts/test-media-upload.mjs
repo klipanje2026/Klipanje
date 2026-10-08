@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';import ts from 'typescript';
+await fs.mkdir('work/upload-tests',{recursive:true});
+const source=await fs.readFile('frontend/src/lib/media-upload.ts','utf8');
+await fs.writeFile('work/upload-tests/upload.mjs',ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText.replace("'./api'","'./api.mjs'").replace("'./diagnostics'","'./diagnostics.mjs'"));
+await fs.writeFile('work/upload-tests/api.mjs',`export class ApiError extends Error{};export const csrfToken=async()=>'';export const apiJson=(...args)=>globalThis.uploadApi(...args);`);
+await fs.writeFile('work/upload-tests/diagnostics.mjs','export const recordFailure=()=>{};');
+const storage=new Map();globalThis.sessionStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};
+const completed=new Set(),calls=[];let fail=true,begins=0;
+globalThis.uploadApi=async(path,options={})=>{calls.push(path);if(path.includes('/projects/')){begins++;return{multipart:true,id:'session',partSize:8*1024*1024};}if(!options.method)return{multipart:true,id:'session',projectId:'project',partSize:8*1024*1024,parts:[...completed]};if(path.includes('/parts/')){const part=path.split('/').at(-1);if(part==='3'&&fail)throw new Error('Disconnected');completed.add(part);return{ok:true};}assert.equal(options.method,'POST');return{id:'asset'};};
+const {uploadMedia}=await import('../work/upload-tests/upload.mjs');
+const originalTimeout=globalThis.setTimeout;globalThis.setTimeout=(fn)=>originalTimeout(fn,0);
+const file=new File([new Uint8Array(33*1024*1024)],'video.mp4',{type:'video/mp4',lastModified:1});
+await assert.rejects(uploadMedia('project',file,()=>{}),/24 sata/);assert.equal(storage.size,1);
+const first=calls.length;fail=false;assert.deepEqual(await uploadMedia('project',file,()=>{}),{id:'asset'});
+assert.equal(begins,1);assert.ok(!calls.slice(first).some(p=>p.endsWith('/parts/1')||p.endsWith('/parts/2')));assert.equal(storage.size,0);globalThis.setTimeout=originalTimeout;
+console.log('Interrupted multipart upload resumes only missing parts and clears completed sessions.');

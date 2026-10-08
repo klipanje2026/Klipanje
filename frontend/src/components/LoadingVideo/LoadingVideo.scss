@@ -1,0 +1,15 @@
+ :root[data-theme][data-palette] .edita-video-loading {
+ position:absolute;inset:0;z-index:8;box-sizing:border-box;background:var(--ui-panel);color:var(--ui-text);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:clamp(16px,4vw,28px);text-align:center;font:inherit;overflow:auto;
+ strong {font:inherit;font-size:13px;font-weight:600;line-height:1.55;max-width:32ch;}
+ small {color:var(--ui-muted);font:inherit;font-size:11px;line-height:1.6;max-width:32ch;}
+ progress {width:min(240px,80%);height:8px;accent-color:var(--ui-accent-button);}
+ button {border:1px solid var(--ui-accent-button);border-radius:9px;color:white;background:var(--ui-accent-button);padding:10px 14px;max-width:100%;cursor:pointer;font:inherit;font-size:11px;line-height:1.4;transition:filter .4s,box-shadow .4s;}
+ button:hover {filter:brightness(1.1);}
+ button:focus-visible {outline:2px solid var(--ui-accent);outline-offset:3px;}
+ .video-diagnostics {background:transparent;color:var(--ui-text);border-color:var(--ui-border);}
+}
+
+.edita-video-audio-repair {position:absolute;left:10px;top:10px;z-index:7;display:flex;flex-wrap:wrap;align-items:center;gap:6px;max-width:calc(100% - 20px);font-size:11px;}
+.edita-video-audio-repair span,.edita-video-audio-repair button {border:1px solid var(--ui-border,#555);border-radius:7px;background:var(--ui-raised,#222);color:var(--ui-text,#fff);padding:6px 9px;}
+.edita-video-audio-repair button {cursor:pointer;font:inherit;}
+.edita-video-audio-repair button:hover {border-color:var(--ui-accent,#88baff);}
