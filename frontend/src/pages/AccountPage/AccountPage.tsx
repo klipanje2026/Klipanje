@@ -1,3 +1,4 @@
+import {LogoMark} from '../../components/LogoMark';
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { apiJson, resetCsrf } from '../../lib/api';
@@ -29,7 +30,7 @@ export function AccountPage() {
   }
 
   return <main className="account-page">
-    <header className="account-header"><Link className="account-logo" to="/" data-no-tooltip aria-label="Klipanje"><img src="/klipanje-logo.svg" width="28" height="28" alt="" />Klipanje</Link></header>
+    <header className="account-header"><Link className="account-logo" to="/" data-no-tooltip aria-label="Klipanje"><LogoMark size={34}/>Klipanje</Link></header>
     <div className="account-studio-art" aria-hidden="true">
       <div className="account-art-window"><div className="account-art-title"><i /><i /><i /><span>Klipanje / studio</span></div><div className="account-art-body"><div className="account-art-preview"><StudioIcon name="play" /><span>Tvoja sljedeća priča.</span></div><div className="account-art-tools"><i /><i /><i /><i /></div></div><div className="account-art-timeline"><span /><span /><span /><span /><span /><b /></div></div>
       <div className="account-art-caption"><StudioIcon name="captions" /><span>Svaka riječ na svom mjestu.</span></div>

@@ -1,7 +1,7 @@
 import json
 import math
 from rest_framework import serializers, viewsets
-from .models import LocalScript
+from .models import LocalScript, ProjectChapter
 
 
 class ScriptSerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class ScriptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LocalScript
-        fields = ['id', 'project', 'title', 'content', 'segments', 'image_prompt', 'photo_settings', 'storyboard', 'created_at', 'updated_at']
+        fields = ['id', 'project', 'chapter', 'title', 'content', 'segments', 'image_prompt', 'photo_settings', 'storyboard', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def validate_project(self, project):
@@ -18,6 +18,13 @@ class ScriptSerializer(serializers.ModelSerializer):
         if self.instance and self.instance.project_id != project.pk:
             raise serializers.ValidationError('Skripta ostaje u svom projektu.')
         return project
+
+    def validate(self, attrs):
+        chapter = attrs.get('chapter', self.instance.chapter if self.instance else None)
+        project = attrs.get('project', self.instance.project if self.instance else None)
+        if chapter and (not project or chapter.project_id != project.pk or chapter.project.created_by_id != self.context['request'].user.pk):
+            raise serializers.ValidationError({'chapter':'Chapter mora pripadati odabranom projektu.'})
+        return attrs
 
     def validate_segments(self, segments):
         if not isinstance(segments, list) or len(segments) > 1000:
@@ -49,7 +56,7 @@ class ScriptSerializer(serializers.ModelSerializer):
         return value
 
     def validate_photo_settings(self, value):
-        if not isinstance(value,dict) or len(json.dumps(value))>50000:
+        if not isinstance(value,dict) or len(json.dumps(value))>500000:
             raise serializers.ValidationError('Postavke fotografija su prevelike ili neispravne.')
         return value
 
@@ -68,3 +75,22 @@ class ScriptViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+
+class ChapterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectChapter
+        fields = ['id', 'project', 'title']
+        read_only_fields = ['id']
+    def validate_project(self, project):
+        if project.created_by_id != self.context['request'].user.pk or project.kind != 'production':
+            raise serializers.ValidationError('Odaberi svoj projekat.')
+        if self.instance and project.pk != self.instance.project_id:
+            raise serializers.ValidationError('Chapter ostaje u svom projektu.')
+        return project
+
+class ChapterViewSet(viewsets.ModelViewSet):
+    serializer_class = ChapterSerializer
+    http_method_names = ['get','post','patch','head','options']
+    def get_queryset(self):
+        return ProjectChapter.objects.filter(project__created_by=self.request.user)

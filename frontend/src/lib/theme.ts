@@ -50,17 +50,32 @@ export function applyDarkPalette(palette: DarkPalette) {
 }
 export function initializeTheme() {
   let theme: Theme = 'light';
-  let palette: DarkPalette = 'graphite';
+  let palette: DarkPalette = 'coral';
   try {
     const saved = localStorage.getItem('edita-theme-v2');
     theme = saved === 'cream' || saved === 'ruby' || saved === 'forest' || saved === 'dark' || saved === 'dark-blue' ? saved : saved === 'light' ? 'light' : localStorage.getItem('edita-theme') === 'dark' ? 'dark' : 'light';
-    palette = darkPalettes.find(item => item.id === localStorage.getItem('edita-dark-palette'))?.id || 'graphite';
+    palette = darkPalettes.find(item => item.id === localStorage.getItem('edita-dark-palette'))?.id || 'coral';
   } catch { /* Keep defaults. */ }
   document.documentElement.dataset.darkPalette = palette;
-  for(const [key,attribute,fallback] of [['cream','creamPalette','linen'],['ruby','rubyPalette','garnet'],['forest','forestPalette','sage'],['light','lightPalette','ice'],['dark-blue','bluePalette','ocean']]){
+  for(const [key,attribute,fallback] of [['cream','creamPalette','linen'],['ruby','rubyPalette','garnet'],['forest','forestPalette','sage'],['light','lightPalette','coral'],['dark-blue','bluePalette','ocean']]){
     try{document.documentElement.dataset[attribute]=localStorage.getItem(`edita-${key}-variant`)||fallback;}catch{/* Defaults. */}
   }
   try { if(!localStorage.getItem('klipanje-palettes-v3')) { theme=theme==='light'||theme==='cream'?'light':'dark'; document.documentElement.dataset.lightPalette='ice'; document.documentElement.dataset.darkPalette='graphite'; localStorage.setItem('edita-light-variant','ice'); localStorage.setItem('edita-dark-palette','graphite'); localStorage.setItem('edita-last-dark','dark'); localStorage.setItem('klipanje-palettes-v3','1'); } } catch { /* Session defaults. */ }
+  // The selected frame logo and entry page now start in the user's warm Coral palette.
+  try {
+    if (!localStorage.getItem('klipanje-warm-default-v1')) {
+      theme = theme === 'light' || theme === 'cream' ? 'light' : 'dark';
+      document.documentElement.dataset.lightPalette = 'coral';
+      document.documentElement.dataset.darkPalette = 'coral';
+      localStorage.setItem('edita-light-variant', 'coral');
+      localStorage.setItem('edita-dark-palette', 'coral');
+      localStorage.setItem('edita-last-dark', 'dark');
+      localStorage.setItem('klipanje-warm-default-v1', '1');
+    }
+  } catch {
+    document.documentElement.dataset.lightPalette = 'coral';
+    document.documentElement.dataset.darkPalette = 'coral';
+  }
   applyTheme(theme);
 }
 export function lastDarkTheme(): Theme {

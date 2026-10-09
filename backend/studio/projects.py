@@ -16,9 +16,15 @@ from .models import MediaAsset, Project, PendingMediaDeletion
 from .media_cleanup import process_deletion
 
 class ProjectSerializer(serializers.ModelSerializer):
+    script_count = serializers.SerializerMethodField()
+    image_count = serializers.SerializerMethodField()
+    audio_count = serializers.SerializerMethodField()
+    def get_script_count(self, project): return project.scripts.count()
+    def get_image_count(self, project): return project.assets.filter(content_type__startswith='image/').count()
+    def get_audio_count(self, project): return project.assets.filter(content_type__startswith='audio/').count()
     class Meta:
         model = Project
-        fields = ['id', 'workspace', 'name', 'kind', 'state', 'brief', 'created_at', 'updated_at']
+        fields = ['id', 'workspace', 'name', 'kind', 'state', 'brief', 'created_at', 'updated_at', 'script_count', 'image_count', 'audio_count']
         read_only_fields = ['id', 'created_at', 'updated_at']
     def validate_workspace(self, workspace):
         if not workspace.memberships.filter(user=self.context['request'].user).exists():
@@ -120,9 +126,15 @@ def asset_content(request, pk):
     response['Cache-Control'] = 'private, no-store'
     return response
 
-@api_view(['DELETE'])
+@api_view(['DELETE','PATCH'])
 def asset_delete(request, pk):
     asset = get_object_or_404(MediaAsset, pk=pk, project__created_by=request.user, project__workspace__memberships__user=request.user)
+    if request.method=='PATCH':
+        update=request.data.get('metadata')
+        if not isinstance(update,dict) or set(update)-{'gallery','segmentId','scriptId'}:raise ValidationError('Neispravna izmjena fotografije.')
+        if 'gallery' in update and not isinstance(update['gallery'],bool):raise ValidationError('Neispravan status galerije.')
+        asset.metadata=asset_metadata(asset.project,{**asset.metadata,**update});asset.save(update_fields=['metadata'])
+        return Response(asset_payload(asset))
     with transaction.atomic():
         asset.delete()
     return Response(status=204)

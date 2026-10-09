@@ -1,7 +1,8 @@
+import './LanguageDropdown.scss';
 import { Children, isValidElement, type ReactNode, Fragment, useEffect, useLayoutEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { StudioIcon } from '../StudioIcon/StudioIcon';
-type Props = { value:string; onChange:(value:string)=>void; options:{value:string;label:string;group?:string;fontFamily?:string}[]; disabled?:boolean; label?:string; hideLabel?:boolean; triggerTitle?:string; variant?:"voice"; placeholder?:string; icon?:ReactNode };
+type Props = { value:string; onChange:(value:string)=>void; options:{value:string;label:string;group?:string;fontFamily?:string;description?:string}[]; disabled?:boolean; label?:string; hideLabel?:boolean; triggerTitle?:string; variant?:"voice"; placeholder?:string; icon?:ReactNode };
 export function LanguageDropdown({value,onChange,options,disabled,label='Jezik govora',hideLabel=false,triggerTitle,variant,placeholder='Odaberi jezik',icon}:Props) {
   const [open,setOpen]=useState(false);
   const [focused,setFocused]=useState(0);
@@ -14,7 +15,7 @@ export function LanguageDropdown({value,onChange,options,disabled,label='Jezik g
     if(!open)return;
     const position=()=>{
       const rect=trigger.current?.getBoundingClientRect();if(!rect)return;
-      const height=Math.min(270,options.length*40+16);
+      const height=Math.min(330,options.reduce((total,option)=>total+(option.description?100:40),16));
       const below=window.innerHeight-rect.bottom-16, above=rect.top-16;
       const down=below>=height||below>=above;
       const maxHeight=Math.max(40,Math.min(height,down?below:above));
@@ -38,7 +39,7 @@ export function LanguageDropdown({value,onChange,options,disabled,label='Jezik g
       else if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();if(!open)show();else setFocused(index=>event.key==='Home'?0:event.key==='End'?options.length-1:(index+(event.key==='ArrowDown'?1:-1)+options.length)%options.length);}
       else if(event.key==='Enter'||event.key===' '){event.preventDefault();if(open)select(focused);else show();}
     }}><span id={`${id}-value`} title={icon?options[selected]?.label:undefined} style={options[selected]?.fontFamily?{fontFamily:options[selected].fontFamily}:undefined}>{icon||options[selected]?.label || placeholder}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-    {open&&!disabled&&createPortal(<div ref={list} style={{...placement,...menuFont}} className={`language-dropdown-list language-dropdown-portal${variant ? ` language-dropdown-${variant}-list` : ""}`} id={`${id}-list`} role="listbox" aria-labelledby={`${id}-label`}>{options.map((option,index)=><Fragment key={option.value}>{option.group&&options[index-1]?.group!==option.group&&<strong className="format-group">{option.group}</strong>}<div id={`${id}-${index}`} role="option" aria-selected={option.value===value} className={focused===index?'focused':''} onPointerMove={()=>setFocused(index)} onClick={()=>select(index)}><span style={option.fontFamily?{fontFamily:option.fontFamily}:undefined}>{option.label}</span>{option.value===value&&<StudioIcon name="check"/>}</div></Fragment>)}</div>,root.current?.closest('dialog')||document.body)}
+    {open&&!disabled&&createPortal(<div ref={list} style={{...placement,...menuFont}} className={`language-dropdown-list language-dropdown-portal${variant ? ` language-dropdown-${variant}-list` : ""}`} id={`${id}-list`} role="listbox" aria-labelledby={`${id}-label`}>{options.map((option,index)=><Fragment key={option.value}>{option.group&&options[index-1]?.group!==option.group&&<strong className="format-group">{option.group}</strong>}<div id={`${id}-${index}`} role="option" aria-selected={option.value===value} title={option.description} className={focused===index?'focused':''} onPointerMove={()=>setFocused(index)} onClick={()=>select(index)}><span style={option.fontFamily?{fontFamily:option.fontFamily}:undefined}>{option.label}{option.description&&<small className="dropdown-option-description">{option.description}</small>}</span>{option.value===value&&<StudioIcon name="check"/>}</div></Fragment>)}</div>,root.current?.closest('dialog')||document.body)}
   </div>;
 }
 

@@ -14,6 +14,7 @@ class LocalScript(models.Model):
     title = models.CharField(max_length=160, default='Nova skripta')
     content = models.TextField(blank=True)
     project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='scripts')
+    chapter = models.ForeignKey('ProjectChapter', on_delete=models.SET_NULL, related_name='scripts', null=True, blank=True)
     segments = models.JSONField(default=list)
     image_prompt = models.TextField(blank=True)
     photo_settings = models.JSONField(default=dict)
@@ -475,3 +476,20 @@ class AffiliateDemoDay(models.Model):
     purchases = models.PositiveIntegerField(default=0)
     class Meta:
         constraints=[models.UniqueConstraint(fields=['affiliate','day'],name='unique_affiliate_demo_day')]
+
+
+class ProjectChapter(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='chapters')
+    title = models.CharField(max_length=160)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['created_at']
+
+class ImageSpend(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    model = models.CharField(max_length=80)
+    usage = models.JSONField(default=dict)
+    estimated_usd = models.DecimalField(max_digits=14, decimal_places=8, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)

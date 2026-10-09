@@ -1,3 +1,4 @@
+import {LogoMark} from '../LogoMark';
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { ProjectPicker, type ProjectKind } from '../ProjectPicker';
@@ -40,12 +41,11 @@ export function EditorLayout() {
   return <div className={'editor-layout is-editing-workspace' + (!videoEditor ? ' is-subtitle-workspace' : '')}>
     <div className="workspace-header-static">
       <header className={'editor-navbar ' + (videoEditor ? 'is-video' : 'is-captions')} aria-label={videoEditor ? 'Alati video editora' : 'Alati editora titlova'}>
-        <a href="/" className="editor-navbar-logo" data-no-tooltip aria-label="Klipanje početna"><img src="/klipanje-logo.svg" width="23" height="23" alt="" /><span>Klipanje</span></a>
+        <a href="/" className="editor-navbar-logo" data-no-tooltip aria-label="Klipanje početna"><LogoMark size={28}/><span>Klipanje</span></a>
         <nav className="workspace-editor-nav" aria-label="Editori">
           <a href="/projekti">Projekti</a>
           <a href={"/skripte"+location.search}>Skripte</a>
           <a href={"/fotografije"+location.search}>Fotografije</a>
-          <a href="/titlovi" aria-current={!videoEditor ? 'page' : undefined}>Titlovi</a>
           <a href={"/videa"+location.search} aria-current={videoEditor ? 'page' : undefined}>Video editor</a>
         </nav>
         <div className="editor-navbar-project" id="workspace-header-project" />
@@ -60,7 +60,7 @@ export function EditorLayout() {
             {menu && <div className="workspace-user-menu" id="workspace-user-menu">
               <div className="workspace-user-identity"><div><strong>{session.user?.name}</strong><small>@{session.user?.username}</small></div></div>
               <a href="/promjena-lozinke">Promijeni lozinku</a>
-              {session.user?.isStaff && <a href="http://127.0.0.1:8002/admin/" target="_blank" rel="noreferrer"><span><StudioIcon name="settings" />Administracija</span></a>}
+              {session.user?.isStaff && <a href="/administracija"><span><StudioIcon name="settings" />Administracija</span></a>}
               <details className="workspace-theme-list"><summary>Teme</summary><ThemePicker /></details>
               <button className="workspace-signout" disabled={busy} onClick={() => void signOut()}><span><StudioIcon name="back" />{busy ? 'Odjava…' : 'Odjavi se'}</span></button>
               {error && <p role="alert">{error}</p>}

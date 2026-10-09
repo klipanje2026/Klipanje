@@ -164,7 +164,9 @@ class AITests(TestCase):
             upstream.reset_mock()
             user=get_user_model().objects.create_user(username='clean-nonstaff')
             self.client.force_authenticate(user)
-            self.assertEqual(self.client.post('/api/audio/clean',{}).status_code,503)
+            self.assertEqual(self.client.post('/api/audio/clean',{}).status_code,400)
+            with override_settings(LOCAL_APP=False):
+                self.assertEqual(self.client.post('/api/audio/clean',{}).status_code,503)
             upstream.assert_not_called()
     def test_token_contract_and_timeout(self):
         with patch('studio.ai.httpx.request', return_value=httpx.Response(200, json={'token': 'short-lived'})) as upstream:

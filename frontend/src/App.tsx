@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './components/AuthProvider/AuthProvider';
 import { RequireAccount } from './components/RequireAccount/RequireAccount';
 import { EditorLayout } from './components/EditorLayout/EditorLayout';
@@ -12,13 +12,14 @@ import { LocalHome } from './pages/LocalHome';
 import { LocalScripts } from './pages/LocalScripts';
 import { Projects } from './pages/Projects';
 import { Photos } from './pages/Photos';
-import { ProductionVideo } from './pages/ProductionVideo';
 import './components/LocalVideo.scss';
 import { ProductionProvider } from './components/ProductionWorkspace';
 import './components/Production.scss';
+import './components/ProductionRefinements.scss';
 import { ChangePassword } from './pages/ChangePassword';
+import { Administration } from './pages/Administration';
 
-const SubtitleStudio = lazy(() => import('./pages/SubtitleStudio/SubtitleStudio').then(module => ({ default: module.SubtitleStudio })));
+const ProductionVideo = lazy(() => import('./pages/ProductionVideo').then(module => ({ default: module.ProductionVideo })));
 
 
 export default function App() {
@@ -32,13 +33,14 @@ export default function App() {
           <Route element={<MainLayout/>}>
             <Route path="/" element={<LocalHome/>}/>
             <Route path="/projekti" element={<Projects/>}/>
+            <Route path="/administracija" element={<Administration/>}/>
             <Route path="/skripte" element={<LocalScripts/>}/>
             <Route path="/fotografije" element={<Photos/>}/>
           </Route>
           <Route element={<EditorLayout />}>
           <Route path="/videa" element={<ProductionVideo/>}/>
           <Route path="/video-editor" element={<ProductionVideo/>}/>
-          <Route path="/titlovi" element={<SubtitleStudio />} />
+          <Route path="/titlovi" element={<Navigate to="/videa" replace/>} />
 
         </Route></Route></Route>
         <Route path="*" element={<NotFound />} />

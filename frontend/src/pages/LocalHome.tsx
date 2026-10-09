@@ -1,20 +1,4 @@
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/auth-context';
-
-const tools = [
-  {id:'script', number:'01', title:'Kreiranje skripte', description:'Zapiši ideju, oblikuj priču i sačuvaj tekst za sljedeći video.', path:'/skripte', label:'Počni pisati'},
-  {id:'photo', number:'02', title:'Generisanje fotografija', description:'Prostor za vizuale koji će tvoju priču pretvoriti u sliku.', path:'/fotografije', label:'Otvori fotografije'},
-  {id:'video', number:'03', title:'Generisanje videa', description:'Od skripte do kadra. Složi video, dodaj tekst i uredi titlove.', path:'/videa', label:'Otvori videa'},
-];
-
-export function LocalHome() {
-  const {session} = useAuth();
-  return <>
-    <section className="klipanje-welcome"><p className="klipanje-eyebrow">KLIPANJE / TVOJ KREATIVNI STUDIO</p><h1>Dobro došao, <em>{session.user?.name}.</em></h1><p>Šta danas stvaramo?</p><Link className="klipanje-secondary" to="/projekti">Moji projekti ↗</Link></section>
-    <section className="klipanje-tools" aria-label="Alati za stvaranje">{tools.map(tool=><Link to={tool.path} className={`klipanje-tool klipanje-tool-${tool.id}`} key={tool.id}>
-      <div className="klipanje-tool-art" aria-hidden="true"><span className="klipanje-tool-number">/{tool.number}</span>{tool.id==='script'?<div className="klipanje-art-paper"><span>JEDNA IDEJA.</span><b>Velika priča.</b><i/><i/><i/><div>✎</div></div>:tool.id==='photo'?<div className="klipanje-art-photo"><i className="art-sun"/><i className="art-hill"/><i className="art-hill back"/><span>✦</span></div>:<div className="klipanje-art-video"><div><span>▶</span></div><i/><i/><i/><b/></div>}</div>
-      <div className="klipanje-tool-content"><span className="klipanje-tool-category">{tool.id==='script'?'RIJEČI':tool.id==='photo'?'VIZUALI':'POKRET'}</span><h2>{tool.title}</h2><p>{tool.description}</p><span className="klipanje-tool-link">{tool.label}<span aria-hidden="true">↗</span></span></div>
-    </Link>)}</section>
-
-  </>;
-}
+import {Link} from 'react-router-dom';
+import {Icon} from '../components/ProductionWorkspace';
+const tools=[{id:'project',icon:'folder',title:'Projekti',description:'Organizuj serijal i odredi pravila priče, vizuelni stil i likove koji se ponavljaju.',path:'/projekti'},{id:'script',icon:'file',title:'Skripte i naracije',description:'Napiši tekst, podijeli ga u vremenske intervale i pripremi naraciju za video.',path:'/skripte'},{id:'photo',icon:'image',title:'Fotografije',description:'Dodaj promptove, generiši slike i odaberi fotografije za svaki interval skripte.',path:'/fotografije'},{id:'video',icon:'film',title:'Video',description:'Poveži slike, naraciju i titlove na timelineu. Podesi prijelaze i izvezi video.',path:'/videa'}] as const;
+export function LocalHome(){return <><section className="simple-home"><h1>Klipanje</h1><p>Pripremi projekat i skriptu, dodaj fotografije i složi video.</p><nav aria-label="Alati">{tools.map(t=><Link key={t.id} to={t.path}><Icon name={t.icon}/>{t.title==='Skripte i naracije'?'Skripte':t.title}</Link>)}</nav></section><section className="home-workflow-cards" aria-label="Pregled alata">{tools.map((t,index)=><Link className={'home-workflow-card '+t.id} key={t.id} to={t.path}><div className="home-card-art"><span className="home-card-index">0{index+1}</span><span className="home-card-icon"><Icon name={t.icon}/></span></div><div className="home-card-description"><h2>{t.title}</h2><p>{t.description}</p><span className="home-card-open">Otvori <span aria-hidden="true">↗</span></span></div></Link>)}</section></>;}

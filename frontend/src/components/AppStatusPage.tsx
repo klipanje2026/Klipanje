@@ -1,3 +1,4 @@
+import {LogoMark} from './LogoMark';
 import {StudioIcon} from './StudioIcon/StudioIcon';
 
 type Props = {kind:'unavailable'|'not-found'|'loading'; message?:string; onRetry?:()=>void; onDiagnostics?:()=>void};
@@ -6,7 +7,7 @@ type Props = {kind:'unavailable'|'not-found'|'loading'; message?:string; onRetry
 export function AppStatusPage({kind,message,onRetry,onDiagnostics}:Props) {
   const missing=kind==='not-found',loading=kind==='loading';
   return <main className={`app-status-page is-${kind}`}>
-    <header className="app-status-header"><a href="/" className="app-status-logo" aria-label="Klipanje" data-no-tooltip><img src="/klipanje-logo.svg" width="28" height="28" alt=""/>Klipanje</a><span>Tvoj prostor za stvaranje</span></header>
+    <header className="app-status-header"><a href="/" className="app-status-logo" aria-label="Klipanje" data-no-tooltip><LogoMark size={34}/>Klipanje</a><span>Tvoj prostor za stvaranje</span></header>
     <section className="app-status-card" aria-labelledby="app-status-title">
       <div className="app-status-illustration" aria-hidden="true">{missing?<span className="app-status-code">404</span>:loading?<span className="app-status-spinner"/>:<svg viewBox="0 0 120 84" fill="none"><rect x="8" y="10" width="74" height="52" rx="10"/><path d="M22 25h27M22 34h18M22 47h35"/><rect x="69" y="36" width="42" height="36" rx="9"/><path d="m85 47 10 14m0-14-10 14"/></svg>}</div>
       <p className="app-status-eyebrow">{missing?'POGREŠNA ADRESA':loading?'KLIPANJE STUDIO':'UČITAVANJE NIJE USPJELO'}</p>

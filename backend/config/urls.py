@@ -1,19 +1,25 @@
-from django.contrib import admin
+from studio import regional_voices
 from django.http import JsonResponse
-from django.urls import include, path
+from django.urls import include, path, re_path
 from rest_framework.routers import SimpleRouter
 from studio import accounts, ai, caption_presets, editor_diagnostics, integrations, scripts, creative
 from studio import media_compatibility, multipart_upload, projects, billing
+from studio import administration, image_spend
 
 router = SimpleRouter(trailing_slash=False)
 router.register('projects', projects.ProjectViewSet, basename='projects')
+router.register('chapters', scripts.ChapterViewSet, basename='chapters')
 router.register('scripts', scripts.ScriptViewSet, basename='scripts')
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    re_path(r'^admin(?:/.*)?$', administration.entry),
+    path('api/administration', administration.overview),
+    path('api/administration/projects/<uuid:pk>', administration.update_project),
     path('api/health', lambda request: JsonResponse({'ok': True, 'service': 'klipanje-django'})),
+    path('api/creative/usage', image_spend.status),
     path('api/creative/options', creative.options),
     path('api/creative/prompt', creative.prompt_preview),
     path('api/creative/generate', creative.generate),
+    path('api/creative/script', creative.generate_script),
     path('api/auth/csrf', accounts.csrf),
     path('api/auth/me', accounts.me),
     path('api/auth/login', accounts.sign_in),
@@ -31,6 +37,7 @@ urlpatterns = [
     path('api/media/prepare/<uuid:key>', media_compatibility.preparation_status),
     path('api/transcribe', ai.transcribe),
     path('api/voices', ai.voices),
+    path('api/voices/regional', regional_voices.regional),
     path('api/elevenlabs-status', ai.status),
     path('api/audio/clean', ai.clean_audio),
     path('api/narration', ai.narration),

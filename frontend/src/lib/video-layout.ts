@@ -5,9 +5,10 @@ export function videoRect(sourceAspect: number, frameAspect: number, transform: 
   const height = (sourceAspect > frameAspect ? frameAspect / sourceAspect * 100 : 100) * scale;
   return { x: (transform.x ?? 50) - width / 2, y: (transform.y ?? 50) - height / 2, width, height };
 }
-export function rulerTicks(duration: number, width: number) {
+export function rulerTicks(duration: number, width: number,range?:{start:number;end:number}) {
   const step = [ .1,.2,.5,1,2,5,10,15,30,60,120,300,600,1800,3600 ].find(value => value * width / duration >= 75) ?? Math.ceil(duration / 10);
-  return Array.from({length: Math.min(1000, Math.floor(duration / step) + 1)}, (_,i) => ({ time:i*step, percent:i*step/duration*100 }));
+  const first=range?Math.max(0,Math.floor(range.start/step)):0,last=Math.floor(Math.min(duration,range?.end??duration)/step);
+  return Array.from({length: Math.max(0,Math.min(1000,last-first+1))}, (_,i) => ({time:Math.min(duration,(first+i)*step),percent:Math.min(duration,(first+i)*step)/duration*100}));
 }
 export function anchorZoom(scroll: number, pointer: number, oldZoom: number, newZoom: number) {
   return Math.max(0, (scroll + pointer) * newZoom / oldZoom - pointer);

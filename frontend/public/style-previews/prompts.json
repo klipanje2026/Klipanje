@@ -1,0 +1,69 @@
+{
+  "method": "Built-in imagegen",
+  "images": [
+    {
+      "file": "realistic-environment.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Photorealistic natural photography. Subject: A quiet old-town street with a small bookshop, trees, cobblestones and warm late afternoon light. No people. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "realistic-character.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Photorealistic natural photography. Subject: Portrait of a fictional young adult male traveler with short dark hair, olive jacket and canvas backpack, against a softly detailed old-town street. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "cinematic-environment.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Cinematic film still, atmospheric color grading. Subject: A quiet old-town street with a small bookshop, trees, cobblestones and warm late afternoon light. No people. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "cinematic-character.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Cinematic film still, atmospheric color grading. Subject: Portrait of a fictional young adult male traveler with short dark hair, olive jacket and canvas backpack, against a softly detailed old-town street. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "cartoon3d-environment.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: 3D animated cartoon, rounded expressive forms. Subject: A quiet old-town street with a small bookshop, trees, cobblestones and warm late afternoon light. No people. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "cartoon3d-character.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: 3D animated cartoon, rounded expressive forms. Subject: Portrait of a fictional young adult male traveler with short dark hair, olive jacket and canvas backpack, against a softly detailed old-town street. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "cartoon2d-environment.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Hand drawn 2D cartoon, clean outlines, flat colors. Subject: A quiet old-town street with a small bookshop, trees, cobblestones and warm late afternoon light. No people. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "cartoon2d-character.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Hand drawn 2D cartoon, clean outlines, flat colors. Subject: Portrait of a fictional young adult male traveler with short dark hair, olive jacket and canvas backpack, against a softly detailed old-town street. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "anime-environment.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Anime illustration. Subject: A quiet old-town street with a small bookshop, trees, cobblestones and warm late afternoon light. No people. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "anime-character.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Anime illustration. Subject: Portrait of a fictional young adult male traveler with short dark hair, olive jacket and canvas backpack, against a softly detailed old-town street. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "watercolor-environment.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Watercolor illustration on textured paper. Subject: A quiet old-town street with a small bookshop, trees, cobblestones and warm late afternoon light. No people. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "watercolor-character.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Watercolor illustration on textured paper. Subject: Portrait of a fictional young adult male traveler with short dark hair, olive jacket and canvas backpack, against a softly detailed old-town street. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "comic-environment.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Graphic novel, bold ink lines. Subject: A quiet old-town street with a small bookshop, trees, cobblestones and warm late afternoon light. No people. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "comic-character.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Graphic novel, bold ink lines. Subject: Portrait of a fictional young adult male traveler with short dark hair, olive jacket and canvas backpack, against a softly detailed old-town street. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "clay-environment.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Handmade clay stop motion miniature. Subject: A quiet old-town street with a small bookshop, trees, cobblestones and warm late afternoon light. No people. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "clay-character.png",
+      "prompt": "Create a single square style preview image for a video creation app. Style: Handmade clay stop motion miniature. Subject: Portrait of a fictional young adult male traveler with short dark hair, olive jacket and canvas backpack, against a softly detailed old-town street. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    }
+  ]
+}

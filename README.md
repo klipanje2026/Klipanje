@@ -11,21 +11,21 @@ Potreban je Python 3.12+ i Node.js 22.13+. Nakon preuzimanja repozitorija pokren
 - Skripte: http://127.0.0.1:5175/skripte
 - Fotografije: http://127.0.0.1:5175/fotografije
 - Video editor: http://127.0.0.1:5175/videa
-- Editor titlova: http://127.0.0.1:5175/titlovi
-- Administracija: http://127.0.0.1:8002/admin/
+- Titlovi: panel unutar video editora
+- Administracija: http://127.0.0.1:5175/administracija
 
 Računi **Abdullah** i **Rijad** dobijaju jedinstvene privremene lozinke u lokalnom `.local/pocetne-prijave.txt` i moraju ih promijeniti pri prvom ulasku. Ponovna instalacija ne resetuje postojeće račune. Administrator **Naghun** postavlja se lokalno; lozinka nije dio repozitorija. Svaki računar ima vlastitu bazu i datoteke. GitHub prenosi kod, a ne korisničke projekte.
 
 ## Radni tok
 
-1. U **Projektima** napravi projekat i upiši opis, serijal, likove i željeni izgled. Reference možeš dodati naknadno.
-2. U **Skriptama** napiši tekst i podijeli ga na vremenske intervale. Intervali se ručno uređuju; automatska podjela daje procijenjena vremena. Skripte se spremaju lokalno i mogu se preuzeti kao TXT.
-3. U **Fotografijama** odaberi cijelu skriptu ili interval, dopuni zajednički i pojedinačni prompt, stil, model i reference. Možeš uvesti vlastite slike ili klikom pokrenuti API generisanje. GPT Image 2.5 Flare služi za brže pokušaje, a Sunburst za zahtjevnije generisanje i rad s referencama. Dostupno je osam početnih stilova.
-4. U **Video editoru** vanjski sidebar bira projekat i skriptu, a unutrašnji nudi medije, skriptu, naraciju, titlove, kadar i pokrete. Slike dodaješ na originalni Editin timeline, podešavaš trajanje, pomjeraš, režeš i dupliciraš. Dostupni su zoom in/out, pomak, blagi shake i prijelazi rez, pretapanje, fade i klizanje. Titlovi imaju Standard/Clean, prikaz riječ po riječ, slovo po slovo, fade i podešavanje veličine. Naracija se uvozi s diska ili generiše kroz ElevenLabs. Montaža se automatski sprema, ima i dugme **Spremi**, te lokalni MP4 izvoz.
+1. U **Projektima** kreiraj projekat. Folder otvara knjigu s opisom, bilješkama, pravilima pripovijedanja, stilom, likovima i referencama. Pri zatvaranju promijenjenog projekta odaberi spremanje ili odbacivanje izmjena.
+2. U **Skriptama** odaberi chapter i napiši tekst ili klikom zatraži AI prijedlog prema pravilima projekta. Podijeli tekst u intervale i prilagodi vremena. Dodavanje, podjela, dupliciranje, spajanje i spremanje ostaju lokalni.
+3. U **Fotografijama** odaberi kadrove i broj slika po kadru, promptove, model, stil i format. Reference biraš u popupu i vežeš za kadrove. Imenovani projektni likovi automatski dobijaju svoje kanonske reference. Generisane rezultate pregledaj, prihvati u galeriju, preuzmi, regeneriši ili obriši. Dostupni su Flare i Sunburst te osam početnih stilova.
+4. U **Video editoru** sačuvani su Editin player, timeline i MP4 izvoz. Paneli Početak, Mediji, Naracija, Zvukovi, Titlovi, Pokreti i Efekti uređuju odvojene staze. Trajanje možeš zadati ručno; novi duži sadržaj produžava timeline. Titlovi imaju deset jednostavnih stilova, boje i pozadinu, osnovne animacije te pomjeranje direktno u playeru. Fit, zoom i prikaz/sakrivanje timelinea su uz reprodukciju. Montaža se automatski sprema i ima dugme **Spremi**.
 
 Opcija **ChatGPT** u fotografijama priprema prompt za ručno korištenje u razgovoru i omogućava uvoz rezultata. Ne upravlja automatski ChatGPT računom niti prenosi API naplatu na ChatGPT pretplatu.
 
-U korisničkom meniju dostupno je dvanaest tema: šest svijetlih i šest tamnih. Početne su **Led** i **Grafit**, a **Neon** i **Koralj** prate dostavljene palete. Slike paleta nisu projektne reference niti dio galerija.
+U korisničkom meniju dostupno je dvanaest tema: šest svijetlih i šest tamnih. Početna paleta je **Koralj** u svijetloj i tamnoj varijanti; dostupne su i **Led** i **Grafit**, a **Neon** i **Koralj** prate dostavljene palete. Slike paleta nisu projektne reference niti dio galerija.
 
 ## Podaci i API ključevi
 
@@ -33,7 +33,13 @@ Baza je `backend/db.sqlite3`, a datoteke su u `backend/media/`. Aktivna aplikaci
 
 Ključeve postavi u glavni `.env` prema `.env.example`. Čitaju ih isključivo serverski OpenAI/ElevenLabs pozivi. `.env`, baze, lozinke, mediji i izvorne ZIP arhive isključeni su iz Gita. Na novom računaru potrebno je zasebno unijeti ključeve. Ne kopirati konfiguraciju iz izvorne Edita arhive.
 
-Generisanje fotografija i naracije koristi internet i kredite izabranog servisa, tek kada se pokrene odgovarajućim dugmetom. Bez ključeva i dalje možeš pisati skripte, uvoziti vlastite medije, uređivati i izvoziti video.
+Generisanje AI skripti, fotografija i naracije koristi internet i kredite izabranog servisa, tek kada se pokrene odgovarajućim dugmetom. Bez ključeva i dalje možeš pisati skripte, uvoziti vlastite medije, uređivati i izvoziti video.
+
+## Reference i glasovi
+
+Upute za dosljednost likova dostupne su u aplikaciji kroz **Upute**. Kanonski opis i odobrene referentne slike koriste se ponovo pri svakom pozivu; potpuna vizuelna identičnost nije zagarantovana. Do 16 referenci podržano je po API zahtjevu. Procjena cijene fotografije odnosi se na izlaz slike prema zvaničnom kalkulatoru; tekst i reference se dodatno naplaćuju.
+
+ElevenLabs primjeri glasova se preslušavaju bez generisanja novog zvuka. Balkanika, Ivan i Milena su provjereni regionalni primjeri; njihova dostupnost preko API-ja zavisi od pretplate. Voice Library preko API-ja nije dostupan na Free planu, a Top Up sam ne mijenja plan. Nakon promjene pretplate ponovo učitaj glasove.
 
 ## Komande za razvoj
 
