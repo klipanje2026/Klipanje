@@ -5,7 +5,7 @@ export function useLocalSave<T>(data:T,persist:(value:T)=>Promise<void>,{auto=tr
  const navigate=useNavigate(),key=JSON.stringify(data);
  const latest=useRef({data,key,persist});latest.current={data,key,persist};
  const saved=useRef(key),pending=useRef<Promise<boolean>|null>(null);
- const [status,setStatus]=useState('Sve izmjene spremljene'),[busy,setBusy]=useState(false);
+ const [status,setStatus]=useState(''),[busy,setBusy]=useState(false);
  const dirty=key!==saved.current;
  async function save(){
   if(pending.current){if(!await pending.current)return false;}
@@ -17,6 +17,7 @@ export function useLocalSave<T>(data:T,persist:(value:T)=>Promise<void>,{auto=tr
   finally{setBusy(false);pending.current=null;}})();pending.current=task;return task;
  }
  const action=useRef(save);action.current=save;
+ useEffect(()=>{if(status!=='✓ Spremljeno')return;const timer=setTimeout(()=>setStatus(''),2500);return()=>clearTimeout(timer);},[status]);
  useEffect(()=>{if(!dirty||!auto)return;setStatus('Izmjene čekaju spremanje…');const timer=setTimeout(()=>void action.current(),900);return()=>clearTimeout(timer);},[key,auto]);
  useEffect(()=>{
   const click=(event:MouseEvent)=>{if(!guardNavigation||event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey)return;

@@ -1,4 +1,5 @@
 import {LogoMark} from '../LogoMark';
+import {useDismissHeaderMenus} from '../../lib/use-dismiss-header-menus';
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { ProjectPicker, type ProjectKind } from '../ProjectPicker';
@@ -9,6 +10,7 @@ import { apiJson, resetCsrf } from '../../lib/api';
 import { useAuth } from '../../context/auth-context';
 
 export function EditorLayout() {
+  useDismissHeaderMenus();
   const { session, refresh } = useAuth();
   const location = useLocation();
   const videoEditor = ['/video-editor','/videa'].includes(location.pathname);

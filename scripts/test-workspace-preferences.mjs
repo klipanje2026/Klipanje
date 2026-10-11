@@ -92,6 +92,7 @@ console.log('Whole-transcript keyword ranking and saved topic data passed.');
  const store=new Map();globalThis.localStorage={getItem:key=>store.get(key)??null,setItem:(key,value)=>store.set(key,value)};
  globalThis.document={documentElement:{dataset:{}}};globalThis.window={dispatchEvent:()=>{}};
  const theme=await import('../work/preferences-tests/theme.mjs');
+ theme.initializeTheme();assert.equal(theme.currentTheme(),'light');assert.equal(theme.currentVariant(),'coral');
  theme.applyVariant('forest','olive');assert.equal(theme.currentTheme(),'forest');assert.equal(theme.currentVariant(),'olive');
  document.documentElement.dataset={};theme.initializeTheme();assert.equal(theme.currentTheme(),'forest');assert.equal(theme.currentVariant(),'olive');assert.equal(theme.lastDarkTheme(),'forest');
 }

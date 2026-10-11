@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import {loadTestModule} from './test-ts-module.mjs';
 import ts from 'typescript';
 import { runInNewContext } from 'node:vm';
 
@@ -20,23 +20,17 @@ globalThis.Image=class extends Image {
 const work = resolve('work/caption-check');
 await mkdir(work, { recursive: true });
 await mkdir(resolve('outputs'), { recursive: true });
-await writeFile(resolve(work,'neon-riot-core.mjs'),await readFile(resolve('frontend/src/lib/neon-riot-core.mjs')));
-for (const [name, input] of Object.entries({ 'video-crop':'lib/video-crop', 'collection':'config/captions/collection', 'collection-captions':'lib/collection-captions', 'signature-caption-styles':'lib/signature-caption-styles', 'ink-impact':'lib/ink-impact', 'caption-accent-motion':'lib/caption-accent-motion', 'prism-fold':'lib/prism-fold', 'neon-riot':'lib/neon-riot', 'neon-riot-variants':'config/captions/neon-riot-variants', 'caption-frames':'lib/caption-frames', 'caption-script-stroke':'lib/caption-script-stroke', 'caption-background':'lib/caption-background', 'caption-transform':'lib/caption-transform', 'caption-texture-fill':'lib/caption-texture-fill', 'caption-light-effects':'lib/caption-light-effects', 'caption-capabilities':'lib/caption-capabilities', 'caption-font-weight':'lib/caption-font-weight', 'caption-word-roles':'lib/caption-word-roles', 'editorial-caption-styles':'lib/editorial-caption-styles', 'metallic-compact':'lib/metallic-compact', 'premium-orange':'lib/premium-orange', 'progressive-caption':'lib/progressive-caption', 'reference-caption-styles':'lib/reference-caption-styles', 'dynamic-glass':'lib/dynamic-glass', 'illustrated-caption-styles':'lib/illustrated-caption-styles', 'text-surface': 'lib/text-surface', 'caption-timing': 'lib/caption-timing', 'caption-presets': 'config/captions/presets', 'caption-renderer': 'lib/caption-renderer', colors: 'config/captions/colors', animations: 'config/captions/animations', effects: 'config/captions/effects' })) {
-  const source = await readFile(resolve(`frontend/src/${input}.ts`), 'utf8');
-  const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ES2022, target: ts.ScriptTarget.ES2022 } });
-  const runnable = outputText.replace(/(['"])\.\.\/config\/captions\/presets\1/g, '"./caption-presets.mjs"').replace(/(['"])(?:\.\.\/config\/captions\/|\.\/)(video-crop|collection|collection-captions|signature-caption-styles|ink-impact|caption-accent-motion|prism-fold|neon-riot|neon-riot-variants|caption-frames|caption-script-stroke|caption-background|caption-transform|caption-texture-fill|caption-light-effects|caption-capabilities|caption-font-weight|colors|animations|effects|caption-word-roles|text-surface|editorial-caption-styles|metallic-compact|premium-orange|progressive-caption|reference-caption-styles|dynamic-glass|illustrated-caption-styles)\1/g, '"./$2.mjs"');
-  await writeFile(resolve(work, `${name}.mjs`), runnable);
-}
-const {prepareSerifTextures,prepareGoldTextures}=await import(pathToFileURL(resolve(work,'text-surface.mjs')));
+const {prepareSerifTextures,prepareGoldTextures}=await loadTestModule('lib/text-surface.ts',work);
 await Promise.all([prepareSerifTextures(),prepareGoldTextures()]);
-const { templates: allTemplates, duoTemplates, settingsForTemplate } = await import(pathToFileURL(resolve(work, 'caption-presets.mjs')));
+const { templates: allTemplates, duoTemplates, settingsForTemplate } = await loadTestModule('config/captions/presets.ts',work);
 // The imported browser/WebGL collection needs its own browser fidelity run.
 // This Skia suite continues to cover every pre-existing style. No GL results are implied.
-const {isCollectionStyle}=await import(pathToFileURL(resolve(work,'collection.mjs')));
+const {isCollectionStyle}=await loadTestModule('config/captions/collection.ts',work);
 const browserCollection=allTemplates.filter(template=>isCollectionStyle(template.key));
 const templates=allTemplates.filter(template=>!isCollectionStyle(template.key));
-const {isNeonRiotStyle}=await import(pathToFileURL(resolve(work,'neon-riot-variants.mjs')));
-const { drawCaption, activeWordIndex, captionFrameKey } = await import(pathToFileURL(resolve(work, 'caption-renderer.mjs')));
+const {isNeonRiotStyle}=await loadTestModule('config/captions/neon-riot-variants.ts',work);
+const {styleLibraryCategory}=await loadTestModule('config/captions/style-library.ts',work);
+const { drawCaption, activeWordIndex, captionFrameKey } = await loadTestModule('lib/caption-renderer.ts',work);
 // Exercise the actual component animation loop with a RAF clock behind performance.now().
 {
   const source = await readFile(resolve('frontend/src/components/CaptionSample/CaptionSample.tsx'), 'utf8');
@@ -49,7 +43,7 @@ const { drawCaption, activeWordIndex, captionFrameKey } = await import(pathToFil
     require: name => name === 'react' ? {
       memo: fn => fn, useRef: value => ({ current: value===null?canvas:value }), useMemo: fn => fn(), useEffect: fn => { cleanup = fn(); },
     } : name === 'react/jsx-runtime' ? { jsx: () => null, jsxs: () => null }
-      : name.endsWith('/collection') ? {isCollectionStyle} : name.endsWith('/CollectionSample') ? {CollectionSample:()=>null} : name.includes('neon-riot-variants') ? {isNeonRiotStyle} : name.includes('presets') ? { settingsForTemplate, templates } : name.includes('portraits') ? { portraitStyle:()=>({}) } : name.includes('home-person-mask') ? { homePersonFrame:async()=>undefined } : { drawCaption,drawPersonCaption:drawCaption },
+      : name.endsWith('/collection') ? {isCollectionStyle} : name.endsWith('/CollectionSample') ? {CollectionSample:()=>null} : name.includes('neon-riot-variants') ? {isNeonRiotStyle} : name.includes('presets') ? { settingsForTemplate, templates } : name.includes('portraits') ? { portraitStyle:()=>({}) } : name.includes('style-library') ? {styleLibraryCategory} : name.includes('home-person-mask') ? { homePersonFrame:async()=>undefined } : { drawCaption,drawPersonCaption:drawCaption },
     performance: { now: () => 1000 },
     requestAnimationFrame: fn => { callback = fn; return 1; },
     cancelAnimationFrame: () => { callback = null; },
@@ -341,7 +335,7 @@ for (const [width,height] of [[360,640],[1920,1080]]) {
 }
 
 {
-  const {resizeCaptionRipple}=await import(pathToFileURL(resolve(work,'caption-timing.mjs')));
+  const {resizeCaptionRipple}=await loadTestModule('lib/caption-timing.ts',work);
   const source=[{id:'a',start:0,end:2,text:'A',words:[{text:'A',start:0,end:2}]},{id:'b',start:2.5,end:4,text:'B',words:[{text:'B',start:2.5,end:4}]},{id:'c',start:4,end:6,text:'C'}];
   const grown=resizeCaptionRipple(source,'a',5,10);
   assert.equal(grown[0].end,5);assert.equal(grown[1].start,5.5);assert.equal(grown[2].end,9);
@@ -351,7 +345,7 @@ for (const [width,height] of [[360,640],[1920,1080]]) {
   assert.ok(resizeCaptionRipple(source,'a',-20,10)[0].end>=.099,'Keep a positive duration');
 }
 {
-  const {moveCaption,reorderCaptions}=await import(pathToFileURL(resolve(work,'caption-timing.mjs')));
+  const {moveCaption,reorderCaptions}=await loadTestModule('lib/caption-timing.ts',work);
   const source=[{id:'a',text:'A',start:0,end:1},{id:'b',text:'B',start:2,end:3,words:[{text:'B',start:2,end:3}]},{id:'c',text:'C',start:4,end:5}];
   const moved=moveCaption(source,'b',1,8);
   assert.equal(moved[1].start,1);assert.equal(moved[1].end,2);assert.equal(moved[1].words[0].start,1);
@@ -363,7 +357,7 @@ for (const [width,height] of [[360,640],[1920,1080]]) {
 }
 
 {
-  const {trimCaption,moveCaption}=await import(pathToFileURL(resolve(work,'caption-timing.mjs')));
+  const {trimCaption,moveCaption}=await loadTestModule('lib/caption-timing.ts',work);
   const source=[{id:'a',start:0,end:2,text:'A'},{id:'b',start:2,end:3,text:'B'}];
   const extended=trimCaption(source,'a','end',7,10);
   assert.equal(extended[0].end,2);assert.deepEqual(extended[1],source[1]);
@@ -371,7 +365,7 @@ for (const [width,height] of [[360,640],[1920,1080]]) {
   assert.equal(trimCaption(source,'b','start',.5,10)[1].start,2);
 }
 {
-  const {moveCaption,trimCaption}=await import(pathToFileURL(resolve(work,'caption-timing.mjs')));
+  const {moveCaption,trimCaption}=await loadTestModule('lib/caption-timing.ts',work);
   const source=[{id:'a',text:'A',start:0,end:1,wordsSeparated:true,wordOffsets:{0:{x:10,y:0,text:'A'}}},{id:'b',text:'B',start:2,end:4}];
   for(const wanted of [-2,0,.5,1,1.5,2,3,4,5,9,12]) {
     const result=moveCaption(source,'a',wanted,10);
@@ -473,7 +467,7 @@ for(const key of ['clean','paperCut','neon','outline','readingFade'])assert.notE
 }
 
 {
- const {trimCaption,moveCaption,dragCaption}=await import(pathToFileURL(resolve(work,'caption-timing.mjs')));
+ const {trimCaption,moveCaption,dragCaption}=await loadTestModule('lib/caption-timing.ts',work);
  const source=[{id:'speech',text:'First',start:0,end:3},{id:'speech2',text:'Second',start:3,end:6},{id:'header',role:'title',lane:1,sourceCaptionId:'speech',text:'First',start:0,end:2}];
  const extended=trimCaption(source,'header','end',9,10);
  assert.equal(extended[2].end,9,'A title can span other captions');
@@ -526,7 +520,7 @@ for(const key of ['clean','paperCut','neon','outline','readingFade'])assert.notE
 
 // Material shading must remain inside glyphs and vary with material and tint.
 {
- const {drawTextSurface}=await import(pathToFileURL(resolve(work,'text-surface.mjs')));
+ const {drawTextSurface}=await loadTestModule('lib/text-surface.ts',work);
  const prior=globalThis.OffscreenCanvas;
  globalThis.OffscreenCanvas=class {constructor(w,h){return createCanvas(w,h);}};
  try {
@@ -568,7 +562,7 @@ assert.equal(hash(render('paperCut',preset('paperCut'),1.5)),hash(render('paperC
 assert.equal(hash(render('paperCut',preset('paperCut',{wordMode:'all'}),.1)),hash(render('paperCut',preset('paperCut',{wordMode:'all'}),1.5)));
 assert.notEqual(hash(render('paperCut',preset('paperCut'),.1,720,240,{...segment,wordsSeparated:true})),hash(render('paperCut',preset('paperCut'),1.5,720,240,{...segment,wordsSeparated:true})));
 {
- const {glassZoom,drawDynamicGlass}=await import(pathToFileURL(resolve(work,'dynamic-glass.mjs')));
+ const {glassZoom,drawDynamicGlass}=await loadTestModule('lib/dynamic-glass.ts',work);
  const settings=preset('dynamicGlass'),speech={...segment,text:'Naša priča ima veliki novi početak',words:undefined};
  let prior=1;
  for(let t=0;t<3;t+=1/120){const zoom=glassZoom(speech,t,settings);assert(zoom>=1&&zoom<=1.101);assert(Math.abs(zoom-prior)<.012,'Camera must not jump at word boundaries');prior=zoom;}
@@ -587,7 +581,7 @@ assert.notEqual(hash(render('paperCut',preset('paperCut'),.1,720,240,{...segment
 }
 
 {
- const {dynamicGlassZoom}=await import(pathToFileURL(resolve(work,'dynamic-glass.mjs')));
+ const {dynamicGlassZoom}=await loadTestModule('lib/dynamic-glass.ts',work);
  const settings=preset('dynamicGlass');
  const whole=[{id:'whole',text:'Duga rečenica',start:0,end:12}];
  const split=[{id:'first',text:'Duga',start:0,end:3},{id:'second',text:'rečenica',start:3.15,end:12}];
@@ -606,7 +600,7 @@ const terminalStart=render('terminalType',preset('terminalType'),0),terminalLate
 assert.deepEqual(terminalStart.bounds.width,terminalLater.bounds.width);
 assert.equal(terminalStart.pixels[3],0,'Terminal panel does not fill the whole video');
 {
- const {drawSerifTextures}=await import(pathToFileURL(resolve(work,'text-surface.mjs')));
+ const {drawSerifTextures}=await loadTestModule('lib/text-surface.ts',work);
  const backgroundAt=time=>{const c=createCanvas(400,160),ctx=c.getContext('2d');ctx.font='40px serif';drawSerifTextures(ctx,'TEST',100,80,40,time,preset('testSerif'));return {pixels:ctx.getImageData(0,0,400,160).data};};
  const initial=backgroundAt(0),final=backgroundAt(2.1);
  assert(initial.pixels.some((value,i)=>i%4===3&&value>0),'PNG background is present before any entrance animation');
@@ -682,7 +676,7 @@ console.log('Serif background, Golden Texture edits, instant Gothic, wave groupi
  const rows=render({wordsPerLine:2}).bounds.words;assert.equal(rows[0].y,rows[1].y);assert.ok(rows[2].y>rows[1].y);
  assert.ok(render({verticalAlignment:'top'}).bounds.y<render({verticalAlignment:'bottom'}).bounds.y);
  const previousDocument=globalThis.document;globalThis.document={createElement:()=>createCanvas(128,128)};
- const {captionTextures}=await import(pathToFileURL(resolve(work,'caption-texture-fill.mjs')));
+ const {captionTextures}=await loadTestModule('lib/caption-texture-fill.ts',work);
  for(const [fillTexture] of captionTextures.filter(([id])=>!['image','video'].includes(id))){assert.notEqual(render({fillTexture}).hash,plain.hash,fillTexture+' paints a texture');}
  assert.notEqual(render({fillTexture:'marble',fillTextureColor:'#ff0000',fillTextureColor2:'#fff'}).hash,render({fillTexture:'marble',fillTextureColor:'#0000ff',fillTextureColor2:'#fff'}).hash);
  globalThis.document=previousDocument;
@@ -691,7 +685,7 @@ console.log('Serif background, Golden Texture edits, instant Gothic, wave groupi
 
 // New shared effects: deterministic seeking, visible controls and disabled identity.
 {
- const {renderCaptionDepth,animateCaptionEffect}=await import(pathToFileURL(resolve(work,'caption-transform.mjs')));
+ const {renderCaptionDepth,animateCaptionEffect}=await loadTestModule('lib/caption-transform.ts',work);
  const base=settingsForTemplate(templates.find(template=>template.key==='clean'));
  const draw=ctx=>{ctx.font='bold 48px Arial';ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.fillText('INK 3D',240,150);return {x:50,y:50,width:45,height:24,rotation:0,segmentId:'effects',words:[]};};
  const render=(patch,time=1,ink=false)=>{const canvas=createCanvas(480,270),ctx=canvas.getContext('2d');(ink?animateCaptionEffect:renderCaptionDepth)(ctx,{...base,...patch},time,draw);return createHash('sha256').update(ctx.getImageData(0,0,480,270).data).digest('hex');};
@@ -717,7 +711,7 @@ for(const key of ['clean','captionsScript','scriptVerbatim','dynamicGlass','term
  }
 }
 {
- const {drawScriptStroke}=await import(pathToFileURL(resolve(work,'caption-script-stroke.mjs')));
+ const {drawScriptStroke}=await loadTestModule('lib/caption-script-stroke.ts',work);
  const stroke=mode=>{const canvas=createCanvas(400,200),ctx=canvas.getContext('2d');ctx.translate(200,25);drawScriptStroke(ctx,200,60,1,{...preset('captionsScript'),scriptLineMode:mode});return createHash('sha256').update(ctx.getImageData(0,0,400,200).data).digest('hex');};
  assert.notEqual(stroke('full'),stroke('right'));
  const native=render('primeFrame',preset('primeFrame'),1.2);

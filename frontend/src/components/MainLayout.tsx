@@ -1,4 +1,5 @@
 import {LogoMark} from './LogoMark';
+import {useDismissHeaderMenus} from '../lib/use-dismiss-header-menus';
 import '@fontsource-variable/manrope';
 import { useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
@@ -10,6 +11,7 @@ import { Icon } from './ProductionWorkspace';
 import {useLocation} from 'react-router-dom';
 
 export function MainLayout() {
+  useDismissHeaderMenus();
   const {search}=useLocation();
   const {session, refresh} = useAuth();
   const [busy, setBusy] = useState(false);

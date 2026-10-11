@@ -58,7 +58,11 @@ export function VideoCaptionLayer({clips,documents,time,aspect,mediaRefs,editabl
     const preset=isPresetCaptionStyle(selected.detachedStyle?.style||selected.laneStyle?.style||g.doc.activeStyle);
     const resizedScale=Math.max(preset?10:40,Math.min(preset?400:600,settings.fontScale+dx*3));
     const next=g.mode==='resize'?{...settings,fontScale:resizedScale,fontSizePx:preset?settings.fontSizePx:settings.fontSizePx?settings.fontSizePx*resizedScale/Math.max(1,settings.fontScale):undefined}:g.mode==='rotate'?{...settings,rotation:Math.round(settings.rotation+dx*3)}:{...settings,x:Math.max(-200,Math.min(300,x)),y:Math.max(-200,Math.min(300,y))};
-    if(scope==='titles'&&selected.role==='title'){const patch=g.mode==='resize'?{fontScale:next.fontScale,fontSizePx:next.fontSizePx}:g.mode==='rotate'?{rotation:next.rotation}:{x:next.x,y:next.y};for(const [id,doc] of Object.entries(documents))onChange?.(id,{...doc,segments:updateTitleStyles(doc.segments,patch)});}
+    if(scope==='local'){
+      const patch=g.mode==='resize'?{fontScale:next.fontScale,fontSizePx:next.fontSizePx}:g.mode==='rotate'?{rotation:next.rotation}:{x:next.x,y:next.y};
+      onChange?.(g.hit.assetId,{...g.doc,captionSettings:{...g.doc.captionSettings,...patch},segments:g.doc.segments.map(s=>({...s,position:g.mode==='move'?{x:next.x,y:next.y}:s.position,laneStyle:s.laneStyle?{...s.laneStyle,settings:{...s.laneStyle.settings,...patch}}:undefined,detachedStyle:s.detachedStyle?{...s.detachedStyle,settings:{...s.detachedStyle.settings,...patch}}:undefined}))});
+    }
+    else if(scope==='titles'&&selected.role==='title'){const patch=g.mode==='resize'?{fontScale:next.fontScale,fontSizePx:next.fontSizePx}:g.mode==='rotate'?{rotation:next.rotation}:{x:next.x,y:next.y};for(const [id,doc] of Object.entries(documents))onChange?.(id,{...doc,segments:updateTitleStyles(doc.segments,patch)});}
     else if(scope!=='scene'&&selected.role!=='title'&&!selected.detachedStyle)onChange?.(g.hit.assetId,{...g.doc,segments:styleCaptionLane(g.doc.segments,0,selected.laneStyle?.style||g.doc.activeStyle,next,scope.startsWith('group:')?scope.slice(6):undefined,g.mode!=='move')});
     else onChange?.(g.hit.assetId,{...g.doc,segments:g.doc.segments.map(s=>s.id!==selected.id?s:{...s,position:undefined,titleOverrides:s.role==='title'?{...s.titleOverrides,x:next.x,y:next.y,rotation:next.rotation,fontScale:next.fontScale,fontSizePx:next.fontSizePx}:s.titleOverrides,detachedStyle:{style:s.detachedStyle?.style||s.laneStyle?.style||g.doc.activeStyle,settings:next}})});
   };

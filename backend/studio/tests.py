@@ -265,7 +265,9 @@ class MediaCompatibilityTests(TestCase):
         self.user = get_user_model().objects.create_user(username='video-compatibility-test')
     def upload(self):
         return SimpleUploadedFile('clip.mp4', b'test-source', content_type='video/mp4')
-    def test_guest_can_prepare_preview(self):
+    def test_local_preview_requires_login(self):
+        self.assertEqual(self.client.post('/api/media/prepare', {'file':self.upload()}).status_code,403)
+        self.client.force_authenticate(self.user)
         with patch('studio.media_compatibility.convert_video', side_effect=lambda source, output: output.write_bytes(b'preview')):
             response=self.client.post('/api/media/prepare', {'file':self.upload()})
             self.assertEqual(response.status_code,200)
@@ -336,12 +338,12 @@ class VideoPreparationCancellationTests(TestCase):
         self.client.force_authenticate(other)
         self.client.delete(self.url)
         self.assertFalse(job['cancel'].is_set())
-    def test_guest_status_is_separate_from_registered_user(self):
+    def test_guest_cannot_read_or_cancel_local_preparation(self):
         from studio.media_compatibility import job_for
         registered=job_for(f'user:{self.user.pk}',self.key)
         self.client.force_authenticate(None)
-        self.assertEqual(self.client.get(self.url).status_code,200)
-        self.assertEqual(self.client.delete(self.url).status_code,200)
+        self.assertEqual(self.client.get(self.url).status_code,403)
+        self.assertEqual(self.client.delete(self.url).status_code,403)
         self.assertFalse(registered['cancel'].is_set())
     def test_cancel_terminates_running_converter(self):
         import tempfile

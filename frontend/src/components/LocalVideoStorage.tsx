@@ -7,6 +7,7 @@ import {useProduction} from './ProductionWorkspace';
 import {useUnsaved} from '../lib/use-unsaved';
 const remoteFiles=new WeakMap<File,string>();
 export function rememberRemoteFile(file:File,id:string){remoteFiles.set(file,id);}
+export function remoteFileId(file:File){return remoteFiles.get(file);}
 export type LocalEditorDocument={editor:'edita';data:Record<string,unknown>;files:{key:string;id:string}[]};
 export function LocalVideoStorage({script,snapshot,restore,saveHandle,changeKey,disabled}:{script:Script;snapshot:()=>Promise<ProjectSnapshot>;restore:(data:Record<string,unknown>,files:Map<string,File>)=>Promise<void>;saveHandle:Ref<ProjectSaveHandle>;changeKey?:string;disabled:boolean}){
  const {putScript}=useProduction();const [message,setMessage]=useState(''),[opening,setOpening]=useState(true),[busy,setBusy]=useState(false),[blocked,setBlocked]=useState(false);const latest=useRef({script,snapshot,restore,putScript,changeKey});latest.current={script,snapshot,restore,putScript,changeKey};const activeSave=useRef<Promise<boolean>|null>(null),lastSaved=useRef(''),savedKey=useRef('');
