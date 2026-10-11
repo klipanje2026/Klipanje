@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import dotenv_values, load_dotenv
@@ -51,6 +52,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = BASE_DIR / 'media'
+LOCAL_WORKSPACE_ROOT = None if 'test' in sys.argv else BASE_DIR.parent / 'workspace'
 MEDIA_URL = '/private-media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 APPEND_SLASH = False

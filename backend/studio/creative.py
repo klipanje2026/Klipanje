@@ -9,6 +9,7 @@ from contextlib import ExitStack
 from uuid import uuid4
 import httpx
 from django.conf import settings
+from django.db import transaction
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -58,9 +59,13 @@ def prepare(request):
         name=character.get('name','').strip()
         if name and re.search(r'(?<!\w)'+re.escape(name.casefold())+r'(?!\w)',context_text):
             identities.append(character)
-            if character.get('referenceId'):
-                identifier=serializers.UUIDField().run_validation(character['referenceId'])
-                if identifier not in data['references']: data['references'].append(identifier)
+            visual_ids=[character.get('referenceId'),character.get('views',{}).get('body-front')]
+            for outfit in character.get('outfits',[]):
+                if outfit.get('name') and outfit['name'].casefold() in context_text:
+                    visual_ids.append(outfit.get('views',{}).get('body-front'))
+            for visual_id in filter(None,visual_ids):
+                identifier=serializers.UUIDField().run_validation(visual_id)
+                if identifier not in data['references']:data['references'].append(identifier)
     if len(data['references'])>16: raise serializers.ValidationError('Odabrani kadar koristi više od 16 referenci. Smanji izbor za taj kadar.')
     found={a.pk:a for a in script.project.assets.filter(pk__in=data['references'],content_type__in=['image/png','image/jpeg','image/webp'])}
     refs=[found[identifier] for identifier in data['references'] if identifier in found]
@@ -83,7 +88,7 @@ def prepare(request):
         'Characters: '+json.dumps(brief.get('characters',[]),ensure_ascii=False),
         'Characters present in this scene: '+json.dumps(identities,ensure_ascii=False),
         'Reference identity mapping: '+json.dumps([{'image':i+1,'characters':[c.get('name') for c in characters if c.get('referenceId')==str(a.pk)]} for i,a in enumerate(refs)],ensure_ascii=False),
-        'Preserve the exact identities, facial features, proportions, hair and established clothing of named characters. Change only the requested pose, action and scene; do not invent replacements.',
+        'Preserve the exact identities, facial features, proportions and hair of named characters. Use the explicitly requested named outfit when present, otherwise their default clothing. Change pose, action and scene as requested; never replace the character.',
         'Visual style: '+style[2],
         'Shared direction: '+script.image_prompt,
         'Narration context: '+(segment['text'] if segment else script.content[:10000]),
@@ -108,24 +113,9 @@ def generate(request):
     data,script,refs,prompt=prepare(request)
     if not settings.OPENAI_API_KEY:
         return Response({'error':'OpenAI ključ nije postavljen u lokalnom .env fajlu.'},status=503)
-    payload={'model':data['model'],'prompt':prompt,'size':data['size'],'quality':data['quality'],'output_format':'png'}
-    try:
-        with httpx.Client(timeout=httpx.Timeout(300,connect=20),headers={'Authorization':'Bearer '+settings.OPENAI_API_KEY}) as client, ExitStack() as stack:
-            if refs:
-                files=[('image[]',(a.name,stack.enter_context(a.file.open('rb')),a.content_type)) for a in refs]
-                response=client.post('https://api.openai.com/v1/images/edits',data=payload,files=files)
-            else:
-                response=client.post('https://api.openai.com/v1/images/generations',json=payload)
-        if response.status_code!=200:
-            messages={401:'OpenAI ključ nije prihvaćen.',403:'Račun nema pristup ovom modelu. Provjeri pristup i verifikaciju organizacije.',404:'Model nije dostupan ovom API projektu.',429:'OpenAI limit ili sredstva nisu dovoljni. Provjeri API stanje računa.',400:'OpenAI nije prihvatio opis ili reference. Prilagodi ih i pokušaj ponovo.'}
-            return Response({'error':messages.get(response.status_code,'OpenAI trenutno nije vratio sliku. Pokušaj kasnije.')},status=502)
-        result=response.json()
-        spend=record_image(request.user,data['model'],result.get('usage',{}))
-        raw=base64.b64decode(result['data'][0]['b64_json'],validate=True)
-        if not raw.startswith(b'\x89PNG\r\n\x1a\n'):
-            raise ValueError('Invalid image')
-    except (httpx.HTTPError,ValueError,KeyError,IndexError,binascii.Error):
-        return Response({'error':'Slika nije preuzeta. Provjeri vezu i galeriju prije ponovnog generisanja.'},status=502)
+    result=request_image(data,refs,prompt,request.user)
+    if isinstance(result,Response):return result
+    raw,spend=result
     # Preserve the requested output ratio without relying on unsupported provider sizes.
     if data.get('aspect') in ['9:16','16:9']:
         crop='crop=864:1536' if data['aspect']=='9:16' else 'crop=1536:864'
@@ -137,11 +127,20 @@ def generate(request):
     asset=MediaAsset(project=script.project,name=f'kadar-{uuid4().hex[:8]}.png',content_type='image/png',size=len(raw),metadata={
         'gallery':False,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None,'purpose':'image','scriptId':str(script.pk),'segmentId':data['segment'],'prompt':data['prompt'],'fullPrompt':prompt,'model':data['model'],'style':data['style'],'aspect':data.get('aspect'),'references':[str(a.pk) for a in refs],
     })
-    asset.file.save(asset.name,ContentFile(raw),save=False)
-    try: asset.save()
-    except Exception:
-        asset.file.delete(save=False)
-        raise
+    with transaction.atomic():
+        from .models import Project
+        Project.objects.select_for_update().get(pk=script.project_id)
+        previous=list(script.project.assets.filter(metadata__scriptId=str(script.pk),content_type__startswith='image/'))
+        sequence=max([len(previous)]+[int(a.metadata.get('sequence',0)) for a in previous])+1
+        episode=re.search(r'\d+',script.title)
+        prefix=re.sub(r'[\\/:*?"<>|]','-',script.project.name).strip() or 'Projekat'
+        asset.name=f"{prefix}-ep{int(episode.group()) if episode else 1}-{sequence:03}.png"
+        asset.metadata['sequence']=sequence
+        asset.file.save(asset.name,ContentFile(raw),save=False)
+        try:asset.save()
+        except Exception:
+            asset.file.delete(save=False)
+            raise
     return Response(asset_payload(asset),status=201)
 
 @api_view(['POST'])
@@ -162,3 +161,69 @@ def generate_script(request):
         if not text or len(text)>100000:raise ValueError('Invalid script')
         return Response({'text':text,'project':str(script.project_id)})
     except (httpx.HTTPError,ValueError,KeyError,TypeError):return Response({'error':'AI skripta nije preuzeta. Pokušaj ponovo.'},status=502)
+
+
+def request_image(data,refs,prompt,user):
+    payload={'model':data['model'],'prompt':prompt,'size':data['size'],'quality':data['quality'],'output_format':'png'}
+    try:
+        with httpx.Client(timeout=httpx.Timeout(300,connect=20),headers={'Authorization':'Bearer '+settings.OPENAI_API_KEY}) as client, ExitStack() as stack:
+            if refs:
+                files=[('image[]',(a.name,stack.enter_context(a.file.open('rb')),a.content_type)) for a in refs]
+                response=client.post('https://api.openai.com/v1/images/edits',data=payload,files=files)
+            else:
+                response=client.post('https://api.openai.com/v1/images/generations',json=payload)
+        if response.status_code!=200:
+            messages={401:'OpenAI ključ nije prihvaćen.',403:'Račun nema pristup ovom modelu. Provjeri pristup i verifikaciju organizacije.',404:'Model nije dostupan ovom API projektu.',429:'OpenAI limit ili sredstva nisu dovoljni. Provjeri API stanje računa.',400:'OpenAI nije prihvatio opis ili reference. Prilagodi ih i pokušaj ponovo.'}
+            return Response({'error':messages.get(response.status_code,'OpenAI trenutno nije vratio sliku. Pokušaj kasnije.')},status=502)
+        result=response.json()
+        spend=record_image(user,data['model'],result.get('usage',{}))
+        raw=base64.b64decode(result['data'][0]['b64_json'],validate=True)
+        if not raw.startswith(b'\x89PNG\r\n\x1a\n'):
+            raise ValueError('Invalid image')
+    except (httpx.HTTPError,ValueError,KeyError,IndexError,binascii.Error):
+        return Response({'error':'Slika nije preuzeta. Provjeri vezu i galeriju prije ponovnog generisanja.'},status=502)
+    return raw,spend
+CHARACTER_VIEWS = {
+    'head-front':'Close-up head portrait, facing directly forward.',
+    'head-side':'Close-up head portrait, strict side profile.',
+    'head-back':'Close-up head viewed directly from behind.',
+    'body-front':'Full body from the front, neutral standing pose, entire feet visible.',
+    'body-back':'Full body from behind, neutral standing pose, entire feet visible.',
+}
+
+@api_view(['POST'])
+def generate_character(request):
+    from .projects import accessible_project
+    class Input(serializers.Serializer):
+        project=serializers.UUIDField()
+        character=serializers.CharField(max_length=64)
+        view=serializers.ChoiceField(choices=list(CHARACTER_VIEWS))
+        outfit=serializers.CharField(max_length=64,allow_blank=True,default='')
+        model=serializers.ChoiceField(choices=[m['id'] for m in MODELS])
+    form=Input(data=request.data);form.is_valid(raise_exception=True);data=form.validated_data
+    project=accessible_project(request,data['project'])
+    character=next((c for c in project.brief.get('characters',[]) if c.get('id')==data['character']),None)
+    if not character:return Response({'error':'Lik nije pronađen.'},status=404)
+    outfit=next((o for o in character.get('outfits',[]) if o.get('id')==data['outfit']),None)
+    if data['outfit'] and not outfit:return Response({'error':'Odjeća nije pronađena.'},status=400)
+    if not settings.OPENAI_API_KEY:return Response({'error':'OpenAI ključ nije postavljen.'},status=503)
+    ids=list(dict.fromkeys(filter(None,[character.get('referenceId'),character.get('views',{}).get('body-front') ])))
+    refs=list(project.assets.filter(pk__in=ids,content_type__in=['image/png','image/jpeg','image/webp']))
+    style=next((s[2] for s in STYLES if s[0]==project.brief.get('style')),STYLES[1][2])
+    prompt='\n'.join(['Create one character design image on a plain neutral background. No text, panels, collage or watermark.',
+        CHARACTER_VIEWS[data['view']], 'Consistent identity: preserve face, hair, age, body proportions and distinctive features from attached images.',
+        'Name: '+str(character.get('name','')), 'Appearance: '+str(character.get('appearance',character.get('description',''))),
+        'Personality: '+str(character.get('personality','')), 'Style: '+style,
+        'Clothing: '+str(outfit.get('description','') if outfit else character.get('clothing','')),
+        'Extra direction (secondary to identity): '+str(character.get('prompt','')),
+        'Project rules: '+str(project.brief.get('desired',''))+' Avoid: '+str(project.brief.get('avoid',''))])
+    result=request_image({'model':data['model'],'size':'1024x1536' if data['view'].startswith('body') else '1024x1024','quality':'medium'},refs,prompt,request.user)
+    if isinstance(result,Response):return result
+    raw,spend=result
+    asset=MediaAsset(project=project,name=f"lik-{data['view']}-{uuid4().hex[:8]}.png",content_type='image/png',size=len(raw),metadata={'purpose':'reference','characterId':data['character'],'view':data['view'],'outfitId':data['outfit'],'fullPrompt':prompt,'model':data['model'],'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None})
+    asset.file.save(asset.name,ContentFile(raw),save=False)
+    try:asset.save()
+    except Exception:
+        asset.file.delete(save=False)
+        raise
+    return Response(asset_payload(asset),status=201)

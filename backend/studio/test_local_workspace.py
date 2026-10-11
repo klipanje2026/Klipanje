@@ -15,7 +15,7 @@ class LocalWorkspaceTests(TestCase):
             call_command('bootstrap_local_users', credentials_file=destination, stdout=StringIO())
             initial = destination.read_text(encoding='utf-8')
             users = list(get_user_model().objects.order_by('username'))
-            self.assertEqual([user.username for user in users], ['Abdullah', 'Rijad'])
+            self.assertEqual([user.username for user in users], ['Nihad', 'Rijad'])
             self.assertNotEqual(users[0].password, users[1].password)
             self.assertTrue(all(user.local_account.must_change_password for user in users))
             self.assertTrue(all(user.memberships.count() == 1 for user in users))

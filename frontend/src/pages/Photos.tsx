@@ -38,7 +38,7 @@ function PhotoWorkspace({script}:{script:Script}){
  const selectedFrames=frames.filter(f=>counts[f.id]);
  const validPrompts=selectedFrames.flatMap(f=>prompts.filter(p=>p.segment===f.id));
  const total=frames.reduce((sum,f)=>sum+(counts[f.id]||0),0),estimate=imageOutputEstimate(format||'1:1');
- const frameName=(id:string)=>{const index=script.segments.findIndex(s=>s.id===id);return index<0?'Cijela skripta':`Kadar ${index+1} · ${script.segments[index].start}s – ${script.segments[index].end}s`;};
+ const frameName=(id:string)=>{const index=script.segments.findIndex(s=>s.id===id);return index<0?'Cijela skripta':`Kadar ${index+1} · ${script.segments[index].start.toFixed(1)}s – ${script.segments[index].end.toFixed(1)}s`;};
  const frameText=(id:string)=>{const text=frames.find(f=>f.id===id)?.text||'';if(id!=='overall')return text;const words=text.trim().split(/\s+/,6);return words.slice(0,5).join(' ')+(words.length>5?'…':'');};
  function chooseFrame(id:string,enabled:boolean){setCounts(old=>({...old,[id]:enabled?old[id]||1:0}));if(enabled)setPrompts(old=>old.some(p=>p.segment===id)?old:[...old,{id:crypto.randomUUID(),segment:id,text:script.segments.find(s=>s.id===id)?.prompt||''}]);}
  function requestBody(segment:string,prompt:string,selectedModel=model,selectedStyle=style,selectedFormat=format,selectedReferences?:string[]){const id=segment||'overall';return {script:script.id,segment,prompt,model:selectedModel,style:selectedStyle,aspect:selectedFormat,size:selectedFormat==='9:16'?'1024x1536':selectedFormat==='16:9'?'1536x1024':'1024x1024',quality:'medium',references:selectedReferences||references.filter(ref=>!referenceFrames[ref]||referenceFrames[ref].includes(id))};}

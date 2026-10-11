@@ -1,6 +1,6 @@
 # Lokalni računi
 
-Registracija odmah stvara aktivan račun i prijavljuje korisnika. Nema potvrde emailom, aktivacijskog linka ni datoteke koju treba ručno potvrditi.
+Lokalna instalacija kreira račune Abdullah i Rijad s različitim privremenim lozinkama, zapisanim samo u ignorisani `.local/pocetne-prijave.txt`. Prvi ulazak obavezno otvara promjenu lozinke; korisnik bira svoju novu lozinku prije pristupa alatima. Ponovna instalacija ili GitHub pull ne resetuju postojeće račune. Javna registracija nije dostupna u lokalnoj aplikaciji.
 
 Za prijavu se koristi **korisničko ime**, a ne prikazno ime. Lozinke se u bazi čuvaju kao hash; nije ih moguće pročitati kao izvorni tekst.
 
@@ -15,6 +15,8 @@ python manage.py changepassword KORISNICKO_IME
 ```
 
 To mijenja lozinku postojećeg računa, bez brisanja projekata. Postojeće prijave tog računa mogu zahtijevati novu prijavu. Ovo je lokalni administratorski postupak; javni tok za reset lozinke emailom još nije implementiran.
+
+Ako korisnik izričito zada privremenu lozinku za određenog korisnika, postavi je samo u lokalnoj bazi i uključi `LocalAccount.must_change_password`. Ne unositi tu lozinku u izvorni kod, dokumentaciju ili Git. To je jednokratna postavka za navedenu instalaciju, a ne pravilo za reset pri svakom pokretanju. Nakon uspješne promjene nova lozinka zamjenjuje privremenu.
 
 ## Lokacije
 

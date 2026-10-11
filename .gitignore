@@ -23,3 +23,4 @@ work/
 backups/
 *.log
 LOCAL_CHANGES.md
+/workspace/

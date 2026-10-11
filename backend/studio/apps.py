@@ -6,3 +6,4 @@ class StudioConfig(AppConfig):
 
     def ready(self):
         from . import media_cleanup  # noqa: F401
+        from . import local_workspace  # noqa: F401

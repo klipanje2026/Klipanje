@@ -8,10 +8,10 @@ from studio.models import LocalAccount, Membership, Workspace
 
 
 class Command(BaseCommand):
-    help = 'Create Abdullah and Rijad on this computer with unique temporary passwords; existing accounts stay intact.'
+    help = 'Create Rijad and Nihad on this computer with unique temporary passwords; existing accounts stay intact.'
 
     def add_arguments(self, parser):
-        parser.add_argument('--users', nargs='+', default=['Abdullah', 'Rijad'])
+        parser.add_argument('--users', nargs='+', default=['Rijad', 'Nihad'])
         parser.add_argument('--credentials-file', type=Path,
                             default=settings.BASE_DIR.parent / '.local' / 'pocetne-prijave.txt')
 

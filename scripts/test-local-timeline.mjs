@@ -32,3 +32,22 @@ assert.deepEqual(draws.pop(),[.5,0,0]);assert.equal(ctx.globalAlpha,1);
 drawStillScene(ctx,images,{...still,imageExit:'slide-left'},4.5,1);
 assert.deepEqual(draws.pop(),[1,-50,0]);assert.equal(ctx.x,0);
 console.log('Local magnets, ripple, linked clips, narration timing/quotes and shared exit rendering passed.');
+
+const {speechBounds}=await loadTestModule('lib/narration-audio.ts','work/local-timeline-tests');
+const speech=new Float32Array(1000);speech.fill(.2,200,700);
+const bounds=speechBounds([speech],1000);
+assert.ok(Math.abs(bounds.start-.14)<.000001);assert.ok(Math.abs(bounds.end-.78)<.000001);
+assert.deepEqual(speechBounds([new Float32Array(1000)],1000),{start:0,end:1});
+const quiet=new Float32Array(1000);assert.deepEqual(speechBounds([quiet,speech],1000),bounds);
+console.log('Narration edge silence, stereo speech and silent files passed.');
+
+const painted=[];const coverContext={canvas:{width:100,height:100},globalAlpha:1,save(){},restore(){},drawImage(...args){painted.push(args);},translate(){}};
+const wideImages=new Map([['wide',{naturalWidth:200,naturalHeight:100}]]);
+drawStillScene(coverContext,wideImages,{...still,assetId:'wide'},2,1);
+assert.equal(painted[0][3],200);assert.equal(painted[0][4],100);
+painted.length=0;drawStillScene(coverContext,wideImages,{...still,assetId:'wide',scale:2,motion:'zoom-out'},5,1);
+assert.equal(painted[0][3],200);assert.equal(painted[0][4],100);
+const {orderedGallery}=await loadTestModule('lib/gallery-order.ts','work/local-timeline-tests');
+const named=orderedGallery([{id:'a',name:'old.png',contentType:'image/png',metadata:{sequence:7},created_at:'2026-10-01'}],{title:'Epizoda 2',segments:[]},'Moj film');
+assert.equal(named[0].name,'Moj film-ep2-007.png');
+console.log('Image cover, zoom-out endpoint and project/episode image filenames passed.');

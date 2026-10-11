@@ -32,6 +32,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Priprema baze nije uspjela.' }
     node scripts/backend.mjs bootstrap_local_users
     if ($LASTEXITCODE -ne 0) { throw 'Priprema lokalnih korisnika nije uspjela.' }
+    node scripts/backend.mjs sync_workspace
+    if ($LASTEXITCODE -ne 0) { throw 'Priprema lokalnih workspace foldera nije uspjela.' }
     Write-Host 'Instalacija zavrsena. Za novog administratora pokreni 4-ADMIN.cmd. Aplikaciju pokreni sa 3-POKRENI.cmd.'
 } catch {
     Write-Host $_.Exception.Message -ForegroundColor Red

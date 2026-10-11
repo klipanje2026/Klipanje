@@ -14,7 +14,7 @@ Potreban je Python 3.12+ i Node.js 22.13+. Nakon preuzimanja repozitorija pokren
 - Titlovi: panel unutar video editora
 - Administracija: http://127.0.0.1:5175/administracija
 
-Računi **Abdullah** i **Rijad** dobijaju jedinstvene privremene lozinke u lokalnom `.local/pocetne-prijave.txt` i moraju ih promijeniti pri prvom ulasku. Ponovna instalacija ne resetuje postojeće račune. Administrator **Naghun** postavlja se lokalno; lozinka nije dio repozitorija. Svaki računar ima vlastitu bazu i datoteke. GitHub prenosi kod, a ne korisničke projekte.
+Računi **Nihad** i **Rijad** dobijaju jedinstvene privremene lozinke u lokalnom `.local/pocetne-prijave.txt` i moraju ih promijeniti pri prvom ulasku. Ponovna instalacija ne resetuje postojeće račune. Administrator **Naghun** postavlja se lokalno; lozinka nije dio repozitorija. Svaki računar ima vlastitu bazu i datoteke. GitHub prenosi kod, a ne korisničke projekte.
 
 ## Radni tok
 
@@ -30,6 +30,10 @@ U korisničkom meniju dostupno je dvanaest tema: šest svijetlih i šest tamnih.
 ## Podaci i API ključevi
 
 Baza je `backend/db.sqlite3`, a datoteke su u `backend/media/`. Aktivna aplikacija koristi lokalnu pohranu; nema Cloudflare/R2, Backblaze ni udaljene baze. Projekti i datoteke dostupni su prijavljenom vlasniku.
+
+Instalacija priprema i privatni `workspace/` s korisničkim folderima `Abdullah`, `Rijad` i `Nihad`. Projektni folderi nose naziv projekta, npr. `workspace/Rijad/Sarajevska priča/`; ponovljeni nazivi dobijaju dodatak `(2)`, `(3)`. Spremanje osvježava `projekat.json`, `skripte.json` i kopije u `mediji/`. Promjena naziva preimenuje lokalni projektni folder. Baza i originalni mediji ostaju glavni izvor; JSON kopije se ne uvoze automatski. Cijeli workspace je izuzet iz Gita. Postojeće kopije i stare UUID foldere osvježi komandom `node scripts/backend.mjs sync_workspace`.
+
+Dogovor za prvi dolazak na Rijadov treći računar i kasnije povlačenje izmjena nalazi se u [docs/RIJAD-INSTALLATION.md](docs/RIJAD-INSTALLATION.md).
 
 Ključeve postavi u glavni `.env` prema `.env.example`. Čitaju ih isključivo serverski OpenAI/ElevenLabs pozivi. `.env`, baze, lozinke, mediji i izvorne ZIP arhive isključeni su iz Gita. Na novom računaru potrebno je zasebno unijeti ključeve. Ne kopirati konfiguraciju iz izvorne Edita arhive.
 

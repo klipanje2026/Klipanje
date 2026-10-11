@@ -29,5 +29,5 @@ export function useLocalSave<T>(data:T,persist:(value:T)=>Promise<void>,{auto=tr
   document.addEventListener('click',click,true);window.addEventListener('beforeunload',unload);
   return()=>{document.removeEventListener('click',click,true);window.removeEventListener('beforeunload',unload);};
  },[navigate,guardNavigation]);
- return {save,busy,status,dirty};
+ return {save,busy,status,dirty,acceptSaved:(value:T)=>{saved.current=JSON.stringify(value);setStatus('✓ Spremljeno');}};
 }

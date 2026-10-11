@@ -42,6 +42,8 @@ def failure(response, capability):
         'concurrent_limit_exceeded': 'Previše paralelnih obrada. Pokušaj ponovo uskoro.',
     }
     error = messages.get(code, f'ElevenLabs nije završio {capability}.')
+    if capability=='generisanje zvučnog efekta' and code in ['missing_permissions','insufficient_permissions']:
+        error='ElevenLabs ključ nema dozvolu Sound Generation. Uključi je za ključ Klipanje AppKey pa pokušaj ponovo.'
     if 'free users cannot use library voices' in str(detail.get('message', '')).lower():
         error = 'Odaberi podrazumijevani glas. Voice Library glasovi nisu dostupni kroz API na besplatnom paketu.'
     return Response({'error': error}, status=response.status_code if 400 <= response.status_code < 500 else 502)

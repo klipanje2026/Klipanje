@@ -1,0 +1,8 @@
+import {useState} from 'react';
+import {apiJson} from '../lib/api';
+import {jsonBody,type Script} from '../lib/production';
+
+export function LocalNarrationTextGenerator({script,onUse}:{script:Script;onUse:(text:string)=>void}){
+ const [direction,setDirection]=useState(''),[result,setResult]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ return <section className="local-narration-text"><h3>Generisanje teksta</h3><p>Opiši temu, dužinu i ton priče. Uključuju se spremljeni likovi i pravila projekta.</p><label>Tvoja uputa<textarea rows={5} maxLength={6000} value={direction} disabled={busy} onChange={e=>setDirection(e.target.value)} placeholder="Napiši priču od 100 riječi o psu koji traži izgubljenu lopticu. Topao ton, jednostavne rečenice, sretan kraj."/></label><button type="button" disabled={busy||!direction.trim()} onClick={async()=>{setBusy(true);setError('');try{const response=await apiJson<{text:string}>('/api/creative/script',jsonBody({script:script.id,direction}));setResult(response.text);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}}>{busy?'Generišem tekst…':'Generiši tekst'}</button>{result&&<><label>Tekst za naraciju<textarea rows={10} value={result} onChange={e=>setResult(e.target.value)}/></label><small>Uredi rezultat pa ga prenesi u naraciju. Izvorna skripta ostaje sačuvana.</small><button type="button" disabled={busy||!result.trim()||result.length>10000} onClick={()=>onUse(result)}>Koristi za naraciju</button>{result.length>10000&&<p>Skrati tekst na najviše 10.000 znakova za jednu naraciju.</p>}</>}{error&&<p role="alert">{error}</p>}</section>;
+}
