@@ -1,0 +1,19 @@
+KLIPANJE — ZAJEDNIČKI PRIJEDLOZI
+
+Ovdje Abdullah, Rijad i Nihad mogu upisivati prijedloge.
+Ovaj dokument je zajednički na GitHubu. Git pull prenosi njegove izmjene,
+ali prijedlozi se ne izvršavaju automatski pri pullu, pokretanju ili pushu.
+Redovni push ne mijenja statuse i ne briše postojeće prijedloge.
+Agent dodaje prijedlog samo na izričit zahtjev; stavlja [x] isključivo
+kada vlasnik izričito kaže da označi konkretni prijedlog završenim.
+Ne unositi lozinke, API ključeve niti privatne podatke.
+
+Format za novi unos (kopiraj i popuni):
+[ ] P-001 | Autor | Datum | Kratak naziv
+    Šta želim:
+    Gdje u aplikaciji:
+    Kako treba raditi:
+    Potvrđeno završeno: —
+
+AKTIVNI PRIJEDLOZI
+(Trenutno nema unesenih prijedloga.)
