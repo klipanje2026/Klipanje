@@ -4,7 +4,10 @@ from unittest.mock import patch, MagicMock
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.http import HttpResponse
-from .models import Project,Workspace,Membership,LocalScript
+from rest_framework.response import Response
+import httpx
+from .models import Project,Workspace,Membership,LocalScript,MediaAsset
+from .creative import image_provider_error
 
 class ProfileTests(TestCase):
     def setUp(self):
@@ -40,6 +43,47 @@ class ProfileTests(TestCase):
         script=LocalScript.objects.create(project=self.project,owner=self.user,title='Episode')
         self.assertEqual(self.client.delete(f'/api/projects/{self.project.pk}').status_code,204)
         self.assertFalse(LocalScript.objects.filter(pk=script.pk).exists())
+
+    @override_settings(OPENAI_API_KEY='test-only')
+    def test_new_cast_member_uses_same_project_style_then_own_identity(self):
+        anchor=MediaAsset.objects.create(project=self.project,name='bear.png',file='unused.png',content_type='image/png',size=10)
+        foreign_project=Project.objects.create(created_by=self.other,workspace=self.project.workspace,name='Private')
+        foreign=MediaAsset.objects.create(project=foreign_project,name='private.png',file='unused.png',content_type='image/png',size=10)
+        self.project.brief.update(description='A sunny seaside adventure',storyRules='Gentle narrator',characters=[
+            {'id':'foreign','name':'Other','referenceId':str(foreign.pk)},
+            {'id':'bear','name':'Ibrahim','appearance':'Brown bear with fez','views':{'body-front':str(anchor.pk)}},
+            {'id':'rabbit','name':'Zeko','appearance':'Gray rabbit','prompt':'Show five views.'},
+        ])
+        self.project.save()
+        body={**self.body,'character':'rabbit'}
+        with patch('studio.creative.request_image',return_value=Response({'error':'test stop'},status=502)) as provider:
+            self.client.post('/api/creative/character',body,content_type='application/json')
+            _,refs,prompt,_=provider.call_args.args
+            self.assertEqual([a.pk for a in refs],[anchor.pk])
+            for text in ['style ONLY, not identity','A sunny seaside adventure','Gentle narrator','Gray rabbit','FINAL OUTPUT REQUIREMENT','ONE view']:
+                self.assertIn(text,prompt)
+            own=MediaAsset.objects.create(project=self.project,name='rabbit.png',file='unused.png',content_type='image/png',size=10)
+            self.project.brief['characters'][-1]['views']={'head-front':str(own.pk)}
+            self.project.save()
+            self.client.post('/api/creative/character',{**body,'view':'head-side'},content_type='application/json')
+            _,refs,prompt,_=provider.call_args.args
+            self.assertEqual([a.pk for a in refs],[own.pk])
+            self.assertIn('identity of requested character',prompt)
+
+    @override_settings(OPENAI_API_KEY='secret-test-key')
+    def test_provider_failure_distinguishes_validation_and_safety_without_exposing_key(self):
+        response=httpx.Response(400,json={'error':{'code':'invalid_value','param':'size','message':'Invalid size secret-test-key'}},headers={'x-request-id':'req-test-123'})
+        with self.assertLogs('studio.creative',level='WARNING') as logs:
+            result=image_provider_error(response)
+        self.assertIn('invalid_value',result.data['error'])
+        self.assertIn('size',result.data['error'])
+        self.assertEqual(result.data['providerRequestId'],'req-test-123')
+        self.assertNotIn('secret-test-key',str(result.data)+str(logs.output))
+        self.assertNotIn('Invalid size',str(logs.output))
+        blocked=image_provider_error(httpx.Response(400,json={'error':{'code':'moderation_blocked','message':'Request rejected'}}))
+        self.assertIn('sigurnosna provjera',blocked.data['error'])
+        malformed=image_provider_error(httpx.Response(502,text='<html>upstream failure</html>'))
+        self.assertNotIn('<html>',malformed.data['error'])
 
     @override_settings(ELEVENLABS_API_KEY='test-only')
     def test_sound_effect_generation_removed(self):

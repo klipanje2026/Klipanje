@@ -2,6 +2,7 @@
 import base64
 import binascii
 import json
+import logging
 import re
 import subprocess
 import imageio_ffmpeg
@@ -19,6 +20,44 @@ from .models import LocalScript, MediaAsset
 from .projects import asset_payload
 from .image_spend import record_image
 
+logger = logging.getLogger(__name__)
+
+
+def image_provider_error(response):
+    """Keep actionable provider diagnostics without logging prompts or credentials."""
+    try:
+        body = response.json()
+        error = body.get('error', {}) if isinstance(body, dict) else {}
+        if not isinstance(error, dict): error = {}
+    except (ValueError, TypeError):
+        error = {}
+    def identifier(value):
+        return re.sub(r'[^a-zA-Z0-9_.\[\]-]', '', str(value or ''))[:120]
+    code = identifier(error.get('code'))
+    param = identifier(error.get('param'))
+    request_id = identifier(response.headers.get('x-request-id'))
+    messages = {
+        401: 'OpenAI ključ nije prihvaćen.',
+        403: 'Račun nema pristup ovom modelu. Provjeri pristup i verifikaciju organizacije.',
+        404: 'Model nije dostupan ovom API projektu.',
+        429: 'OpenAI limit ili sredstva nisu dovoljni. Provjeri API stanje računa.',
+        400: 'OpenAI je vratio grešku zahtjeva (400). To samo po sebi ne znači da je opis zabranjen.',
+    }
+    message = messages.get(response.status_code, 'OpenAI trenutno nije vratio sliku. Pokušaj kasnije.')
+    if code in ('moderation_blocked', 'content_policy_violation', 'safety_violations'):
+        message = 'OpenAI sigurnosna provjera odbila je ovaj zahtjev. Pregledaj opis i reference.'
+    detail = error.get('message')
+    if isinstance(detail, str):
+        if settings.OPENAI_API_KEY:
+            detail = detail.replace(settings.OPENAI_API_KEY, '[ključ uklonjen]')
+        detail = re.sub(r'sk-[A-Za-z0-9_-]+|Bearer\s+\S+', '[ključ uklonjen]', detail)
+        message += ' Detalj: ' + ' '.join(detail.split())[:700]
+    if code: message += ' Kod: ' + code + '.'
+    if param: message += ' Parametar: ' + param + '.'
+    if request_id: message += ' ID zahtjeva: ' + request_id + '.'
+    logger.warning('OpenAI image failure status=%s code=%s param=%s request_id=%s', response.status_code, code, param, request_id)
+    return Response({'error': message, 'providerCode': code, 'providerRequestId': request_id}, status=502)
+
 MODELS = [
     {'id':'gpt-image-2.5-flare','name':'GPT Image 2.5 Flare','description':'Brze ideje, novi kadrovi i svakodnevno generisanje.'},
     {'id':'gpt-image-2.5-sunburst','name':'GPT Image 2.5 Sunburst','description':'Precizne izmjene i rad s referencama likova.'},
@@ -35,6 +74,7 @@ STYLES = [
 ]
 
 class ImageRequest(serializers.Serializer):
+    segments = serializers.ListField(child=serializers.CharField(max_length=64),max_length=1000,required=False,default=list)
     script = serializers.UUIDField()
     segment = serializers.CharField(required=False, allow_blank=True, max_length=64, default='')
     prompt = serializers.CharField(max_length=10000, allow_blank=True, default='')
@@ -52,6 +92,15 @@ def prepare(request):
     segment=next((s for s in script.segments if s['id']==data['segment']),None)
     if data['segment'] and not segment:
         raise serializers.ValidationError('Odabrani interval više ne postoji.')
+    if data['segments']:
+        requested=set(data['segments'])
+        combined=[s for s in script.segments if s['id'] in requested]
+        indices=[i for i,s in enumerate(script.segments) if s['id'] in requested]
+        if len(combined)!=len(data['segments']) or (indices and indices[-1]-indices[0]+1!=len(indices)):
+            raise serializers.ValidationError('Poveži postojeće susjedne kadrove iste skripte.')
+        segment={**combined[0],'text':' '.join(s['text'] for s in combined),'end':combined[-1]['end']}
+        data['segment']=combined[0]['id']
+        data['segments']=[s['id'] for s in combined]
     context_text=((segment or {}).get('text',script.content)+' '+data['prompt']).casefold()
     characters=script.project.brief.get('characters',[])
     identities=[]
@@ -93,6 +142,7 @@ def prepare(request):
         'Shared direction: '+script.image_prompt,
         'Narration context: '+(segment['text'] if segment else script.content[:10000]),
         'Scene direction: '+data['prompt'],
+        'Create ONE continuous composition shared by these consecutive story beats, not a collage or multiple panels.' if len(data['segments'])>1 else '',
         'Use the attached reference images to preserve appearance, clothing and environment.' if refs else '',
     ]))
     if len(prompt)>32000:
@@ -125,7 +175,7 @@ def generate(request):
         except (subprocess.SubprocessError,OSError):
             return Response({'error':'Slika je generisana, ali priprema odabranog formata nije uspjela. Provjeri servis prije ponovnog generisanja.'},status=502)
     asset=MediaAsset(project=script.project,name=f'kadar-{uuid4().hex[:8]}.png',content_type='image/png',size=len(raw),metadata={
-        'gallery':False,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None,'purpose':'image','scriptId':str(script.pk),'segmentId':data['segment'],'prompt':data['prompt'],'fullPrompt':prompt,'model':data['model'],'style':data['style'],'aspect':data.get('aspect'),'references':[str(a.pk) for a in refs],
+        'gallery':False,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None,'purpose':'image','scriptId':str(script.pk),'segmentId':data['segment'],'segmentIds':data['segments'] or ([data['segment']] if data['segment'] else []),'prompt':data['prompt'],'fullPrompt':prompt,'model':data['model'],'style':data['style'],'aspect':data.get('aspect'),'references':[str(a.pk) for a in refs],
     })
     with transaction.atomic():
         from .models import Project
@@ -173,8 +223,7 @@ def request_image(data,refs,prompt,user):
             else:
                 response=client.post('https://api.openai.com/v1/images/generations',json=payload)
         if response.status_code!=200:
-            messages={401:'OpenAI ključ nije prihvaćen.',403:'Račun nema pristup ovom modelu. Provjeri pristup i verifikaciju organizacije.',404:'Model nije dostupan ovom API projektu.',429:'OpenAI limit ili sredstva nisu dovoljni. Provjeri API stanje računa.',400:'OpenAI nije prihvatio opis ili reference. Prilagodi ih i pokušaj ponovo.'}
-            return Response({'error':messages.get(response.status_code,'OpenAI trenutno nije vratio sliku. Pokušaj kasnije.')},status=502)
+            return image_provider_error(response)
         result=response.json()
         spend=record_image(user,data['model'],result.get('usage',{}))
         raw=base64.b64decode(result['data'][0]['b64_json'],validate=True)
@@ -207,8 +256,23 @@ def generate_character(request):
     outfit=next((o for o in character.get('outfits',[]) if o.get('id')==data['outfit']),None)
     if data['outfit'] and not outfit:return Response({'error':'Odjeća nije pronađena.'},status=400)
     if not settings.OPENAI_API_KEY:return Response({'error':'OpenAI ključ nije postavljen.'},status=503)
-    ids=list(dict.fromkeys(filter(None,[character.get('referenceId'),character.get('views',{}).get('body-front') ])))
-    refs=list(project.assets.filter(pk__in=ids,content_type__in=['image/png','image/jpeg','image/webp']))
+    ids=list(dict.fromkeys(filter(None,[character.get('referenceId'),character.get('views',{}).get('head-front'),character.get('views',{}).get('body-front') ])))
+    found={str(a.pk):a for a in project.assets.filter(pk__in=ids,content_type__in=['image/png','image/jpeg','image/webp'])}
+    refs=[found[str(identifier)] for identifier in ids if str(identifier) in found]
+    reference_roles=[{'image':i+1,'role':'identity of requested character','name':character.get('name','')} for i in range(len(refs))]
+    # A new cast member shares the established art direction, not another animal's identity.
+    if not refs:
+        for sibling in project.brief.get('characters',[]):
+            if sibling.get('id')==character.get('id'): continue
+            candidates=list(filter(None,[sibling.get('views',{}).get('body-front'),sibling.get('referenceId'),sibling.get('views',{}).get('head-front')]))
+            found={str(a.pk):a for a in project.assets.filter(pk__in=candidates,content_type__in=['image/png','image/jpeg','image/webp'])}
+            anchor=next((found[str(identifier)] for identifier in candidates if str(identifier) in found),None)
+            if anchor:
+                refs.append(anchor)
+                reference_roles.append({'image':1,'role':'shared visual style ONLY, not identity','name':sibling.get('name','')})
+                break
+    if sum(a.size for a in refs)>40*1024*1024:
+        return Response({'error':'Reference lika zajedno mogu imati najviše 40 MB.'},status=400)
     style=next((s[2] for s in STYLES if s[0]==project.brief.get('style')),STYLES[1][2])
     prompt='\n'.join(['Create one character design image on a plain neutral background. No text, panels, collage or watermark.',
         CHARACTER_VIEWS[data['view']], 'Consistent identity: preserve face, hair, age, body proportions and distinctive features from attached images.',
@@ -216,11 +280,21 @@ def generate_character(request):
         'Personality: '+str(character.get('personality','')), 'Style: '+style,
         'Clothing: '+str(outfit.get('description','') if outfit else character.get('clothing','')),
         'Extra direction (secondary to identity): '+str(character.get('prompt','')),
-        'Project rules: '+str(project.brief.get('desired',''))+' Avoid: '+str(project.brief.get('avoid',''))])
+        'Project rules: '+str(project.brief.get('desired',''))+' Avoid: '+str(project.brief.get('avoid','')),
+        'Same story: '+project.name+' — '+str(project.brief.get('description','')),
+        'Series continuity: '+str(project.brief.get('series','')),
+        'Storytelling: '+str(project.brief.get('storyRules','')),
+        'Shared notes: '+json.dumps(project.brief.get('notes',[]),ensure_ascii=False),
+        'Other cast members (context only, do not draw them): '+json.dumps([{'name':c.get('name',''),'appearance':c.get('appearance',c.get('description',''))} for c in project.brief.get('characters',[]) if c.get('id')!=character.get('id') and c.get('name') in [role['name'] for role in reference_roles]],ensure_ascii=False),
+        'Attached image roles: '+json.dumps(reference_roles,ensure_ascii=False),
+        'Identity references preserve ONLY this character. Style-only references establish rendering, materials, lighting and visual language for the same story; never copy their species, face, clothes or accessories onto the requested character. Established reference rendering takes precedence over conflicting generic style wording.',
+        'FINAL OUTPUT REQUIREMENT: Render only the named character in ONE view: '+CHARACTER_VIEWS[data['view']]+' This single-view requirement overrides any request for a sheet, five views or multiple panels in the extra direction. Use the default everyday clothing unless a specific outfit was requested.'])
+    if len(prompt)>32000:
+        return Response({'error':'Skrati projektne bilješke ili opis lika (prompt prelazi 32.000 znakova).'},status=400)
     result=request_image({'model':data['model'],'size':'1024x1536' if data['view'].startswith('body') else '1024x1024','quality':'medium'},refs,prompt,request.user)
     if isinstance(result,Response):return result
     raw,spend=result
-    asset=MediaAsset(project=project,name=f"lik-{data['view']}-{uuid4().hex[:8]}.png",content_type='image/png',size=len(raw),metadata={'purpose':'reference','characterId':data['character'],'view':data['view'],'outfitId':data['outfit'],'fullPrompt':prompt,'model':data['model'],'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None})
+    asset=MediaAsset(project=project,name=f"lik-{data['view']}-{uuid4().hex[:8]}.png",content_type='image/png',size=len(raw),metadata={'purpose':'reference','characterId':data['character'],'view':data['view'],'outfitId':data['outfit'],'fullPrompt':prompt,'model':data['model'],'references':[str(a.pk) for a in refs],'referenceRoles':reference_roles,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None})
     asset.file.save(asset.name,ContentFile(raw),save=False)
     try:asset.save()
     except Exception:

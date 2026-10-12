@@ -143,6 +143,7 @@ def status(request):
         return Response({'error': 'Stanje ElevenLabs računa trenutno nije dostupno.'}, status=502)
 
 class NarrationInput(serializers.Serializer):
+    timestamps = serializers.BooleanField(default=False)
     voiceId = serializers.RegexField(r'^[A-Za-z0-9_-]+$', max_length=100)
     text = serializers.CharField(max_length=10000)
     stability = serializers.FloatField(min_value=0, max_value=1, default=.55)
@@ -220,6 +221,19 @@ def narration(request):
     serializer = NarrationInput(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
+    if data['timestamps'] and settings.LOCAL_APP:
+        try:
+            upstream=provider_call(request,'elevenlabs','narration',lambda: httpx.post(
+                BASE_URL+f'/v1/text-to-speech/{data["voiceId"]}/with-timestamps?output_format=mp3_44100_128',
+                headers={'xi-api-key':settings.ELEVENLABS_API_KEY},timeout=180,
+                json={'text':data['text'],'model_id':'eleven_flash_v2_5','language_code':'hr',
+                      'voice_settings':{'stability':data['stability'],'similarity_boost':data['similarity'],'speed':data['speed']}}))
+            if not upstream.is_success:return failure(upstream,'naraciju')
+            result=upstream.json()
+            if not isinstance(result.get('audio_base64'),str):raise ValueError('Missing audio')
+            return Response({'audio_base64':result['audio_base64'],'alignment':result.get('alignment') or result.get('normalized_alignment')},headers={'Cache-Control':'no-store'})
+        except (httpx.HTTPError,ValueError,TypeError):
+            return Response({'error':'Naracija nije preuzeta. Provjeri vezu prije ponovnog generisanja.'},status=502)
     return stream_audio(f'/v1/text-to-speech/{data["voiceId"]}?output_format=mp3_44100_128', 'narator', billing_request=request, json={
         'text': data['text'], 'model_id': 'eleven_flash_v2_5', 'language_code': 'hr',
         'voice_settings': {'stability': data['stability'], 'similarity_boost': data['similarity'],

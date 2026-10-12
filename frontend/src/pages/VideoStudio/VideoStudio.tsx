@@ -1,3 +1,5 @@
+import {fitCaptionsToAudio} from '../../lib/narration-sync';
+import {getMediaTiming,fitNarration} from '../../lib/narration-sync';
 import {mergeSpeechCaptions,snapTime,clipsFollowCaptions,captionsFollowClips} from '../../lib/local-timeline';
 import {localMediaLanes} from '../../lib/local-media-lanes';
 import {localTimelineDuration,timelineClock,extendTimelineRequest,timelineZoomMaximum} from '../../lib/timeline-duration';
@@ -75,7 +77,7 @@ import {EditorHeaderPortal} from '../../components/EditorHeaderPortal/EditorHead
 import { useAuth } from '../../context/auth-context';
 
 type Asset = { id: string; name: string; type: "video" | "audio" | "image"; url: string; file: File; duration: number; aspectRatio: number };
-type Clip = VideoTransform & SceneEffects & StillMotion & { captionId?:string; audioRole?:'narration'|'sound'; background?:string; groupId?: string; id: string; assetId: string; name: string; type: "video" | "audio"; start: number; inPoint: number; outPoint: number; volume: number; muted: boolean; layer: number };
+type Clip = VideoTransform & SceneEffects & StillMotion & { captionId?:string; segmentIds?:string[]; sceneSlice?:{index:number;count:number}; narrationSegmentIds?:string[]; audioRole?:'narration'|'sound'; background?:string; groupId?: string; id: string; assetId: string; name: string; type: "video" | "audio"; start: number; inPoint: number; outPoint: number; volume: number; muted: boolean; layer: number };
 
 function restoreSceneDefaults(value:unknown):StillMotion {
  const v=value&&typeof value==='object'?value as StillMotion:{};
@@ -130,6 +132,7 @@ export function VideoStudio({localScript,registerSave}:{localScript?:Script;regi
 
   const playheadRef = useRef(0);
   const [assets, setAssets] = useState<Asset[]>([]);
+  const localAssetsRef=useRef(assets);localAssetsRef.current=assets;
   const [stillImages,setStillImages]=useState<Map<string,HTMLImageElement>>(new Map());
   useEffect(()=>{let active=true;const images=new Map<string,HTMLImageElement>();void Promise.all(assets.filter(a=>a.type==='image').map(a=>new Promise<void>(resolve=>{const image=new Image();image.onload=()=>{images.set(a.id,image);resolve();};image.onerror=()=>resolve();image.src=a.url;}))).then(()=>{if(active)setStillImages(images);});return()=>{active=false;};},[assets]);
   const history = useEditorHistory<{clips:Clip[];frameAspect:number;timelineFloor:number;sceneDefaults:StillMotion;captions:Record<string,VideoCaptions>;overlays:Overlay[]}>({clips:[],frameAspect:0,timelineFloor:0,sceneDefaults:{motion:'none',imageTransition:'cut',imageTransitionDuration:.5},captions:localScript?{__script:scriptCaptions(localScript)}:{},overlays:[]});
@@ -147,10 +150,10 @@ export function VideoStudio({localScript,registerSave}:{localScript?:Script;regi
 
   const setCaptions=(action:React.SetStateAction<Record<string,VideoCaptions>>)=>history.set(current=>{const before=prepareCaptions(current.captions),next=typeof action==='function'?action(before):action;const linked=localScript?clipsFollowCaptions(current.clips,before.__script?.segments||[],next.__script?.segments||[]):current.clips;return {...current,clips:linked,timelineFloor:localScript?extendTimelineRequest(Math.max(0,...(before.__script?.segments||[]).map(s=>s.end)),Math.max(0,...(next.__script?.segments||[]).map(s=>s.end)),current.timelineFloor):current.timelineFloor,captions:Object.fromEntries(Object.entries(next).map(([id,d])=>[id,{...d,segments:preserveSuggestionRemoval(before[id]?.segments||[],d.segments)}]))};});
   const setClips=(action:React.SetStateAction<Clip[]>)=>history.set(current=>{
-    const requested=typeof action==='function'?action(current.clips):action;
+    const requested=(typeof action==='function'?action(current.clips):action).map(c=>{const old=current.clips.find(v=>v.id===c.id);return c.sceneSlice&&c.sceneSlice.count>1&&old&&(old.start!==c.start||old.inPoint!==c.inPoint||old.outPoint!==c.outPoint)?{...c,segmentIds:undefined,sceneSlice:undefined}:c;});
     const prior=current.captions.__script;
     const segments=localScript&&prior?captionsFollowClips(current.clips,requested,prior.segments):prior?.segments||[];
-    const next=localScript&&prior?clipsFollowCaptions(requested,[],segments):requested;
+    const next=localScript&&prior?clipsFollowCaptions(requested,[],segments).map(c=>{if(!c.narrationSegmentIds?.length||current.clips.find(old=>old.id===c.id)?.start!==c.start)return c;const old=prior.segments.find(s=>s.id===c.narrationSegmentIds![0]),changed=segments.find(s=>s.id===c.narrationSegmentIds![0]);return old&&changed?{...c,start:c.start+changed.start-old.start}:c;}):requested;
     return {...current,clips:next,captions:localScript&&prior?{...current.captions,__script:{...prior,segments}}:current.captions,timelineFloor:localScript?extendTimelineRequest(Math.max(0,...current.clips.map(c=>c.start+clipLength(c))),Math.max(0,...next.map(c=>c.start+clipLength(c)),...segments.map(s=>s.end)),current.timelineFloor):current.timelineFloor};
   });
   const setFrameAspect=(value:number)=>history.set(current=>({...current,frameAspect:value}));
@@ -203,7 +206,8 @@ export function VideoStudio({localScript,registerSave}:{localScript?:Script;regi
   const [timingCaption,setTimingCaption] = useState<{clipId:string;segmentId:string}|null>(null);
   useEffect(()=>{const clear=(e:PointerEvent)=>{const target=e.target as Element;if(target.closest('button,input,textarea,select,a,dialog,[role=dialog],[role=listbox],.subtitle-customize-panel,.video-studio-media,.video-caption-hit,.caption-timing-clip,.caption-group-row,.timeline-group-tools'))return;setCaptionWord(undefined);};document.addEventListener('pointerdown',clear);return()=>document.removeEventListener('pointerdown',clear);},[]);
   const [selectedId, setSelectedIdRaw] = useState("");
-  function setSelectedId(id:string){setSelectedIdRaw(id);if(id){setSelectedOverlay('');if(localScript)setTimingCaption(null);}}
+  const [linkSelection,setLinkSelection]=useState<string[]>([]);
+  function setSelectedId(id:string){setLinkSelection(id?[id]:[]);setSelectedIdRaw(id);if(id){setSelectedOverlay('');if(localScript)setTimingCaption(null);}}
   const [playhead, setPlayhead] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [exportOptionsOpen,setExportOptionsOpen]=useState(false);
@@ -335,16 +339,30 @@ export function VideoStudio({localScript,registerSave}:{localScript?:Script;regi
     setAssets(current=>[...current,...loaded]);
     if(importedCaptions){const restoredCaptions=importedCaptions;setCaptions(current=>({...current,...Object.fromEntries(loaded.filter(a=>a.type==='video').map(a=>[a.id,restoredCaptions]))}));}
     const groups=loaded.map(asset=>({asset,id:crypto.randomUUID(),groupId:crypto.randomUUID(),audioId:crypto.randomUUID()}));
-    setClips(current=>{
+    history.set(state=>{
+      let current=state.clips;
+      let doc=state.captions.__script;
+      let audioCursor=importedAudioStart;
       let cursor=Math.max(0,...current.filter(c=>c.type==='video').map(c=>c.start+clipLength(c)));
       let layer=Math.max(0,...current.map(c=>c.layer))+1;
       const additions=groups.flatMap(({asset,id,groupId,audioId})=>{
-        const start=asset.type==='audio'?importedAudioStart:cursor;
-        if(asset.type!=='audio')cursor+=asset.duration;
-        const clip={...(asset.type==='image'?sceneDefaultsRef.current:{}),audioRole:asset.type==='audio'?importedAudioRole:undefined,groupId,id,assetId:asset.id,name:asset.name,type:asset.type==='audio'?'audio':'video',start,inPoint:0,outPoint:asset.duration,volume:100,muted:asset.type!=='audio',layer:asset.type==='audio'?layer++:1} satisfies Clip;
+        const meta=getMediaTiming(asset.file);
+        const targets=doc?.segments.filter(s=>(meta?.segmentIds?.includes(s.id)||!!s.sourceSceneId&&meta?.segmentIds?.includes(s.sourceSceneId)))||[];
+        const timing=meta?.narration||(asset.type==='audio'&&importedAudioRole==='narration'&&meta?.segmentIds?.length?{segmentIds:meta.segmentIds,text:targets.map(s=>s.text).join(' '),words:[],duration:asset.duration,sync:false,placement:'scene' as const}:undefined);
+        const sceneStart=targets.length?Math.min(...targets.map(s=>s.start)):audioCursor;
+        const narrationEnd=Math.max(0,...current.filter(c=>c.type==='audio'&&c.audioRole!=='sound').map(c=>c.start+clipLength(c)));
+        let start=asset.type==='audio'?(timing?.placement==='scene'?sceneStart:timing?.placement==='append'?Math.max(audioCursor,narrationEnd):audioCursor):targets.length?sceneStart:cursor;
+        if(timing&&doc){if(timing.sync)current=current.map(c=>{const a=localAssetsRef.current.find(a=>a.id===c.assetId),m=a&&getMediaTiming(a.file);return a?.type==='image'&&!c.captionId&&!c.segmentIds?.length&&m?.segmentIds?.length?{...c,segmentIds:m.segmentIds}:c;});const before=doc.segments,after=fitNarration(before,timing,start);current=clipsFollowCaptions(current,before,after);doc={...doc,segments:after};}
+        const imageEnd=targets.length?Math.max(...targets.map(s=>s.end)):start+asset.duration;
+        let duration=asset.type==='image'&&targets.length?imageEnd-start:asset.duration;
+        const peers=asset.type==='image'&&targets.length?groups.filter(g=>g.asset.type==='image'&&JSON.stringify(getMediaTiming(g.asset.file)?.segmentIds)===JSON.stringify(meta?.segmentIds)):[];
+        const sceneSlice=peers.length>1?{index:peers.findIndex(g=>g.id===id),count:peers.length}:undefined;
+        if(sceneSlice){duration/=sceneSlice.count;start+=duration*sceneSlice.index;}
+        if(asset.type!=='audio')cursor=Math.max(cursor,start+duration);else audioCursor=start+duration;
+        const clip={...(asset.type==='image'?sceneDefaultsRef.current:{}),audioRole:asset.type==='audio'?importedAudioRole:undefined,groupId,id,sceneSlice,segmentIds:asset.type==='image'?meta?.segmentIds:undefined,narrationSegmentIds:asset.type==='audio'&&timing?.sync?timing.segmentIds:undefined,assetId:asset.id,name:asset.name,type:asset.type==='audio'?'audio':'video',start,inPoint:0,outPoint:duration,volume:100,muted:asset.type!=='audio',layer:asset.type==='audio'?layer++:1} satisfies Clip;
         return asset.type==='video'?[clip,{...clip,id:audioId,type:'audio' as const,audioRole:'sound' as const,name:asset.name,muted:muteImportedVideo,volume:importedOriginalVolume,layer:0}]:[clip];
       });
-      return [...current,...additions];
+      const next=[...current,...additions];return {...state,clips:next,captions:doc?{...state.captions,__script:doc}:state.captions,timelineFloor:extendTimelineRequest(0,Math.max(0,...next.map(c=>c.start+clipLength(c))),state.timelineFloor)};
     });
     setSelectedId(groups[0]?.id||'');
     return true;
@@ -425,7 +443,26 @@ export function VideoStudio({localScript,registerSave}:{localScript?:Script;regi
     setPlaying(current => !current);
   }
 
-  const selectedSound = selected && (selected.type === 'audio' ? selected : clips.find(clip => clip.type === 'audio' && linkedTo(clip, selected)));
+  const selectedSound = selected && (selected.type === 'audio' ? selected : clips.find(clip => clip.type === 'audio' && (linkedTo(clip, selected)||!!selected.captionId&&clip.narrationSegmentIds?.includes(selected.captionId))));
+  const linkImage=clips.find(c=>linkSelection.includes(c.id)&&assets.find(a=>a.id===c.assetId)?.type==='image');
+  const linkNarration=clips.find(c=>linkSelection.includes(c.id)&&c.type==='audio'&&c.audioRole!=='sound');
+  const fitAudio=linkNarration||(selectedSound?.audioRole!=='sound'?selectedSound:undefined);
+  const fitIds=fitAudio?.narrationSegmentIds?.length?fitAudio.narrationSegmentIds:timingCaption?.clipId==='__script'?[timingCaption.segmentId]:[];
+  function fitToNarration(){
+    if(locked||!fitAudio||!fitIds.length)return;
+    history.set(current=>{
+      const doc=current.captions.__script;if(!doc)return current;
+      const segments=fitCaptionsToAudio(doc.segments,fitIds,fitAudio.start,clipLength(fitAudio));
+      const bound=current.clips.map(c=>c.id===fitAudio.id?{...c,narrationSegmentIds:fitIds}:c.id===linkImage?.id?{...c,captionId:undefined,sceneSlice:undefined,segmentIds:fitIds}:c);
+      const next=clipsFollowCaptions(bound,doc.segments,segments).map(c=>c.id===fitAudio.id?{...c,start:fitAudio.start}:c);
+      return {...current,clips:next,captions:{...current.captions,__script:{...doc,segments}},timelineFloor:Math.max(current.timelineFloor,...next.map(c=>c.start+clipLength(c)),...segments.map(s=>s.end))};
+    });
+  }
+  function linkAllThree(){
+    const segment=captions.__script?.segments.find(s=>s.id===timingCaption?.segmentId);
+    if(locked||!linkImage||!linkNarration||!segment)return;
+    history.set(current=>({...current,clips:current.clips.map(c=>c.id===linkImage.id?{...c,captionId:segment.id,segmentIds:undefined,sceneSlice:undefined,start:segment.start,outPoint:c.inPoint+segment.end-segment.start}:c.id===linkNarration.id?{...c,narrationSegmentIds:[segment.id],start:segment.start}:c)}));
+  }
   function updateSelectedSound(patch: Pick<Partial<Clip>, 'muted' | 'volume'>) {
     if (!selectedSound || locked) return;
     setClips(current => current.map(clip => clip.id === selectedSound.id ? {...clip, ...patch} : clip));
@@ -458,6 +495,7 @@ export function VideoStudio({localScript,registerSave}:{localScript?:Script;regi
 
   function audioVolumeControl(audio: Clip, selectionId: string) {
     const asset=assets.find(asset=>asset.id===audio.assetId)!;
+    if(localScript)return <span style={{pointerEvents:'none'}}><AudioWaveform normalize file={asset.file} start={audio.inPoint/asset.duration} end={audio.outPoint/asset.duration}/></span>;
     return <AudioVolumeHandle volume={audio.volume} muted={audio.muted} onSelect={()=>setSelectedId(selectionId)} onBegin={()=>history.begin()} onEnd={()=>history.end()} onChange={volume=>setClips(current=>current.map(clip=>clip.id===audio.id?{...clip,volume}:clip))}>
       <AudioWaveform normalize file={asset.file} start={audio.inPoint/asset.duration} end={audio.outPoint/asset.duration}/>
     </AudioVolumeHandle>;
@@ -467,7 +505,7 @@ export function VideoStudio({localScript,registerSave}:{localScript?:Script;regi
   const showGuides=(bounds:{start:number;end:number}|null,guide:number|null)=>{setDragBounds(bounds);setSnapGuide(guide);};
   const [dropLayer,setDropLayer]=useState<number|null>(null);
   function beginDrag(event: React.PointerEvent<HTMLButtonElement>, clip: Clip) {
-    if(localScript&&event.shiftKey){event.preventDefault();setSelectedId(selectedId===clip.id?'':clip.id);setPlaying(false);return;}
+    if(localScript&&event.shiftKey){event.preventDefault();setLinkSelection(ids=>ids.includes(clip.id)?ids.filter(id=>id!==clip.id):[...ids.filter(id=>clips.find(c=>c.id===id)?.type!==clip.type),clip.id]);setSelectedIdRaw(clip.id);setPlaying(false);return;}
     history.begin();
     setTimingCaption(null);setDragBounds({start:clip.start,end:clip.start+clipLength(clip)});
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -667,7 +705,7 @@ export function VideoStudio({localScript,registerSave}:{localScript?:Script;regi
         <div className="video-timeline-transport"><button aria-label="Vrati video na početak" disabled={locked||!clips.length} onClick={()=>{setPlaying(false);seek(0);}}><StudioIcon name="skipStart"/></button><button title={playing?'Pause | Space':'Play | Space'} aria-label={playing?'Pauziraj vremensku liniju':'Pusti vremensku liniju'} disabled={locked||!clips.length} onClick={togglePlayback}><StudioIcon name={playing?'pause':'play'}/></button><button type="button" aria-label={previewMuted?'Uključi zvuk pregleda':'Isključi zvuk pregleda'} title={previewMuted?'Uključi zvuk':'Mute'} aria-pressed={previewMuted} onClick={()=>setPreviewMuted(v=>!v)}><StudioIcon name={previewMuted?'mute':'sound'}/></button><button type="button" aria-label="Ponavljaj video" title="Ponavljaj video" aria-pressed={repeat} disabled={locked||!clips.length} onClick={()=>setRepeat(value=>!value)}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3"/></svg></button>{!localScript&&<button className="clean-audio-shortcut" title="Clean Audio" aria-label="Clean Audio" disabled={!selectedSound||locked} onClick={()=>{setPanel("audio");setCleanAudioRequest(v=>v+1);}}><StudioIcon name="spark"/></button>}<strong>{timelineClock(playhead)}</strong><span>/ {timelineClock(timelineDuration)}</span></div>
         <div className="video-studio-zoom"><button aria-label="Zoom out vremenske linije" disabled={zoom<=100} onClick={()=>setZoom(v=>Math.max(100,v/1.25))}>−</button><input aria-label="Zoom vremenske linije" type="range" min="100" max={zoomMaximum} step="1" value={Math.min(zoom,zoomMaximum)} onChange={event=>setZoom(Number(event.target.value))}/><button aria-label="Zoom in vremenske linije" disabled={zoom>=zoomMaximum} onClick={()=>setZoom(v=>Math.min(zoomMaximum,v*1.25))}>+</button><button className="timeline-fit" title="Uklopi cijeli timeline" aria-label="Uklopi cijeli timeline" onClick={()=>{setZoom(100);if(timelineRef.current)timelineRef.current.scrollLeft=0;}}>Fit</button><button aria-label={timelineHidden?'Prikaži timeline':'Sakrij timeline'} title={timelineHidden?'Prikaži timeline':'Sakrij timeline'} aria-expanded={!timelineHidden} onClick={()=>setTimelineHidden(v=>!v)}><StudioIcon name={timelineHidden?"timelineShow":"timelineHide"}/></button></div>
       </div>
-      {localScript&&<div className="local-timeline-options"><button aria-pressed={magnet} onClick={()=>setMagnet(v=>!v)} title="Magnet poravnava rubove. Alt ga privremeno isključuje.">Magnet {magnet?'✓':''}</button><label><input type="checkbox" checked={rippleCaptions} onChange={e=>setRippleCaptions(e.target.checked)}/>Pomjeri naredne titlove</label><button disabled={!selected||selectedAsset?.type!=='image'||!timingCaption||timingCaption.clipId!=='__script'} onClick={()=>{const segment=captions.__script?.segments.find(s=>s.id===timingCaption?.segmentId);if(!selected||!segment)return;setClips(current=>current.map(c=>c.id===selected.id?{...c,captionId:segment.id,start:segment.start,outPoint:c.inPoint+segment.end-segment.start}:c.captionId===segment.id?{...c,captionId:undefined}:c));}}>Poveži sliku i titl</button>{selected?.captionId&&<button onClick={()=>updateSelected({captionId:undefined})}>Odvoji sliku i titl</button>}<small>Drži Shift i odaberi sliku i titl za povezivanje.</small></div>}
+      {localScript&&<div className="local-timeline-options"><button aria-pressed={magnet} onClick={()=>setMagnet(v=>!v)} title="Magnet poravnava rubove. Alt ga privremeno isključuje.">Magnet {magnet?'✓':''}</button><label><input type="checkbox" checked={rippleCaptions} onChange={e=>setRippleCaptions(e.target.checked)}/>Pomjeri naredne titlove</label><button disabled={!selected||selectedAsset?.type!=='image'||!timingCaption||timingCaption.clipId!=='__script'} onClick={()=>{const segment=captions.__script?.segments.find(s=>s.id===timingCaption?.segmentId);if(!selected||!segment)return;setClips(current=>current.map(c=>c.id===selected.id?{...c,captionId:segment.id,start:segment.start,outPoint:c.inPoint+segment.end-segment.start}:c.captionId===segment.id?{...c,captionId:undefined}:c));}}>Poveži sliku i titl</button>{(selected?.captionId||selected?.segmentIds?.length)&&<button onClick={()=>updateSelected({captionId:undefined,segmentIds:undefined})}>Odvoji sliku i titl</button>}<button disabled={locked||!fitAudio||!fitIds.length} onClick={fitToNarration} title="Prilagodi početak i trajanje povezanih titlova i slika odabranom zvuku">Prilagodi titl i sliku naraciji</button><button disabled={locked||!linkImage||!linkNarration||timingCaption?.clipId!=='__script'} onClick={linkAllThree}>Poveži sliku, titl i naraciju</button>{(selected?.captionId||selected?.narrationSegmentIds?.length)&&<button onClick={()=>{const ids=selected?.narrationSegmentIds||(selected?.captionId?[selected.captionId]:[]);history.set(current=>({...current,clips:current.clips.map(c=>c.captionId&&ids.includes(c.captionId)?{...c,captionId:undefined,segmentIds:undefined}:c.narrationSegmentIds?.some(id=>ids.includes(id))?{...c,narrationSegmentIds:undefined}:c)}));}}>Odvoji povezane elemente</button>}<label>Glasnoća · {selectedSound?.volume??0}%<input aria-label="Glasnoća odabranog zvuka" type="range" min="0" max="150" disabled={!selectedSound||locked} value={selectedSound?.volume??0} onPointerDown={()=>history.begin()} onPointerUp={()=>history.end()} onPointerCancel={()=>history.end()} onChange={e=>updateSelectedSound({volume:Number(e.target.value)})}/></label><small>Drži Shift i odaberi sliku, titl i naraciju za povezivanje.</small></div>}
       <div className={`video-studio-track-scroll${zoom===100?' is-fit':''}`} title="Scroll: gore/dolje · Ctrl + scroll: zoom · Shift + scroll: lijevo/desno" ref={timelineRef} onScroll={e=>setTimelineScroll(e.currentTarget.scrollLeft)} tabIndex={0} onPointerDownCapture={e=>{if(!(e.target instanceof Element&&e.target.closest('input,textarea,select')))e.currentTarget.focus({preventScroll:true});}} hidden={timelineHidden}>
         <div className="video-studio-track-area" style={{width:`${zoom}%`}}>
           <div className="video-timeline-ruler" aria-label="Vrijeme na vremenskoj liniji" onPointerDown={event=>{event.currentTarget.setPointerCapture(event.pointerId);seekPointer(event);}} onPointerMove={event=>{if(event.buttons===1)seekPointer(event);}}>{ticks.map(t=><span key={t.time} style={{left:`${t.percent}%`,transform:t.percent>95?'translateX(-100%)':undefined}}>{timeLabel(t.time)}{t.time%1 ? `.${Math.round(t.time%1*10)}`:''}</span>)}</div>
@@ -679,7 +717,7 @@ export function VideoStudio({localScript,registerSave}:{localScript?:Script;regi
 
           {localScript&&<div className="video-studio-track local-effects-lane" style={{order:4}}>{!clips.some(c=>c.filter)&&<span className="local-track-label">Efekti</span>}{!clips.some(c=>c.filter)&&<span className="local-empty-lane">Efekti odabranih kadrova</span>}{clips.filter(c=>c.type==='video'&&c.filter).map(c=><button key={c.id} title="Uredi efekat kadra" style={{left:`${(c.start+Math.max(0,c.filter!.start-c.inPoint))/timelineDuration*100}%`,width:`${Math.max(.1,Math.min(c.outPoint,c.filter!.end)-Math.max(c.inPoint,c.filter!.start))/timelineDuration*100}%`}} onClick={()=>{setSelectedId(c.id);setPanel('effects');}}><StudioIcon name="filters"/>{c.filter!.id}</button>)}</div>}
           {overlays.map(o=><div className={`video-studio-track overlay-track overlay-track-${o.kind==='text'?'text':o.kind==='heart'||o.kind==='star'?'sticker':'shape'}`} key={o.id} style={{order:orderedTrackKeys.length+1}}><button className={selectedOverlay===o.id?'active':''} style={{left:`${o.start/timelineDuration*100}%`,width:`${(o.end-o.start)/timelineDuration*100}%`}} onClick={()=>selectOverlay(o.id)} title={o.kind==='text'?o.text:'Uredi element'}><StudioIcon name={o.kind==='text'?'text':o.kind==='heart'||o.kind==='star'?'sticker':'elements'}/>{o.kind==='text'&&<strong>{o.text}</strong>}</button></div>)}
-          {lanes.map(lane=><div data-track-key={lane.key} style={{order:orderedTrackKeys.indexOf(lane.key)}} data-drop-layer={lane.audio?undefined:lane.clips[0]?.layer} className={`video-studio-track ${lane.clips.length?'has-local-content ':''}${localScript?'local-media-lane ':''}${lane.audio?'audio':'video combined-media'}${!lane.audio&&dropLayer===lane.clips[0]?.layer?' drop-active':''}`} key={lane.key} onPointerDown={e=>{if(e.target===e.currentTarget)seekPointer(e);}}>{localScript?(!lane.clips.length&&<span className="local-track-label">{lane.label}</span>):<TrackGrip id={lane.key} label={lane.audio?'Zvuk':'Video i zvuk'} move={moveTrack}/>} {!lane.clips.length&&<span className="local-empty-lane">{lane.audio?'Dodaj audio u ovu stazu':'Dodaj slike u ovu stazu'}</span>}{!lane.audio&&<>{(['top','bottom'] as const).map(edge=><TrackHeightHandle key={edge} edge={edge} height={mediaTrackHeight} onChange={setMediaTrackHeight}/>)}</>}{lane.clips.filter(clip=>clip.start<timelineDuration).map(clip=><button key={clip.id} className={`${selectedId===clip.id?'active selected-clip':''}${clipAtPlayhead(clip,playhead,timelineDuration)?' at-playhead':''}${clip.muted&&lane.audio?' muted':''}`} disabled={locked} style={{left:`${clip.start/timelineDuration*100}%`,width:`${clipLength(clip)/timelineDuration*100}%`}} onClick={event=>{if(!event.shiftKey)setSelectedId(clip.id);}} onPointerDown={event=>beginDrag(event,clip)} onPointerMove={dragClip} onPointerUp={endDrag} onPointerCancel={endDrag}>
+          {lanes.map(lane=><div data-track-key={lane.key} style={{order:orderedTrackKeys.indexOf(lane.key)}} data-drop-layer={lane.audio?undefined:lane.clips[0]?.layer} className={`video-studio-track ${lane.clips.length?'has-local-content ':''}${localScript?'local-media-lane ':''}${lane.audio?'audio':'video combined-media'}${!lane.audio&&dropLayer===lane.clips[0]?.layer?' drop-active':''}`} key={lane.key} onPointerDown={e=>{if(e.target===e.currentTarget)seekPointer(e);}}>{localScript?(!lane.clips.length&&<span className="local-track-label">{lane.label}</span>):<TrackGrip id={lane.key} label={lane.audio?'Zvuk':'Video i zvuk'} move={moveTrack}/>} {!lane.clips.length&&<span className="local-empty-lane">{lane.audio?'Dodaj audio u ovu stazu':'Dodaj slike u ovu stazu'}</span>}{!lane.audio&&<>{(['top','bottom'] as const).map(edge=><TrackHeightHandle key={edge} edge={edge} height={mediaTrackHeight} onChange={setMediaTrackHeight}/>)}</>}{lane.clips.filter(clip=>clip.start<timelineDuration).map(clip=><button key={clip.id} className={`${(selectedId===clip.id||linkSelection.includes(clip.id))?'active selected-clip':''}${clipAtPlayhead(clip,playhead,timelineDuration)?' at-playhead':''}${clip.muted&&lane.audio?' muted':''}`} disabled={locked} style={{left:`${clip.start/timelineDuration*100}%`,width:`${clipLength(clip)/timelineDuration*100}%`}} onClick={event=>{if(!event.shiftKey)setSelectedId(clip.id);}} onPointerDown={event=>beginDrag(event,clip)} onPointerMove={dragClip} onPointerUp={endDrag} onPointerCancel={endDrag}>
             {!lane.audio&&clip.filter&&<span className="clip-filter-marker" title="Filter scene" style={{left:`${Math.max(0,clip.filter.start-clip.inPoint)/clipLength(clip)*100}%`,width:`${Math.max(0,Math.min(clip.outPoint,clip.filter.end)-Math.max(clip.inPoint,clip.filter.start))/clipLength(clip)*100}%`}}/>}{!lane.audio&&clip.transition&&<span className="clip-transition-marker" title="Prijelaz na početku scene" style={{width:`${Math.min(1,clip.transition.duration/clipLength(clip))*100}%`}}><StudioIcon name="transitions"/></span>}{lane.audio && audioVolumeControl(clip,clip.id)}
             {!lane.audio && <>{assets.find(a=>a.id===clip.assetId)?.type==='image'?<img className="local-image-thumbnails" src={assets.find(a=>a.id===clip.assetId)!.url} alt=""/>:<VideoThumbnails url={assets.find(a=>a.id===clip.assetId)!.url} start={clip.inPoint} end={clip.outPoint}/>}{(()=>{const audio=clips.find(c=>c.type==='audio'&&linkedTo(c,clip));return audio&&!localScript?<span className={`combined-audio${audio.muted?' muted':''}`}>{audioVolumeControl(audio,clip.id)}</span>:null;})()}</>}
             {(['start','end'] as const).map(edge=><span key={edge} className={`clip-trim-handle ${edge}`} role="slider" tabIndex={0} aria-label={edge==='start'?'Skrati početak klipa':'Skrati kraj klipa'} aria-valuenow={edge==='start'?clip.inPoint:clip.outPoint}

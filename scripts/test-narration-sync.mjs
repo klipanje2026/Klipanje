@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import {loadTestModule} from './test-ts-module.mjs';
+const {alignmentWords,fitNarration,fitCaptionsToAudio,narrationText}=await loadTestModule('lib/narration-sync.ts','work/narration-sync-tests');
+const {clipsFollowCaptions,captionsFollowClips}=await loadTestModule('lib/local-timeline.ts','work/narration-sync-tests');
+const {buildPhotoPlan}=await loadTestModule('lib/photo-plan.ts','work/narration-sync-tests');
+assert.equal(narrationText('„Zeko!” "Hej"',false),'Zeko! Hej');
+assert.equal(narrationText('„Zeko!”',true),'„Zeko!”');
+const words=alignmentWords({characters:['H','i',' ','Z','e','k','o'],character_start_times_seconds:[0,.1,.2,.6,.7,.8,.9],character_end_times_seconds:[.1,.2,.3,.7,.8,.9,1]});
+assert.deepEqual(words,[{text:'Hi',start:0,end:.2},{text:'Zeko',start:.6,end:1}]);
+assert.deepEqual(alignmentWords({characters:['X'],character_start_times_seconds:[NaN],character_end_times_seconds:[1]}),[]);
+const original=[{id:'a',start:0,end:4,text:'Hi Zeko'},{id:'b',start:4,end:7,text:'Idemo dalje'}];
+const manualFit=fitCaptionsToAudio([{...original[0],words:[{text:'Hi',start:0,end:2}]},original[1]],['a'],1,2);
+assert.equal(manualFit[0].start,1);assert.equal(manualFit[0].end,3);assert.equal(manualFit[0].words[0].end,2);
+assert.equal(manualFit[0].text,'Hi Zeko');assert.equal(manualFit[1].start,3);
+const timing={segmentIds:['a'],text:'Hi Zeko',words,duration:1.2,sync:true,placement:'scene'};
+const fitted=fitNarration(original,timing,0);
+assert.equal(fitted[0].end,1.2);assert.equal(fitted[0].words[1].start,.6);assert.ok(Math.abs(fitted[1].start-1.2)<1e-9);assert.equal(original[0].end,4);
+const images=[{id:'image',segmentIds:['a','b'],start:0,inPoint:0,outPoint:7}];
+assert.equal(clipsFollowCaptions(images,original,fitted)[0].outPoint,4.2);
+const slices=clipsFollowCaptions([0,1].map(index=>({...images[0],id:`slice${index}`,sceneSlice:{index,count:2}})),original,fitted);
+assert.equal(slices[0].outPoint,2.1);assert.equal(slices[1].start,2.1);assert.equal(slices[1].outPoint,2.1);
+const sound={id:'audio',narrationSegmentIds:['b'],start:4,inPoint:0,outPoint:2};
+assert.ok(Math.abs(clipsFollowCaptions([sound],original,fitted)[0].start-1.2)<1e-9);
+const shifted=captionsFollowClips([sound],[{...sound,start:6}],original);
+assert.equal(shifted[1].start,6);assert.equal(shifted[0].start,0);
+// A manually linked image, caption and narration follow whichever member moves.
+const trio=[{id:'picture',captionId:'b',start:4,inPoint:0,outPoint:3},sound];
+const movedAudio=trio.map(c=>c.id==='audio'?{...c,start:6}:c);
+const afterAudio=captionsFollowClips(trio,movedAudio,original);
+const followedAudio=clipsFollowCaptions(movedAudio,[],afterAudio);
+assert.equal(followedAudio[0].start,6);assert.equal(followedAudio[1].start,6);
+assert.equal(followedAudio[1].outPoint,2); // Never stretch the recording.
+const afterImage=captionsFollowClips(trio,trio.map(c=>c.id==='picture'?{...c,start:7}:c),original);
+assert.equal(afterImage[1].start,7);
+assert.equal(clipsFollowCaptions(trio,original,afterImage)[1].start,7);
+const plan=buildPhotoPlan(['a','b'],{a:1,b:1},[{id:'1',segment:'a',text:'Forest'},{id:'2',segment:'b',text:'Friends'}],[['a','b']]);
+assert.equal(plan.length,1);assert.deepEqual(plan[0].segments,['a','b']);assert.match(plan[0].prompt,/Forest\nFriends/);
+console.log('Narration timing, quote handling, linked media and grouped photo checks passed.');

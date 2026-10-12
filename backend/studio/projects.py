@@ -37,8 +37,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             raise ValidationError('Projekat mora biti JSON objekt do 4 MB.')
         return value
     def validate_brief(self, value):
-        if not isinstance(value,dict) or len(json.dumps(value))>100000:
-            raise ValidationError('Opis projekta mora biti objekt do 100 KB.')
+        if not isinstance(value,dict) or len(json.dumps(value))>2*1024**2:
+            raise ValidationError('Opis projekta mora biti objekt do 2 MB.')
         return value
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -68,7 +68,7 @@ def asset_payload(asset):
 
 def asset_metadata(project, value):
     from .models import LocalScript
-    if not isinstance(value,dict) or len(json.dumps(value))>50000:
+    if not isinstance(value,dict) or len(json.dumps(value))>1024*1024:
         raise ValidationError('Neispravni podaci datoteke.')
     if value.get('scriptId'):
         identifier=serializers.UUIDField().run_validation(value['scriptId'])

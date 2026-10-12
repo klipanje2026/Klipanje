@@ -124,7 +124,8 @@ class CreativeWorkspaceTests(TestCase):
         with patch('studio.regional_voices.json_request',side_effect=mock_request):
             result=self.client.get('/api/voices/regional')
             self.assertEqual(result.status_code,200)
-            self.assertEqual(len(result.json()['voices']),3)
+            from .regional_voices import CHOICES
+            self.assertEqual(len(result.json()['voices']),len(CHOICES))
             self.assertTrue(all(not v['available'] for v in result.json()['voices']))
             self.assertTrue(all(v['previewUrl'] for v in result.json()['voices']))
         cache.clear()
