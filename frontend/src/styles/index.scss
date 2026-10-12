@@ -10,38 +10,21 @@
 @use './aqua-account';
 // One entry point keeps shared defaults before component overrides.
 @use './shared';
-@use '../components/BookingForm/BookingForm';
 @use '../components/CaptionCanvas/CaptionCanvas';
 @use '../components/CaptionDuoControls/CaptionDuoControls';
-@use '../components/CaseStudyDetail/CaseStudyDetail';
 @use '../components/EditorInspector/EditorInspector';
-@use '../components/InnerShell/InnerShell';
-@use '../components/LeadForm/LeadForm';
 @use '../components/ProjectToolbar/ProjectToolbar';
-@use '../components/ServiceDetail/ServiceDetail';
-@use '../components/StudioDashboard/StudioDashboard';
 @use '../pages/SubtitleStudio/SubtitleStudio';
 @use '../components/TranscriptionStatus/TranscriptionStatus';
 @use '../components/VideoPreviewStage/VideoPreviewStage';
 @use '../pages/VideoStudio/VideoStudio';
-@use '../pages/BookPage/BookPage';
 @use '../pages/NotFoundPage/NotFoundPage';
-@use '../pages/PrivacyPage/PrivacyPage';
-@use '../components/Image/Image';
-@use '../components/Link/Link';
 @use '../components/AuthProvider/AuthProvider';
 @use '../components/RequireAccount/RequireAccount';
 @use '../pages/AccountPage/AccountPage';
 @use '../components/EditorLayout/EditorLayout';
 @use '../components/NavigationEffects/NavigationEffects';
-@use '../pages/ServicePage/ServicePage';
-@use '../pages/WorkPage/WorkPage';
-@use '../pages/CrmPage/CrmPage';
 @use '../components/StudioIcon/StudioIcon';
-@use '../components/SiteHeader/SiteHeader';
-@use '../components/CaptionShowcaseCard/CaptionShowcaseCard';
-@use '../components/CaptionShowcase/CaptionShowcase';
-@use '../pages/HomePage/HomePage';
 @use '../components/CaptionSample/CaptionSample';
 @use '../components/InspectorPanel/InspectorPanel';
 @use '../components/SubtitleIcon/SubtitleIcon';
@@ -55,16 +38,12 @@
 @use '../components/LanguageDropdown/LanguageDropdown';
 
 @use '../components/SaveBeforeLeaving/SaveBeforeLeaving';
-@use '../pages/CreditsPage/CreditsPage';
-@use '../pages/OptionsPage/OptionsPage';
 
 @use '../pages/SubtitleStudio/SubtitleStudioTheme';
 @use '../components/LoadingVideo/LoadingVideo';
 
 @use "../components/ColorPicker/ColorPicker";
 
-@use "../components/PublicLayout/PublicLayout";
-@use "../pages/FaqPage/FaqPage";
 
 :root { color-scheme:light; --ui-panel:#fff; --ui-stage:#edf1f5; --ui-text:#182331; --ui-border:#e3e9ef; }
 :root[data-theme="dark"] { color-scheme:dark; --ui-panel:#18202d; --ui-stage:#101720; --ui-text:#e6ecf6; --ui-border:#344257; }

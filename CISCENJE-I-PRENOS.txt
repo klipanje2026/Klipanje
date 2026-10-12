@@ -1,0 +1,36 @@
+KLIPANJE: STA OSTAJE I KAKO PRENIJETI APLIKACIJU
+
+Klipanje dodaje privatne projekte, skripte i kadrove, likove i outfite,
+generisanje fotografija/teksta/naracije, lokalne korisnike i workspace kopije.
+Od Edite koristi video editor, timeline, titlove, zajednicki renderer,
+izvoz videa, audio obradu, fontove i resurse za prikaz stilova.
+
+IZDVOJENO IZ AKTIVNOG PROJEKTA
+Stare marketinske stranice, CRM ekran, pretplate/checkout, affiliate i
+analiticki ekrani te njihove nepovezane komponente i zasebni stilovi.
+Nepovezani backend CRM, prisutnost, najave, affiliate prijave/pregled,
+korisnicki uvidi i njihovi testovi. Stari test Editine pocetne stranice.
+Nekoristeni primjeri okoline, stari logotipi i izvorni Titlovi-main.zip.
+Povratna kopija: backups/edita-unused-20261012/ (ne ulazi u paket ni Git).
+
+NAMJERNO SACUVANO
+Zajednicki renderer i editor moduli, fontovi, teksture, primjeri likova,
+MediaPipe i modeli za postojece video funkcije. Naziv Edita u internim
+klasama/importima sam po sebi ne znaci da je fajl nepotreban.
+Postojeci Django modeli/migracije i povezani kompatibilni dijelovi obracuna
+ostaju radi citanja postojece baze i neometanog uploada/izvoza. Nema nove naplate.
+Root .env, baza, backend/media, workspace i korisnicki podaci nisu mijenjani.
+
+PRENOS NA DRUGI RACUNAR
+1. Dvaput klikni 6-PAKET-ZA-DRUGI-RACUNAR.cmd.
+2. Prenesi najnoviji outputs/Klipanje-prenos-*.zip i raspakuj ga.
+3. Instaliraj Node.js 22.13+ i Python 3.12+, zatim 1-INSTALIRAJ.cmd.
+4. Na tom racunaru zasebno upisi API kljuceve u root .env.
+5. Pripremi lokalnu prijavu, pa pokreni 3-POKRENI.cmd.
+
+Paket ne sadrzi node_modules, .venv, .git istoriju, izvorni Edita ZIP,
+backups, radne izlaze, kljuceve, bazu ni projekte. Biblioteke se ponovo
+instaliraju. Sadrzi aplikacijske slike/fontove koji su potrebni editoru.
+Ovo je prenos aplikacije, ne prenos tvojih projekata. Za projekte zasebno
+treba privatni backup baze i medija; JSON workspace kopije nisu automatski uvoznik.
+Paket je za lokalno pokretanje i nije paket za javnu web objavu.
