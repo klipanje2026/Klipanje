@@ -35,4 +35,7 @@ assert.equal(afterImage[1].start,7);
 assert.equal(clipsFollowCaptions(trio,original,afterImage)[1].start,7);
 const plan=buildPhotoPlan(['a','b'],{a:1,b:1},[{id:'1',segment:'a',text:'Forest'},{id:'2',segment:'b',text:'Friends'}],[['a','b']]);
 assert.equal(plan.length,1);assert.deepEqual(plan[0].segments,['a','b']);assert.match(plan[0].prompt,/Forest\nFriends/);
+const explicit=buildPhotoPlan(['a','b'],{a:2,b:1},[{id:'old',segment:'a',text:'Old solo prompt'}],[['a','b']],{'a|b':'Both friends in one forest scene'});
+assert.equal(explicit.length,2);assert.ok(explicit.every(item=>item.prompt==='Both friends in one forest scene'));
+assert.throws(()=>buildPhotoPlan(['a','b'],{a:1,b:1},[],[['a','b']],{'a|b':''}),/prompt/);
 console.log('Narration timing, quote handling, linked media and grouped photo checks passed.');

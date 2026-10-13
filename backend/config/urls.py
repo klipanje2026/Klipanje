@@ -42,6 +42,8 @@ urlpatterns = [
     path('api/audio/clean', ai.clean_audio),
     path('api/narration', ai.narration),
     path('api/creative/character', creative.generate_character),
+    path('api/creative/character/crop', creative.recrop_character_sheet),
+    path('api/creative/frame-prompt', creative.generate_frame_prompt),
     path('api/voice-change', ai.voice_change),
     # Retain the original renderer's accounting API for upload/export compatibility.
     path('api/subscription', billing.mine),

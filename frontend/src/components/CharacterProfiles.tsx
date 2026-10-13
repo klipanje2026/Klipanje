@@ -1,3 +1,4 @@
+import {CharacterSheetCrop} from './CharacterSheetCrop';
 import {useState} from 'react';
 import {LocalDialog,localConfirm} from './LocalDialog';
 import {apiJson} from '../lib/api';
@@ -5,6 +6,7 @@ import {jsonBody,type Character,type Asset} from '../lib/production';
 import {StyleDropdown} from './LanguageDropdown/LanguageDropdown';
 const views=[['head-front','Glava sprijeda'],['head-side','Glava sa strane'],['head-back','Glava odzada'],['body-front','Tijelo sprijeda'],['body-back','Tijelo odzada']] as const;
 export function CharacterProfiles({project,characters,assets,onSave,onRemove,onAsset}:{project:string;characters:Character[];assets:Asset[];onSave:(c:Character)=>Promise<void>;onRemove:(id:string)=>Promise<void>;onAsset:(a:Asset)=>void}){
+ const [sheet,setSheet]=useState<Asset|null>(null);
  const [preview,setPreview]=useState<Asset|null>(null);
  const [draft,setDraft]=useState<Character|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[model,setModel]=useState('gpt-image-2.5-sunburst');
  const patch=(value:Partial<Character>)=>setDraft(c=>c?{...c,...value}:c);
@@ -24,6 +26,19 @@ export function CharacterProfiles({project,characters,assets,onSave,onRemove,onA
    setMessage('Pogledi su spremljeni.');
   }catch(e){setMessage((e as Error).message+' Već spremljeni pogledi ostaju; ponovni klik nastavlja nedostajuće.');}finally{setBusy(false);}
  }
+ async function acceptSheet(result:{sheet:Asset;assets:Asset[];cropError?:string}){
+  if(!draft)return;onAsset(result.sheet);result.assets.forEach(onAsset);
+  const added=Object.fromEntries(result.assets.filter(a=>a.metadata.view).map(a=>[a.metadata.view!,a.id]));
+  const current={...draft,views:{...draft.views,...added},referenceId:added['head-front']||draft.referenceId};
+  setDraft(current);await onSave(current);setMessage(result.cropError||'Pet pogleda spremljeno iz jednog lista.');
+ }
+ async function generateSheet(){
+  if(!draft)return;
+  if(Object.keys(draft.views||{}).length&&!await localConfirm('Novi list zamijenit će aktivnih pet pogleda. Prethodne slike ostaju sačuvane.','Jedan list · pet pogleda','Generiši list'))return;
+  setBusy(true);setMessage('Generišem jedan list s pet pogleda…');
+  try{await onSave(draft);const result=await apiJson<{sheet:Asset;assets:Asset[];cropError?:string}>('/api/creative/character',jsonBody({project,character:draft.id,view:'sheet',model}));await acceptSheet(result);setSheet(result.sheet);}
+  catch(e){setMessage((e as Error).message);}finally{setBusy(false);}
+ }
  const photo=(id?:string)=>assets.find(a=>a.id===id);
  return <><button type="button" disabled={busy} onClick={()=>{setDraft({id:crypto.randomUUID(),name:'',description:'',appearance:'',personality:'',clothing:'',prompt:'',views:{},outfits:[]});setMessage('');}}>+ Dodaj lika</button>
  <div className="character-profile-grid">{characters.map(c=><button type="button" disabled={busy} key={c.id} onClick={()=>{setDraft({...c});setMessage('');}}><strong>{c.name}</strong>{photo(c.views?.['head-front']||c.referenceId)?<img src={photo(c.views?.['head-front']||c.referenceId)!.url} alt={c.name}/>:<svg viewBox="0 0 100 100" aria-label="Portret još nije generisan"><circle cx="50" cy="35" r="19"/><path d="M16 95v-9a34 34 0 0 1 68 0v9"/></svg>}</button>)}</div>
@@ -39,9 +54,10 @@ export function CharacterProfiles({project,characters,assets,onSave,onRemove,onA
  <label>Osnovna odjeća<textarea rows={2} maxLength={2000} value={draft.clothing||''} onChange={e=>patch({clothing:e.target.value})}/></label>
  <label>Dodatni prompt · opcionalno<textarea rows={2} maxLength={3000} value={draft.prompt||''} placeholder="Dodatne upute; opis iznad je dovoljan." onChange={e=>patch({prompt:e.target.value})}/></label>
  <StyleDropdown label="Model za lik" value={model} onChange={e=>setModel(e.target.value)}><option value="gpt-image-2.5-flare">GPT Image 2.5 Flare</option><option value="gpt-image-2.5-sunburst">GPT Image 2.5 Sunburst</option></StyleDropdown>
+ <section className="character-sheet-generation"><h3>Jedan list · pet pogleda</h3><p>Jedna generacija, pa lokalno izrezivanje: tri glave 1:1 i dva cijela tijela 9:16. Izreze možeš doraditi bez nove generacije.</p><button type="button" className="klipanje-primary" disabled={!draft.name.trim()||!(draft.appearance||draft.description).trim()} onClick={()=>void generateSheet()}>Generiši svih 5 u jednoj slici</button><small>Pogledi imaju manje detalja nego pojedinačne generacije. Pregledaj izreze prije korištenja.</small>{assets.filter(a=>a.metadata.purpose==='character-sheet'&&a.metadata.characterId===draft.id).slice().reverse().map(a=><button type="button" key={a.id} onClick={()=>setSheet(a)}>Prilagodi izreze · {a.created_at?new Date(a.created_at).toLocaleString('bs-BA'):a.name}</button>)}</section>
  <div className="character-view-grid">{views.map(([id,label])=><div key={id}><small>{label}</small>{photo(draft.views?.[id])?<button type="button" title={label} onClick={()=>setPreview(photo(draft.views?.[id])!)}><img src={photo(draft.views?.[id])!.url} alt={label}/></button>:<span>Još nije generisano</span>}<button type="button" disabled={!draft.name.trim()||!(draft.appearance||draft.description).trim()} onClick={async()=>{if(draft.views?.[id]&&!await localConfirm('Generisati novu verziju ovog pogleda? Prethodna slika ostaje sačuvana.','Novi pogled','Generiši'))return;void generate('',id);}}>{draft.views?.[id]?'Nova verzija':'Generiši ovaj pogled'}</button></div>)}</div>
  <button type="button" disabled={!draft.name.trim()||!(draft.appearance||draft.description).trim()} onClick={()=>void generate()}>Generiši nedostajuće poglede lika</button>
  <h3>Odjevne kombinacije</h3>{(draft.outfits||[]).map(o=><div className="character-outfit" key={o.id}><label>Naziv odjeće<input value={o.name} maxLength={100} onChange={e=>patch({outfits:draft.outfits?.map(v=>v.id===o.id?{...v,name:e.target.value}:v)})}/></label><label>Opis odjeće<textarea rows={2} maxLength={2000} value={o.description} onChange={e=>patch({outfits:draft.outfits?.map(v=>v.id===o.id?{...v,description:e.target.value}:v)})}/></label><div className="character-view-grid">{['body-front','body-back'].map(view=>photo(o.views?.[view])&&<img key={view} src={photo(o.views?.[view])!.url} alt={view==='body-front'?'Odjeća sprijeda':'Odjeća odzada'}/>)}</div><button type="button" disabled={!o.description.trim()||!draft.referenceId} onClick={()=>void generate(o.id)}>Generiši odjeću sprijeda i odzada</button><button type="button" onClick={()=>patch({outfits:draft.outfits?.filter(v=>v.id!==o.id)})}>Ukloni kombinaciju</button></div>)}
  <button type="button" onClick={()=>patch({outfits:[...(draft.outfits||[]),{id:crypto.randomUUID(),name:'Nova odjeća',description:'',views:{}}]})}>+ Dodaj odjeću</button>
- <div className="local-dialog-actions"><button type="button" disabled={!draft.name.trim()} className="klipanje-primary" onClick={()=>void save(true)}>Spremi lika</button>{characters.some(c=>c.id===draft.id)&&<button type="button" onClick={async()=>{if(await localConfirm('Obrisati profil lika?','Obriši lika','Obriši',true)){setBusy(true);try{await onRemove(draft.id);setDraft(null);}catch(e){setMessage((e as Error).message);}finally{setBusy(false);}}}}>Obriši lika</button>}</div></fieldset>{message&&<p role="status">{message}</p>}</LocalDialog>}{preview&&<LocalDialog title={preview.name} wide onClose={()=>setPreview(null)}><img className="photo-full-preview" src={preview.url} alt={preview.name}/></LocalDialog>}</>;
+ <div className="local-dialog-actions"><button type="button" disabled={!draft.name.trim()} className="klipanje-primary" onClick={()=>void save(true)}>Spremi lika</button>{characters.some(c=>c.id===draft.id)&&<button type="button" onClick={async()=>{if(await localConfirm('Obrisati profil lika?','Obriši lika','Obriši',true)){setBusy(true);try{await onRemove(draft.id);setDraft(null);}catch(e){setMessage((e as Error).message);}finally{setBusy(false);}}}}>Obriši lika</button>}</div></fieldset>{message&&<p role="status">{message}</p>}</LocalDialog>}{sheet&&draft&&<CharacterSheetCrop sheet={sheet} onClose={()=>setSheet(null)} onSaved={acceptSheet}/>} {preview&&<LocalDialog title={preview.name} wide onClose={()=>setPreview(null)}><img className="photo-full-preview" src={preview.url} alt={preview.name}/></LocalDialog>}</>;
 }

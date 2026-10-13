@@ -178,3 +178,43 @@
  :root[data-theme][data-palette] .local-edita-video .video-studio-timeline-head { flex-wrap:wrap!important; overflow-x:visible; }
  :root[data-theme][data-palette] .local-edita-video .video-studio-timeline-head .video-studio-zoom { margin-left:auto; }
 }
+
+/* Shared-frame prompts use the same surfaces, spacing and controls as the workspace. */
+.production-workspace .photo-frame-toolbar {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.production-workspace .photo-frame-toolbar h3 {margin:0;}
+.production-workspace .photo-frame-toolbar button,.production-workspace .photo-linked-group button {padding:10px 14px;border-radius:10px;transition:background .4s,border-color .4s;}
+.production-workspace .photo-linked-groups {display:grid;gap:8px;}
+.production-workspace .photo-linked-group {display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;background:var(--k-card);border:1px solid var(--k-border);border-radius:12px;}
+.production-workspace .photo-linked-group strong {font-size:12px;font-weight:500;}
+.production-workspace .photo-linked-group small,.production-workspace .photo-group-prompt header small {display:block;margin-top:5px;color:var(--k-muted);font-size:11px;}
+.production-workspace .photo-linked-group button:hover,.production-workspace .photo-frame-toolbar button:hover {background:color-mix(in srgb,var(--k-accent) 12%,var(--k-card));border-color:var(--k-accent);}
+.production-workspace .photo-group-prompts {display:grid;gap:14px;margin:20px 0;}
+.production-workspace .photo-group-prompts>h3 {font-size:13px;margin:0;}
+.production-workspace .photo-group-prompt {padding:18px;border:1px solid var(--k-border);border-radius:14px;background:var(--k-card);}
+.production-workspace .photo-group-prompt header {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;flex-wrap:wrap;}
+.production-workspace .photo-group-prompt header label {display:flex;align-items:center;gap:8px;margin:0;font-size:11px;}
+.production-workspace .photo-group-prompt header input {width:62px;padding:8px;}
+.production-workspace .photo-group-script {padding:12px 14px;margin-bottom:14px;border-radius:10px;background:color-mix(in srgb,var(--k-accent) 6%,var(--k-card));max-height:180px;overflow:auto;}
+.production-workspace .photo-group-script p {display:grid;gap:4px;margin:0 0 10px;font-size:12px;}
+.production-workspace .photo-group-script p:last-child {margin-bottom:0;}
+.production-workspace .photo-group-script strong {font-size:10px;color:var(--k-muted);font-weight:500;}
+.production-workspace .photo-group-prompt>label {display:grid;gap:8px;font-size:12px;margin:0;}
+.production-workspace .photo-group-prompt textarea {padding:12px 14px;min-height:108px;resize:vertical;}
+.production-workspace .photo-group-prompt>small {display:block;margin-top:10px;color:var(--k-muted);font-size:11px;}
+.character-sheet-generation {display:grid;gap:10px;padding:16px;border:1px solid var(--k-border);border-radius:14px;background:var(--k-card);margin:14px 0;}
+.character-sheet-generation h3,.character-sheet-generation p {margin:0;}
+.character-sheet-generation p,.character-sheet-generation small {font-size:12px;line-height:1.6;color:var(--k-muted);}
+.character-sheet-generation button {padding:10px 14px;}
+.character-sheet-canvas {position:relative;margin:16px 0;line-height:0;}
+.character-sheet-canvas>img {display:block;width:100%;height:auto;}
+.character-sheet-box {position:absolute;border:2px solid var(--k-accent);box-shadow:0 0 0 1px #fff8;pointer-events:none;}
+.character-sheet-box>span {position:absolute;left:0;top:0;padding:6px;background:var(--k-card);color:var(--k-text);font-size:10px;line-height:1.3;}
+.character-crop-controls {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+.character-crop-controls label {display:grid;gap:8px;font-size:12px;}
+.character-crop-controls input {width:100%;accent-color:var(--k-accent);}
+.local-caption-scope {display:grid;gap:8px;padding:12px;margin-bottom:12px;background:var(--k-card);border:1px solid var(--k-border);border-radius:12px;}
+.local-caption-scope small {font-size:10px;color:var(--k-muted);}
+.local-caption-actions {flex-wrap:wrap;gap:5px;}
+.photo-ai-prompt {padding:9px 12px!important;margin-bottom:10px;justify-self:start;}
+.photo-frame-prompt-field>.photo-ai-prompt {grid-column:1/-1;}
+@media(max-width:600px){.character-crop-controls {grid-template-columns:1fr;}}
