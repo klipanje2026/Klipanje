@@ -62,7 +62,39 @@ class CharacterSheetTests(ProfileTests):
             self.assertEqual([s['id'] for s in context['requestedFrames']],['a','b'])
             self.assertIn('They go home',context['story']);self.assertEqual(context['rules']['characters'][0]['name'],'Mila')
             self.assertIn('ONE coherent scene',request['instructions']);image.assert_not_called()
+            self.assertIn('30-55 words',request['instructions'])
+            self.assertIn('forgetting to buy sunscreen',request['instructions'])
             for ids in [['a','c'],['foreign'],['a','a']]:
                 self.assertEqual(self.client.post('/api/creative/frame-prompt',{**payload,'segments':ids},content_type='application/json').status_code,400)
             self.client.force_login(self.other)
             self.assertEqual(self.client.post('/api/creative/frame-prompt',payload,content_type='application/json').status_code,404)
+
+    @override_settings(OPENAI_API_KEY='')
+    def test_request_preview_is_private_and_never_generates(self):
+        with patch('studio.creative.request_image') as image:
+            response=self.client.post('/api/creative/character',{**self.body,'preview':True,'view':'sheet'},content_type='application/json')
+            self.assertEqual(response.status_code,200,response.content)
+            self.assertIn('Green eyes',response.json()['prompt']);image.assert_not_called()
+            self.assertEqual(MediaAsset.objects.count(),0)
+            self.client.force_login(self.other)
+            self.assertEqual(self.client.post('/api/creative/character',{**self.body,'preview':True},content_type='application/json').status_code,404)
+
+    @override_settings(OPENAI_API_KEY='test-only',OPENAI_MODEL='test-text')
+    def test_story_profile_suggestion_is_reviewable_and_does_not_modify_profile(self):
+        script=LocalScript.objects.create(project=self.project,owner=self.user,title='Mila',content='Mila wears a blue coat and walks through the rain.')
+        proposal={'name':'Mila','appearance':'Green eyes','personality':'Curious, gentle steps','clothing':'Blue coat',
+            'prompt':'Original character with green eyes.','outfits':[{'name':'Kiša','description':'Yellow raincoat'}],'suggestions':'Gentle steps suggested.'}
+        payload={'project':str(self.project.pk),'script':str(script.pk),'name':'Mila','appearance':'Green eyes'}
+        original=self.project.brief.copy()
+        with patch('studio.creative.httpx.Client') as provider:
+            response=provider.return_value.__enter__.return_value.post.return_value
+            response.is_success=True;response.json.return_value={'output':[{'content':[{'type':'output_text','text':json.dumps(proposal)}]}]}
+            result=self.client.post('/api/creative/character-profile',payload,content_type='application/json')
+            self.assertEqual(result.status_code,200,result.content);self.assertEqual(result.json()['clothing'],'Blue coat')
+            sent=provider.return_value.__enter__.return_value.post.call_args.kwargs['json']
+            self.assertIn(script.content,sent['input']);self.assertIn('default everyday outfit',sent['instructions'])
+            self.project.refresh_from_db();self.assertEqual(self.project.brief,original)
+            response.json.return_value={'output':[{'content':[{'type':'output_text','text':'not json'}]}]}
+            self.assertEqual(self.client.post('/api/creative/character-profile',payload,content_type='application/json').status_code,502)
+            self.client.force_login(self.other)
+            self.assertEqual(self.client.post('/api/creative/character-profile',payload,content_type='application/json').status_code,404)

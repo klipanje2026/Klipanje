@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {loadTestModule} from './test-ts-module.mjs';
-const {snapTime,rippleMove,clipsFollowCaptions,captionsFollowClips,narrationParts,fitCaptionSpeech,mergeSpeechCaptions}=await loadTestModule('lib/local-timeline.ts','work/local-timeline-tests');
+const {estimateSpeech,snapTime,rippleMove,clipsFollowCaptions,captionsFollowClips,narrationParts,fitCaptionSpeech,mergeSpeechCaptions}=await loadTestModule('lib/local-timeline.ts','work/local-timeline-tests');
 const segments=[{id:'a',start:0,end:2,text:'Prva scena',words:[{text:'Prva',start:0,end:1}]},{id:'b',start:3,end:5,text:'Druga scena'},{id:'c',start:5,end:8,text:'Treća duža scena'}];
 const original=JSON.stringify(segments);
 assert.deepEqual(snapTime(3.04,2,[3,5],.1),{start:3,guide:3});
@@ -18,7 +18,7 @@ const fitted=fitCaptionSpeech(segments,1,8);
 assert.deepEqual(fitted.map(s=>[s.start,s.end]),[[1,3],[3,5],[5,8]]);
 assert.equal(fitted[0].words[0].start,1);
 const merged=mergeSpeechCaptions(segments,'a',{start:0,end:7});
-assert.equal(merged.length,2);assert.equal(merged[0].end,4);assert.equal(merged[1].start,4);
+assert.equal(merged.length,2);assert.equal(merged[0].end,5);assert.equal(merged[1].start,5);
 assert.deepEqual(narrationParts('„Stani!” rekao je vuk. Crvenkapica je zastala.'),['„Stani!” rekao je vuk.','Crvenkapica je zastala.']);
 assert.deepEqual(narrationParts('Prva linija\nDruga linija'),['Prva linija','Druga linija']);
 assert.equal(JSON.stringify(segments),original);
@@ -51,3 +51,11 @@ const {orderedGallery}=await loadTestModule('lib/gallery-order.ts','work/local-t
 const named=orderedGallery([{id:'a',name:'old.png',contentType:'image/png',metadata:{sequence:7},created_at:'2026-10-01'}],{title:'Epizoda 2',segments:[]},'Moj film');
 assert.equal(named[0].name,'Moj film-ep2-007.png');
 console.log('Image cover, zoom-out endpoint and project/episode image filenames passed.');
+
+const sentence='Medo Ibrahim je ustao iz kreveta i polako krenuo prema prozoru.';
+assert.ok(estimateSpeech(sentence)>=5);
+assert.ok(estimateSpeech(sentence,100)>estimateSpeech(sentence,180));
+assert.ok(estimateSpeech('Zdravo, prijatelju, kako si danas!')>estimateSpeech('Zdravo prijatelju kako si danas'));
+const timed=[{id:'x',text:'Jedan',start:0,end:3,timingSource:'narration',words:[{text:'Jedan',start:1,end:2}]},{id:'y',text:'Dva',start:3,end:5,words:[{text:'Dva',start:3.5,end:4}]}];
+const joined=mergeSpeechCaptions(timed,'x');
+assert.equal(joined[0].end,5);assert.equal(joined[0].words[1].start,3.5);

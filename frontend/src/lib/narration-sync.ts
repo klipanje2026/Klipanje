@@ -30,7 +30,7 @@ export function fitNarration(segments:Segment[],timing:NarrationTiming,start:num
  const weights=targets.map(s=>Math.max(1,s.text.trim().split(/\s+/).length)),total=weights.reduce((a,b)=>a+b,0);
  const changes=new Map<string,Segment>();let count=0,weight=0;
  targets.forEach((s,i)=>{weight+=weights[i];const next=i===targets.length-1?words.length:Math.round(words.length*weight/total);const own=words.slice(count,next);const from=i===0?start:start+(own[0]?.start??timing.duration*weight/total);const end=i===targets.length-1?start+timing.duration:start+(words[next]?.start??timing.duration);
-  changes.set(s.id,{...s,start:from,end:Math.max(from+.01,end),text:own.map(w=>w.text).join(' ')||s.text,words:own.map(w=>({...w,start:start+w.start,end:start+w.end}))});count=next;
+  changes.set(s.id,{...s,timingSource:timing.words.length?'narration':'estimate',start:from,end:Math.max(from+.01,end),text:own.map(w=>w.text).join(' ')||s.text,words:own.map(w=>({...w,start:start+w.start,end:start+w.end}))});count=next;
  });
  const oldEnd=targets[targets.length-1].end,delta=start+timing.duration-oldEnd;
  return segments.map(s=>changes.get(s.id)||(!(ids.has(s.id)||!!s.sourceSceneId&&ids.has(s.sourceSceneId))&&s.role!=='title'&&s.start>=oldEnd?shiftSegment(s,delta):s));

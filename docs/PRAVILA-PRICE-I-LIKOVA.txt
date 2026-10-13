@@ -1,0 +1,42 @@
+Klipanje — pravila za priču, likove i promptove
+
+Polazište je korisnikova priča, ne unaprijed izmišljen predložak.
+1. Pročitaj cijelu priču. Zapiši redoslijed događaja, odnose, važne rekvizite,
+   propuste i posljedice. Ne preskači negacije: zaboravili su kremu nije kupili su kremu.
+2. Sačuvaj već odobrena imena, izgled, stil i korisnikove posebne zahtjeve.
+   Novi detalji su prijedlog, a ne činjenica iz izvornog teksta.
+3. Projekt opiši kratko. Razdvoji: šta želimo, šta izbjegavamo i način pripovijedanja.
+   Pripovijedanje definiše glas, jezik, dužinu rečenica, dijalog, humor i ritam.
+4. Svaki lik ima zasebna polja:
+   - Izgled: vrsta, silueta, građa, proporcije, krzno/kosa, lice, oči, prepoznatljiva oznaka.
+   - Osobine i ponašanje: karakter te vidljivi koraci, geste i reakcije.
+   - Osnovna odjeća: jedna svakodnevna kombinacija, stalne boje i glavni dodatak.
+   - Druge kombinacije: posebno imenovane, uz opis u kojim scenama se koriste.
+   - Dodatni prompt: sažet opis identiteta, stila, osnovne odjeće i neutralnog prikaza.
+     Ne nameće raspored panela: alat bira pojedinačni pogled ili list s pet pogleda.
+5. Antropomorfna životinja zadržava životinjsku anatomiju uz ljudsko držanje i geste.
+   Isti svijet znači isti stil, ne isto lice, vrstu ili odjeću za sve likove.
+6. Prompt kadra obično ima 30–55 riječi, najviše 75: ko, šta radi, gdje, važan predmet,
+   kadar/svjetlo i kratka napomena o referencama. Bez dugog ponavljanja cijelog profila.
+   Jedna povezana grupa dobija jedan zajednički prizor, ne kolaž više trenutaka.
+7. Očuvaj ključni detalj i u kratkom promptu. Primjer: prijatelji odlaze s kupljenim
+   potrepštinama, a krema nedostaje u torbi. Ne dodavati namjerno odbacivanje kreme.
+8. Izmjenu korisnik može urediti. AI prijedlog prompta upisuje se direktno u njegovo
+   polje; prethodni tekst može se vratiti dok je stranica otvorena. Profil lika se
+   pregleda prije primjene da se odobren identitet ne prepiše neprimjetno.
+
+Vrijeme: prije zvuka koristi sporiju procjenu s pauzama, podesivu u skriptama.
+Po generisanju koristi stvarno trajanje i vremena riječi. Spajanje titlova uz
+snimljenu naraciju čuva vremenski raspon; ne ubrzava postojeći govor.
+
+List lika: jedna generacija pa lokalni izrezi (glave 1:1, tijela 9:16).
+Okviri se mogu pomjerati i povećavati bez nove generacije; original ostaje.
+Model može odstupiti od rasporeda. Pregledati izreze prije daljnjeg korištenja.
+
+Odbijanje: moderation_blocked ne daje pouzdan razlog niti označenu problematičnu
+riječ. Pogledati stvarni zahtjev i reference, sačuvati request ID za podršku.
+Ne obećavati rješenje prepisivanjem prompta, ne zaobilaziti provjeru i ne slati
+automatske ponovne pokušaje. Pravila ne mijenjaju sigurnosne postavke providera.
+
+Ovaj dokument opisuje aplikacijski kreativni tok. Izvorna privatna priča, profili,
+slike i API ključevi ostaju u lokalnom workspaceu; nisu dio GitHub objave.

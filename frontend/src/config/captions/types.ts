@@ -50,6 +50,7 @@ export type CaptionPosition = "top" | "middle" | "bottom";
 export type CaptionWord = { text: string; start: number; end: number };
 export type Segment = {
   sourceSceneId?: string;
+  timingSource?: 'narration' | 'estimate';
   keywordWord?: number | null;
   headingWord?: number | null;
   frameAnimationStart?: number;

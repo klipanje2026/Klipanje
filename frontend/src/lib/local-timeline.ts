@@ -40,12 +40,13 @@ export function captionsFollowClips<T extends LinkedClip>(before:T[],after:T[],s
  return next;
 }
 export const wordWeight=(text:string)=>Math.max(1,text.trim().split(/\s+/).filter(Boolean).length);
-export function estimateSpeech(text:string){return Math.round(Math.max(.8,wordWeight(text)/3.2+(text.match(/[,;:]/g)?.length||0)*.1)*10)/10;}
+export function estimateSpeech(text:string,wordsPerMinute=135){const pace=Math.max(80,Math.min(220,wordsPerMinute));return Math.round(Math.max(1.4,wordWeight(text)*60/pace+(text.match(/[,;:]/g)?.length||0)*.18+(text.match(/[.!?]+/g)?.length||0)*.35)*10)/10;}
 export function mergeSpeechCaptions(segments:Segment[],id:string,range?:{start:number;end:number}){
  const first=segments.find(s=>s.id===id),second=nextCaptionToMerge(segments,id);if(!first||!second)return segments;
  const merged=mergeCaptionWithNext(segments,id),combined=merged.find(s=>s.id===id)!;
- const rate=range&&range.end>range.start?segments.filter(s=>s.role!=='title').reduce((sum,s)=>sum+wordWeight(s.text),0)/(range.end-range.start):0;
- const duration=Math.max(.2,rate?wordWeight(combined.text)/rate:estimateSpeech(combined.text)),end=first.start+duration,delta=end-second.end;
+ // Existing audio timing must not be replaced by a fresh speaking-rate estimate.
+ if(range&&range.end>range.start||first.timingSource==='narration'||second.timingSource==='narration')return merged;
+ const duration=estimateSpeech(combined.text),end=first.start+duration,delta=end-second.end;
  const tokens=combined.text.trim().split(/\s+/).filter(Boolean);
  return merged.map(s=>s.id===id?{...s,end,words:tokens.map((text,i)=>({text,start:first.start+duration*i/tokens.length,end:first.start+duration*(i+1)/tokens.length}))}:s.role===first.role&&(s.lane||0)===(first.lane||0)&&s.start>=second.end?shiftSegment(s,delta):s);
 }
