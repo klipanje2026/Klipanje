@@ -21,8 +21,10 @@ export function clipsFollowCaptions<T extends LinkedClip>(clips:T[],before:Segme
   if(!clip.captionId&&clip.segmentIds?.length){const targets=after.filter(s=>(clip.segmentIds!.includes(s.id)||!!s.sourceSceneId&&clip.segmentIds!.includes(s.sourceSceneId)));if(!targets.length)return clip;const start=Math.min(...targets.map(s=>s.start)),end=Math.max(...targets.map(s=>s.end));const count=clip.sceneSlice?.count||1,index=clip.sceneSlice?.index||0,length=(end-start)/count;return {...clip,start:start+length*index,outPoint:clip.inPoint+length};}
   if(!clip.captionId)return clip;const prior=before.find(s=>s.id===clip.captionId),next=after.find(s=>s.id===clip.captionId);
   if(!next)return {...clip,captionId:undefined};
-  if(prior&&prior.start===next.start&&prior.end===next.end)return clip;
-  return {...clip,start:next.start,outPoint:clip.inPoint+Math.max(.1,next.end-next.start)};
+  const family=after.filter(s=>s.id===next.id||(s.sourceSceneId||s.id)===(next.sourceSceneId||next.id));const start=Math.min(...family.map(s=>s.start)),end=Math.max(...family.map(s=>s.end));
+  const oldFamily=before.filter(s=>s.id===clip.captionId||(s.sourceSceneId||s.id)===(prior?.sourceSceneId||clip.captionId));
+  if(oldFamily.length&&Math.min(...oldFamily.map(s=>s.start))===start&&Math.max(...oldFamily.map(s=>s.end))===end)return clip;
+  return {...clip,start,outPoint:clip.inPoint+Math.max(.1,end-start)};
  });
 }
 export function captionsFollowClips<T extends LinkedClip>(before:T[],after:T[],segments:Segment[]):Segment[]{
@@ -40,7 +42,7 @@ export function captionsFollowClips<T extends LinkedClip>(before:T[],after:T[],s
  return next;
 }
 export const wordWeight=(text:string)=>Math.max(1,text.trim().split(/\s+/).filter(Boolean).length);
-export function estimateSpeech(text:string,wordsPerMinute=135){const pace=Math.max(80,Math.min(220,wordsPerMinute));return Math.round(Math.max(1.4,wordWeight(text)*60/pace+(text.match(/[,;:]/g)?.length||0)*.18+(text.match(/[.!?]+/g)?.length||0)*.35)*10)/10;}
+export function estimateSpeech(text:string,wordsPerMinute=210){const pace=Math.max(80,Math.min(220,wordsPerMinute));return Math.round(Math.max(.8,wordWeight(text)*60/pace+(text.match(/[,;:]/g)?.length||0)*.08+(text.match(/[.!?]+/g)?.length||0)*.15)*10)/10;}
 export function mergeSpeechCaptions(segments:Segment[],id:string,range?:{start:number;end:number}){
  const first=segments.find(s=>s.id===id),second=nextCaptionToMerge(segments,id);if(!first||!second)return segments;
  const merged=mergeCaptionWithNext(segments,id),combined=merged.find(s=>s.id===id)!;

@@ -16,7 +16,7 @@ Polazište je korisnikova priča, ne unaprijed izmišljen predložak.
      Ne nameće raspored panela: alat bira pojedinačni pogled ili list s pet pogleda.
 5. Antropomorfna životinja zadržava životinjsku anatomiju uz ljudsko držanje i geste.
    Isti svijet znači isti stil, ne isto lice, vrstu ili odjeću za sve likove.
-6. Prompt kadra obično ima 30–55 riječi, najviše 75: ko, šta radi, gdje, važan predmet,
+6. Prompt kadra obično ima 60–130 riječi: ko, šta radi, gdje, važan predmet,
    kadar/svjetlo i kratka napomena o referencama. Bez dugog ponavljanja cijelog profila.
    Jedna povezana grupa dobija jedan zajednički prizor, ne kolaž više trenutaka.
 7. Očuvaj ključni detalj i u kratkom promptu. Primjer: prijatelji odlaze s kupljenim
@@ -25,7 +25,7 @@ Polazište je korisnikova priča, ne unaprijed izmišljen predložak.
    polje; prethodni tekst može se vratiti dok je stranica otvorena. Profil lika se
    pregleda prije primjene da se odobren identitet ne prepiše neprimjetno.
 
-Vrijeme: prije zvuka koristi sporiju procjenu s pauzama, podesivu u skriptama.
+Vrijeme: prije zvuka koristi bržu procjenu (210 riječi/min) s kratkim pauzama, podesivu u skriptama.
 Po generisanju koristi stvarno trajanje i vremena riječi. Spajanje titlova uz
 snimljenu naraciju čuva vremenski raspon; ne ubrzava postojeći govor.
 
@@ -40,3 +40,6 @@ automatske ponovne pokušaje. Pravila ne mijenjaju sigurnosne postavke providera
 
 Ovaj dokument opisuje aplikacijski kreativni tok. Izvorna privatna priča, profili,
 slike i API ključevi ostaju u lokalnom workspaceu; nisu dio GitHub objave.
+
+Dijelovi titla su samo raspored prikaza: jedan blok, isto trajanje i vezana slika.
+Povezane fotografije obuhvataju naraciju svih svojih kadrova.

@@ -49,6 +49,8 @@ export type StyleKey =
 export type CaptionPosition = "top" | "middle" | "bottom";
 export type CaptionWord = { text: string; start: number; end: number };
 export type Segment = {
+  visualParts?: {id:string;from:number;to:number;position?:{x:number;y:number};detachedStyle?:{style:StyleKey;settings:CaptionSettings}}[];
+  renderPartId?: string;
   sourceSceneId?: string;
   timingSource?: 'narration' | 'estimate';
   keywordWord?: number | null;

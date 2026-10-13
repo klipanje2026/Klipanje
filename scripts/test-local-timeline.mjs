@@ -53,7 +53,7 @@ assert.equal(named[0].name,'Moj film-ep2-007.png');
 console.log('Image cover, zoom-out endpoint and project/episode image filenames passed.');
 
 const sentence='Medo Ibrahim je ustao iz kreveta i polako krenuo prema prozoru.';
-assert.ok(estimateSpeech(sentence)>=5);
+assert.ok(estimateSpeech(sentence)<5);
 assert.ok(estimateSpeech(sentence,100)>estimateSpeech(sentence,180));
 assert.ok(estimateSpeech('Zdravo, prijatelju, kako si danas!')>estimateSpeech('Zdravo prijatelju kako si danas'));
 const timed=[{id:'x',text:'Jedan',start:0,end:3,timingSource:'narration',words:[{text:'Jedan',start:1,end:2}]},{id:'y',text:'Dva',start:3,end:5,words:[{text:'Dva',start:3.5,end:4}]}];

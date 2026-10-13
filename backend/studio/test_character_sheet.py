@@ -62,7 +62,7 @@ class CharacterSheetTests(ProfileTests):
             self.assertEqual([s['id'] for s in context['requestedFrames']],['a','b'])
             self.assertIn('They go home',context['story']);self.assertEqual(context['rules']['characters'][0]['name'],'Mila')
             self.assertIn('ONE coherent scene',request['instructions']);image.assert_not_called()
-            self.assertIn('30-55 words',request['instructions'])
+            self.assertIn('60-130 words',request['instructions'])
             self.assertIn('forgetting to buy sunscreen',request['instructions'])
             for ids in [['a','c'],['foreign'],['a','a']]:
                 self.assertEqual(self.client.post('/api/creative/frame-prompt',{**payload,'segments':ids},content_type='application/json').status_code,400)

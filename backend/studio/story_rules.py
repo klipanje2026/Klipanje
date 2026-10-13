@@ -14,8 +14,8 @@ Do not silently rewrite the plot, add characters or turn a suggestion into an es
 No text, watermarks or unrelated props in image prompts unless the user explicitly requests them.'''
 
 FRAME_RULES = STORY_RULES + '''
-Write a short usable image prompt in Bosnian Latin script: normally 30-55 words, at most 75.
-Use 2-4 plain sentences, no headings, Markdown or repeated lists of every profile attribute.
+Write a short usable image prompt in Bosnian Latin script: about 60-130 words, with enough detail for a coherent scene.
+Use plain sentences, no headings, Markdown or unnecessary repetition of every profile attribute.
 Specify who, one visible action/reaction, location, relevant prop, composition/light and a short reference-continuity instruction.
 The selected frames define what must be shown; the rest of the story is continuity context only.
 For a connected group return ONE coherent scene, never separate prompts, multiple panels or a storyboard.

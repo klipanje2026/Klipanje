@@ -1,3 +1,4 @@
+import {expandVisualParts,patchVisualPart} from '../lib/caption-parts';
 import {isPresetCaptionStyle} from '../config/captions/style-library';
 import {captionNeedsPerson} from '../lib/caption-word-roles';
 import {prepareCollectionResources} from '../lib/collection-captions';
@@ -17,12 +18,12 @@ import { videoRect, type VideoTransform } from '../lib/video-layout';
 export function drawVideoCaptions(context: CanvasRenderingContext2D, layer: HTMLCanvasElement, clips: (CaptionClip & VideoTransform)[], documents: Record<string, VideoCaptions>, time: number, videoFor: (id:string)=>FrameSource|undefined) {
   layer.width=context.canvas.width; layer.height=context.canvas.height;
   const ink=layer.getContext('2d')!;
-  const hits:{assetId:string;clipId:string;segmentId:string;bounds:CaptionBounds}[]=[];
+  const hits:{assetId:string;clipId:string;segmentId:string;partId?:string;bounds:CaptionBounds}[]=[];
   for (const item of captionsAtTime(clips,documents,time)) {
     ink.clearRect(0,0,layer.width,layer.height);
     const video=videoFor(item.clip.id),rect=video&&video.videoWidth?videoRect(video.videoWidth/video.videoHeight,layer.width/layer.height,glassVideoTransform(item.clip,item.document,item.sourceTime)):undefined;
     const bounds=drawPersonCaption(ink,item.segment,item.captionTime,item.document.activeStyle,item.document.captionSettings,video,50,50,rect);
-    if(bounds)hits.push({assetId:item.clip.assetId,clipId:item.clip.id,segmentId:item.segment.id,bounds});
+    if(bounds)hits.push({assetId:item.clip.assetId,clipId:item.clip.id,segmentId:item.segment.id,partId:item.segment.renderPartId,bounds});
     context.drawImage(layer,0,0);
   }
   return hits;
@@ -50,7 +51,7 @@ export function VideoCaptionLayer({clips,documents,time,aspect,mediaRefs,editabl
   },[clips,documents,time,aspect,mediaRefs,behind,ready,collectionReady]);
 
   const begin=(e:React.PointerEvent<HTMLElement>,hit:typeof hits[number],word?:number,mode='move')=>{if(!documents[hit.assetId]?.segments.some(s=>s.id===hit.segmentId))return;e.preventDefault();e.stopPropagation();if(e.ctrlKey||e.metaKey){onSelect?.(hit.clipId,hit.segmentId,undefined,true);return;}onBegin?.();onSelect?.(hit.clipId,hit.segmentId,word);gesture.current={x:e.clientX,y:e.clientY,box:ref.current!.getBoundingClientRect(),hit,doc:documents[hit.assetId],word,mode};e.currentTarget.setPointerCapture(e.pointerId);};
-  const move=(e:React.PointerEvent<HTMLElement>)=>{const g=gesture.current;if(!g||!e.currentTarget.hasPointerCapture(e.pointerId))return;e.stopPropagation();const dx=(e.clientX-g.x)/g.box.width*100,dy=(e.clientY-g.y)/g.box.height*100;const selected=resolveCaptionSuggestions(g.doc.segments).find(s=>s.id===g.hit.segmentId)!;const settings={...(selected.detachedStyle?.settings||selected.laneStyle?.settings||g.doc.captionSettings),...selected.position};
+  const move=(e:React.PointerEvent<HTMLElement>)=>{const g=gesture.current;if(!g||!e.currentTarget.hasPointerCapture(e.pointerId))return;e.stopPropagation();const dx=(e.clientX-g.x)/g.box.width*100,dy=(e.clientY-g.y)/g.box.height*100;const selected=resolveCaptionSuggestions(g.doc.segments).flatMap(expandVisualParts).find(s=>s.id===g.hit.segmentId&&s.renderPartId===g.hit.partId)!;const settings={...(selected.detachedStyle?.settings||selected.laneStyle?.settings||g.doc.captionSettings),...selected.position};
     let x=g.hit.bounds.x+dx,y=g.hit.bounds.y+dy;const gx=Math.abs(x-50)<1.5,gy=[25,50,75].find(point=>Math.abs(y-point)<1.5);if(gx)x=50;if(gy!==undefined)y=gy;setGuides({x:gx,y:gy??null});
     // Bounds describe the visible ink, which need not be centered on the renderer anchor.
     x+=settings.x-g.hit.bounds.x;y+=settings.y-g.hit.bounds.y;
@@ -58,7 +59,8 @@ export function VideoCaptionLayer({clips,documents,time,aspect,mediaRefs,editabl
     const preset=isPresetCaptionStyle(selected.detachedStyle?.style||selected.laneStyle?.style||g.doc.activeStyle);
     const resizedScale=Math.max(preset?10:40,Math.min(preset?400:600,settings.fontScale+dx*3));
     const next=g.mode==='resize'?{...settings,fontScale:resizedScale,fontSizePx:preset?settings.fontSizePx:settings.fontSizePx?settings.fontSizePx*resizedScale/Math.max(1,settings.fontScale):undefined}:g.mode==='rotate'?{...settings,rotation:Math.round(settings.rotation+dx*3)}:{...settings,x:Math.max(-200,Math.min(300,x)),y:Math.max(-200,Math.min(300,y))};
-    if(scope==='local'){
+    if(g.hit.partId){onChange?.(g.hit.assetId,{...g.doc,segments:g.doc.segments.map(s=>s.id===selected.id?patchVisualPart(s,g.hit.partId!,next,selected.detachedStyle?.style||g.doc.activeStyle):s)});}
+    else if(scope==='local'){
       const patch=g.mode==='resize'?{fontScale:next.fontScale,fontSizePx:next.fontSizePx}:g.mode==='rotate'?{rotation:next.rotation}:{x:next.x,y:next.y};
       onChange?.(g.hit.assetId,{...g.doc,captionSettings:{...g.doc.captionSettings,...patch},segments:g.doc.segments.map(s=>({...s,position:g.mode==='move'?{x:next.x,y:next.y}:s.position,laneStyle:s.laneStyle?{...s.laneStyle,settings:{...s.laneStyle.settings,...patch}}:undefined,detachedStyle:s.detachedStyle?{...s.detachedStyle,settings:{...s.detachedStyle.settings,...patch}}:undefined}))});
     }
@@ -67,5 +69,5 @@ export function VideoCaptionLayer({clips,documents,time,aspect,mediaRefs,editabl
     else onChange?.(g.hit.assetId,{...g.doc,segments:g.doc.segments.map(s=>s.id!==selected.id?s:{...s,position:undefined,titleOverrides:s.role==='title'?{...s.titleOverrides,x:next.x,y:next.y,rotation:next.rotation,fontScale:next.fontScale,fontSizePx:next.fontSizePx}:s.titleOverrides,detachedStyle:{style:s.detachedStyle?.style||s.laneStyle?.style||g.doc.activeStyle,settings:next}})});
   };
   const end=(e:React.PointerEvent<HTMLElement>)=>{gesture.current=null;setGuides({x:false,y:null});onEnd?.();if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);};
-  return <><canvas className="video-caption-layer" ref={ref} aria-label="Titlovi u video editoru"/>{editable&&<div className="video-caption-handles">{hits.flatMap(hit=>{const segment=documents[hit.assetId]?.segments.find(s=>s.id===hit.segmentId);if(!segment)return [];return (segment.wordsSeparated?hit.bounds.words.map(w=>({...w,word:w.index})):[{...hit.bounds,word:undefined}]).map((bounds,i)=><div key={hit.clipId+hit.segmentId+i} role="button" tabIndex={0} aria-label={`Pomjeri titl: ${segment.text}`} className="video-caption-hit" style={{left:`${bounds.x}%`,top:`${bounds.y}%`,width:`${bounds.width}%`,height:`${bounds.height}%`,transform:`translate(-50%,-50%) rotate(${bounds.rotation}deg)`}} onPointerDown={e=>begin(e,hit,bounds.word)} onPointerMove={move} onPointerUp={end} onPointerCancel={end} onDoubleClick={()=>{onSelect?.(hit.clipId,hit.segmentId,bounds.word);onEdit?.();}}>{bounds.word===undefined&&<><button title="Promijeni veličinu titla" className="caption-resize-knob" onPointerDown={e=>begin(e,hit,undefined,'resize')} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>↘</button><button title="Rotiraj titl" className="caption-rotate-knob" onPointerDown={e=>begin(e,hit,undefined,'rotate')} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>↻</button></>}</div>);})}{guides.x&&<div className="caption-center-guide vertical"/>}{guides.y!==null&&<div className="caption-center-guide horizontal" style={{top:`${guides.y}%`}}/>}</div>}{scanStatus&&<span className="caption-mask-scan-status" role="status">{scanStatus}</span>}{error&&<span role="status">{error}</span>}</>;
+  return <><canvas className="video-caption-layer" ref={ref} aria-label="Titlovi u video editoru"/>{editable&&<div className="video-caption-handles">{hits.flatMap(hit=>{const segment=documents[hit.assetId]?.segments.find(s=>s.id===hit.segmentId);if(!segment)return [];return (segment.wordsSeparated?hit.bounds.words.map(w=>({...w,word:w.index})):[{...hit.bounds,word:undefined}]).map((bounds,i)=><div key={hit.clipId+hit.segmentId+(hit.partId||'')+i} role="button" tabIndex={0} aria-label={`Pomjeri titl: ${segment.text}`} className="video-caption-hit" style={{left:`${bounds.x}%`,top:`${bounds.y}%`,width:`${bounds.width}%`,height:`${bounds.height}%`,transform:`translate(-50%,-50%) rotate(${bounds.rotation}deg)`}} onPointerDown={e=>begin(e,hit,bounds.word)} onPointerMove={move} onPointerUp={end} onPointerCancel={end} onDoubleClick={()=>{onSelect?.(hit.clipId,hit.segmentId,bounds.word);onEdit?.();}}>{bounds.word===undefined&&<><button title="Promijeni veličinu titla" className="caption-resize-knob" onPointerDown={e=>begin(e,hit,undefined,'resize')} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>↘</button><button title="Rotiraj titl" className="caption-rotate-knob" onPointerDown={e=>begin(e,hit,undefined,'rotate')} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>↻</button></>}</div>);})}{guides.x&&<div className="caption-center-guide vertical"/>}{guides.y!==null&&<div className="caption-center-guide horizontal" style={{top:`${guides.y}%`}}/>}</div>}{scanStatus&&<span className="caption-mask-scan-status" role="status">{scanStatus}</span>}{error&&<span role="status">{error}</span>}</>;
 }

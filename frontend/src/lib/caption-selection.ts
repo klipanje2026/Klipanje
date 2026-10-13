@@ -1,3 +1,4 @@
+import {expandVisualParts} from './caption-parts';
 import {applyPresetCaptionStyle} from './preset-caption-style';
 import {isPresetCaptionStyle} from '../config/captions/style-library';
 import {captionWordRoles,captionRenderSegment,ignoresCaptionTitles} from './caption-word-roles';
@@ -212,7 +213,7 @@ export function activeCaptionSegments(segments:Segment[],time:number,style:Style
   if(['primeFrame','lensFrame','vistaRise','popCollage'].includes(own.style))active.push({...previous,effectOnly:true});
   if(own.style!=='primeFrame'&&own.style!=='lensFrame'&&own.style!=='underlinedEditorial')for(const title of resolved.filter(s=>s.role==='title'&&s.sourceCaptionId===previous.id)){if(!active.some(s=>s.id===title.id))active.push({...title,effectOnly:true});}
  }
- return active;
+ return active.flatMap(expandVisualParts);
 }
 
 /** Remove the shared group style while retaining each caption's explicit override. */
