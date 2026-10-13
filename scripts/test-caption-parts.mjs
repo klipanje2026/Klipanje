@@ -43,7 +43,7 @@ const letters={id:'letters',start:2,end:4,text:'Medo',words:[{text:'Medo',start:
 let separated=letters;
 for(let cursor=1;cursor<4;cursor++)separated=toggleVisualPartAtCursor(separated,cursor);
 assert.deepEqual(expandVisualParts(separated).map(p=>p.text),['M','e','d','o']);
-assert.deepEqual(expandVisualParts(separated).map(p=>[p.words[0].start,p.words[0].end]),[[2,2.5],[2.5,3],[3,3.5],[3.5,4]]);
+assert.deepEqual(expandVisualParts(separated).map(p=>[p.words[0].start,p.words[0].end]),[[2,4],[2,4],[2,4],[2,4]]);
 separated=toggleVisualPartAtCursor(separated,2);
 assert.deepEqual(expandVisualParts(separated).map(p=>p.text),['M','ed','o']);
 for(const cursor of [1,3])separated=toggleVisualPartAtCursor(separated,cursor);
@@ -54,3 +54,20 @@ const once=toggleVisualPartAtCursor(original,11),twice=toggleVisualPartAtCursor(
 assert.equal(twice.visualParts,undefined);assert.deepEqual(twice.words,original.words);
 assert.equal(visualBoundaryAtCursor('A😀B',2),.75);
 console.log('Cursor boundaries toggle repeatedly, including each letter; word timings and timeline remain unchanged.');
+
+const chosen=toggleVisualPartAtCursor(original,5,11);assert.deepEqual(expandVisualParts(chosen).map(p=>p.text),["Zeko","zdravo","Medo idemo"]);assert.equal(toggleVisualPartAtCursor(chosen,5,11).visualParts,undefined);
+const {layoutFrameImages,frameStrengthValue}=await loadTestModule('lib/frame-strength.ts',out);
+const shot=[{id:'a',start:0,end:6,text:'A'},{id:'b',start:6,end:10,text:'B'}];
+const pic=i=>({id:'p'+i,assetId:'i'+i,segmentIds:['a'],start:0,inPoint:0,outPoint:6});
+const imageIds=new Set(['i1','i2','i3']);
+const firstImport=layoutFrameImages([pic(1)],shot,imageIds,{a:3});
+assert.equal(frameStrengthValue(firstImport[0]),3);assert.equal(firstImport[0].outPoint,2);
+const secondImport=layoutFrameImages([...firstImport,pic(2)],shot,imageIds,{a:3});
+const thirdImport=layoutFrameImages([...secondImport,pic(3)],shot,imageIds,{a:3});
+assert.deepEqual(thirdImport.map(c=>[c.start,c.outPoint]),[[0,2],[2,2],[4,2]]);
+const auto=layoutFrameImages([pic(1),pic(2)],shot,imageIds);assert.deepEqual(auto.map(c=>[c.start,c.outPoint]),[[0,3],[3,3]]);
+const shared=layoutFrameImages([{...pic(1),segmentIds:['a','b']}],shot,imageIds);
+assert.equal(frameStrengthValue(shared[0]),.5);assert.equal(shared[0].outPoint,10);
+const manual=layoutFrameImages([{...pic(1),frameStrength:2}],shot,imageIds,{a:3});assert.equal(manual[0].outPoint,3);
+assert.equal(layoutFrameImages([{...pic(1),segmentIds:undefined}],shot,imageIds)[0].outPoint,6);
+console.log('Frame strength: incremental imports reserve configured slots, auto count and two-scene image ratios.');

@@ -20,7 +20,8 @@ export function visualBoundaryAtCursor(text:string,cursor:number):number {
  }
  return tokens.length;
 }
-export function toggleVisualPartAtCursor(segment:Segment,cursor:number):Segment {
+export function toggleVisualPartAtCursor(segment:Segment,cursor:number,selectionEnd?:number):Segment {
+ if(selectionEnd!==undefined&&selectionEnd>cursor){const first=visualBoundaryAtCursor(segment.text,cursor),last=visualBoundaryAtCursor(segment.text,selectionEnd),length=segment.text.trim().split(/\s+/).length;const cuts=[first,last].filter(n=>n>0&&n<length);const existing=cuts.every(n=>segment.visualParts?.some(p=>Math.abs(p.to-n)<1e-8));let result=segment;for(const n of cuts){if(existing)result=toggleVisualPartAtCursor(result,n===first?cursor:selectionEnd);else result=splitVisualPart(result,n);}return result;}
  const boundary=visualBoundaryAtCursor(segment.text,cursor),parts=segment.visualParts;
  const index=parts?.findIndex((p,i)=>i<parts.length-1&&Math.abs(p.to-boundary)<1e-8)??-1;
  if(parts&&index>=0){const joined=[...parts.slice(0,index),{...parts[index],to:parts[index+1].to},...parts.slice(index+2)];return {...segment,visualParts:joined.length>1?joined:undefined};}
@@ -33,9 +34,11 @@ export function expandVisualParts(segment:Segment):Segment[]{
  return segment.visualParts.filter(p=>p.from<tokens.length&&p.to>p.from).map(p=>{
   const words=tokens.flatMap((text,i)=>{const from=Math.max(0,p.from-i),to=Math.min(1,p.to-i);if(to<=from)return [];
    const piece=text.slice(Math.round(from*text.length),Math.round(to*text.length));if(!piece)return [];
-   const word=timing[i];return [{text:piece,start:word.start+(word.end-word.start)*from,end:word.start+(word.end-word.start)*to}];});
+   const word=timing[i];return [{text:piece,start:word.start,end:word.end}];});
+  const offset=Math.floor(p.from);
+  const remap=<T extends {text:string}>(map:Record<number,T>|undefined)=>map?Object.fromEntries(words.flatMap((word,i)=>map[i+offset]?[[i,{...map[i+offset],text:word.text}]]:[])):undefined;
   return {...segment,visualParts:undefined,renderPartId:p.id,text:words.map(w=>w.text).join(' '),words,
-   position:p.position||segment.position,separateStyle:p.detachedStyle?true:segment.separateStyle,detachedStyle:p.detachedStyle||segment.detachedStyle,wordOffsets:undefined,wordStyles:undefined};
+   position:p.position||segment.position,separateStyle:p.detachedStyle?true:segment.separateStyle,detachedStyle:p.detachedStyle||segment.detachedStyle,wordOffsets:remap(segment.wordOffsets),wordStyles:remap(segment.wordStyles),keywordWord:segment.keywordWord==null?segment.keywordWord:segment.keywordWord>=offset&&segment.keywordWord<offset+words.length?segment.keywordWord-offset:null};
  });
 }
 export function patchVisualPart(segment:Segment,id:string,settings:CaptionSettings,style:NonNullable<Segment['detachedStyle']>['style']):Segment {
