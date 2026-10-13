@@ -273,3 +273,11 @@
 .local-frame-strength small {display:block;font-size:11px;line-height:1.5;margin:8px 0;}
 .local-frame-strength p {font-size:11px;color:var(--k-muted);}
 .local-frame-strength input {max-width:110px;}
+
+:root[data-theme] .klipanje-shell .project-create-form {
+ align-items:flex-end;
+ >label {min-width:200px;margin:0;}
+ >label>input,>button {height:40px;box-sizing:border-box;}
+ >button {flex-shrink:0;white-space:nowrap;}
+ @media(max-width:600px) {>label {flex-basis:100%;min-width:0;}}
+}
