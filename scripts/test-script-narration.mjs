@@ -28,3 +28,12 @@ props.plan.mode='narration';tree=render();find(tree,'Generiši kadar').props.onC
 slots=[];assets=[];calls=[];results=[];failUpload=true;tree=render();find(tree,'Generiši kadar').props.onClick();await settle();assert.equal(calls.length,1);tree=render();find(tree,'Generiši kadar').props.onClick();await settle();assert.equal(calls.length,1,'Upload retry reuses paid audio');assert.equal(results.length,1);
 assert.equal(find(tree,'Generiši kadrove bez snimka'),undefined);
 console.log('Book pagination, speaker labels, duration/ripple, single-scene voices/emotions, narration mode, double-click and upload retry passed.');
+
+const measured={};runInNewContext(compile('frontend/src/lib/book-pagination.ts'),{exports:measured});
+const exact='Prvi red.\n\nDrugi red. Treći red.';
+assert.equal(measured.fitBookPages(exact,s=>s.length<=exact.length).length,1);
+const divided=measured.fitBookPages(exact,s=>s.length<=17);
+assert.ok(divided.length>1);assert.equal(divided.join(''),exact);
+assert.ok(divided.every(s=>s.length<=17));
+assert.equal(measured.fitBookPages('',()=>true).length,1);
+console.log('Measured pagination: one-page fit, overflow and lossless text passed.');

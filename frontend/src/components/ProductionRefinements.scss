@@ -436,3 +436,17 @@
 .klipanje-shell .script-panel .compact-script-studio label {margin:0!important;padding:0!important;}
 .klipanje-shell .script-panel .compact-script-studio :is(select,input,textarea) {margin:0!important;}
 .klipanje-shell .script-panel .compact-script-studio button {padding:6px 10px!important;}
+
+@font-face {font-family:'Klipanje Notebook';src:url('/fonts/kalam-regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap;}
+.local-dialog.script-book-dialog .script-book-page {border-left:0!important;border-radius:6px;box-shadow:none;display:flex;flex-direction:column;padding:12px 24px 8px!important;overflow:auto;scrollbar-width:none;}
+.local-dialog.script-book-dialog .script-book-page::-webkit-scrollbar {display:none;}
+.local-dialog.script-book-dialog .script-book-page>div {flex:1;font-family:'Klipanje Notebook','Segoe Print',cursive!important;font-size:14px!important;line-height:20px!important;font-weight:400!important;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 19px,color-mix(in srgb,currentColor 14%,transparent) 19px,color-mix(in srgb,currentColor 14%,transparent) 20px)!important;background-color:transparent!important;background-position:0 0;white-space:pre-wrap;}
+.local-dialog.script-book-dialog .script-book-page :is(strong,em) {font-family:inherit!important;font-size:inherit!important;font-weight:400!important;line-height:inherit!important;}
+.local-dialog.script-book-dialog .script-book-page footer {flex:none;margin:0!important;padding-top:8px;text-align:center;font:11px/16px 'Manrope Variable',sans-serif!important;}
+@media(max-width:600px){.local-dialog.script-book-dialog .script-book-page{padding:10px 12px 6px!important;}}
+
+/* Compact paragraph spacing without notebook rules. */
+.local-dialog.script-book-dialog .script-book-page .script-book-paragraph-gap {display:block;height:10px;}
+.local-dialog.script-book-dialog .script-book-page>div {background-image:none!important;}
+.script-panel .script-interval-toolbar {position:sticky;top:0;z-index:4;gap:10px;padding:10px 0;background:var(--k-card);border-bottom:1px solid color-mix(in srgb,currentColor 15%,transparent);}
+.script-panel .script-undo-button:not(:disabled) {border-color:var(--k-accent);color:var(--k-accent);font-weight:600;}
