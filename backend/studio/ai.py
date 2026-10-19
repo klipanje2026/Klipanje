@@ -143,6 +143,7 @@ def status(request):
         return Response({'error': 'Stanje ElevenLabs računa trenutno nije dostupno.'}, status=502)
 
 class NarrationInput(serializers.Serializer):
+    model = serializers.ChoiceField(choices=['eleven_flash_v2_5', 'eleven_v4_turbo'], default='eleven_flash_v2_5')
     timestamps = serializers.BooleanField(default=False)
     voiceId = serializers.RegexField(r'^[A-Za-z0-9_-]+$', max_length=100)
     text = serializers.CharField(max_length=10000)
@@ -221,6 +222,19 @@ def narration(request):
     serializer = NarrationInput(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
+    if data['model'] == 'eleven_v4_turbo':
+        if not settings.LOCAL_APP:
+            return Response({'error': 'V4 Turbo je trenutno dostupan samo u lokalnom editoru.'}, status=400)
+        from .eleven_dialogue import synthesize, DialogueError
+        try:
+            result = provider_call(request, 'elevenlabs', 'narration', lambda: synthesize(settings.ELEVENLABS_API_KEY, data), input_chars=len(data['text']))
+            if data['timestamps']:
+                return Response(result, headers={'Cache-Control': 'no-store'})
+            import base64
+            from django.http import HttpResponse
+            return HttpResponse(base64.b64decode(result['audio_base64']), content_type='audio/wav', headers={'Cache-Control': 'no-store'})
+        except DialogueError as exc:
+            return Response({'error': str(exc)}, status=502)
     if data['timestamps'] and settings.LOCAL_APP:
         try:
             upstream=provider_call(request,'elevenlabs','narration',lambda: httpx.post(

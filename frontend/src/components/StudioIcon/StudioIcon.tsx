@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-export function StudioIcon({ name, style }: { name: 'music' | 'reset' | 'alignLeft' | 'alignCenter' | 'alignRight' | 'devices' | 'underline' | 'behindPerson' | 'letterCase' | 'splitWords' | 'joinWords' | 'filters' | 'transitions' | 'sticker' | 'text' | 'elements' | 'mute' | 'sound' | 'language' | 'search' | 'plus' | 'newVideo' | 'newCaptions' | 'copy' | 'trash' | 'download' | 'frame' | 'skipStart' | 'voice' | 'timelineShow' | 'timelineHide' | 'hand' | 'pointer' | 'undo' | 'redo' | 'ratio' | 'arrow' | 'back' | 'play' | 'pause' | 'captions' | 'video' | 'spark' | 'check' | 'menu' | 'close' | 'chevron' | 'settings'; style?: CSSProperties }) {
+export function StudioIcon({ name, style }: { name: 'cut' | 'music' | 'reset' | 'alignLeft' | 'alignCenter' | 'alignRight' | 'devices' | 'underline' | 'behindPerson' | 'letterCase' | 'splitWords' | 'joinWords' | 'filters' | 'transitions' | 'sticker' | 'text' | 'elements' | 'mute' | 'sound' | 'language' | 'search' | 'plus' | 'newVideo' | 'newCaptions' | 'copy' | 'trash' | 'download' | 'frame' | 'skipStart' | 'voice' | 'timelineShow' | 'timelineHide' | 'hand' | 'pointer' | 'undo' | 'redo' | 'ratio' | 'arrow' | 'back' | 'play' | 'pause' | 'captions' | 'video' | 'spark' | 'check' | 'menu' | 'close' | 'chevron' | 'settings'; style?: CSSProperties }) {
   const paths = {
     music:<><path d="M9 18V5l11-2v13 M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></>,
     reset:<><path d="M3 10a9 9 0 1 1 2 9 M3 4v6h6"/></>,
@@ -11,6 +11,7 @@ export function StudioIcon({ name, style }: { name: 'music' | 'reset' | 'alignLe
     underline:<><path d="m6 17 6-13 6 13M8 13h8M4 21h16"/></>,
     behindPerson:<><rect x="2" y="4" width="15" height="12" rx="2"/><circle cx="16" cy="11" r="4"/><path d="M10 22v-2a6 6 0 0 1 12 0v2M5 8h4m-4 4h3"/></>,
     letterCase:<><path d="m2 19 6-14 6 14M4 14h8m5-2c5-4 7 2 3 3-5 0-4 5 1 3l1-1m0-5v7"/></>,
+    cut:<><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="m8.2 8.2 12 12M8.2 15.8 20 4"/></>,
     splitWords:<><path d="M3 6h18M3 18h18M10 12H3m18 0h-7m-8-3-3 3 3 3m12-6 3 3-3 3"/></>,
     joinWords:<><path d="M3 6h18M3 18h18M3 12h7m4 0h7M7 9l3 3-3 3m10-6-3 3 3 3"/></>,
     filters:<><circle cx="9" cy="9" r="6"/><circle cx="15" cy="15" r="6"/></>,

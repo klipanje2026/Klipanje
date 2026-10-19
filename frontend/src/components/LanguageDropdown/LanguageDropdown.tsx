@@ -26,11 +26,19 @@ export function LanguageDropdown({value,onChange,options,disabled,label='Jezik g
     position();window.addEventListener('resize',position);window.addEventListener('scroll',position,true);
     return()=>{window.removeEventListener('resize',position);window.removeEventListener('scroll',position,true);};
   },[open,options.length,variant]);
-  useEffect(()=>{if(open)document.getElementById(`${id}-${focused}`)?.scrollIntoView({block:'nearest'});},[open,focused,id]);
+  useEffect(()=>{
+    if(!open)return;
+    const menu=list.current,option=document.getElementById(`${id}-${focused}`);
+    if(!menu||!option)return;
+    // Scroll only the option list, never the editor panel or document behind it.
+    const bounds=menu.getBoundingClientRect(),item=option.getBoundingClientRect();
+    if(item.top<bounds.top)menu.scrollTop+=item.top-bounds.top;
+    else if(item.bottom>bounds.bottom)menu.scrollTop+=item.bottom-bounds.bottom;
+  },[open,focused,id]);
   const selected=options.findIndex(option=>option.value===value);
   useEffect(()=>{ const outside=(event:PointerEvent)=>{if(!root.current?.contains(event.target as Node)&&!list.current?.contains(event.target as Node))setOpen(false);};document.addEventListener('pointerdown',outside);return()=>document.removeEventListener('pointerdown',outside);},[]);
   function show(){if(trigger.current){const css=getComputedStyle(trigger.current);setMenuFont({fontFamily:css.fontFamily,fontSize:css.fontSize,fontWeight:css.fontWeight});}setFocused(Math.max(0,selected));setOpen(true);}
-  function select(index:number){const option=options[index];if(option){onChange(option.value);setOpen(false);trigger.current?.focus();}}
+  function select(index:number){const option=options[index];if(option){onChange(option.value);setOpen(false);trigger.current?.focus({preventScroll:true});}}
   return <div className={`language-dropdown${variant ? ` language-dropdown-${variant}` : ""}`} ref={root}>
     <span id={`${id}-label`} hidden={hideLabel}>{label}</span>
     <button type="button" ref={trigger} title={triggerTitle} className="language-dropdown-trigger" role="combobox" aria-labelledby={`${id}-label ${id}-value`} aria-expanded={open} aria-controls={`${id}-list`} aria-haspopup="listbox" aria-activedescendant={open ? `${id}-${focused}` : undefined} disabled={disabled} onClick={()=>open?setOpen(false):show()} onKeyDown={event=>{
@@ -43,7 +51,7 @@ export function LanguageDropdown({value,onChange,options,disabled,label='Jezik g
   </div>;
 }
 
-export function StyleDropdown({label,value,onChange,children}:{label:string;value:string;onChange:(event:{target:{value:string}})=>void;children:ReactNode}) {
+export function StyleDropdown({label,value,onChange,children,hideLabel=false}:{hideLabel?:boolean;label:string;value:string;onChange:(event:{target:{value:string}})=>void;children:ReactNode}) {
   const options=Children.toArray(children).flatMap(child=>isValidElement<{value:string;children:ReactNode}>(child)?[{value:String(child.props.value),label:String(child.props.children)}]:[]);
-  return <LanguageDropdown label={label} value={value} options={options} onChange={value=>onChange({target:{value}})} />;
+  return <LanguageDropdown hideLabel={hideLabel} label={label} value={value} options={options} onChange={value=>onChange({target:{value}})} />;
 }

@@ -64,6 +64,10 @@
     {
       "file": "clay-character.png",
       "prompt": "Create a single square style preview image for a video creation app. Style: Handmade clay stop motion miniature. Subject: Portrait of a fictional young adult male traveler with short dark hair, olive jacket and canvas backpack, against a softly detailed old-town street. Beautiful clear example of this visual medium. No text, no labels, no borders, no logos."
+    },
+    {
+      "file": "chibi-character.png",
+      "prompt": "Chibi adult couple outside a mountain cabin with cocoa; oversized heads, compact bodies, expressive eyes, detailed painterly storybook texture and warm cinematic lighting. Portrait 9:16. Style guided by user reference."
     }
   ]
 }

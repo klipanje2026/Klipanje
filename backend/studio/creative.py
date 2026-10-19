@@ -68,6 +68,7 @@ STYLES = [
     ('cinematic','Filmski','Cinematic still, deliberate composition, atmospheric lighting and film color grading.'),
     ('cartoon3d','3D cartoon','Expressive 3D animated cartoon, rounded forms and soft cinematic lighting.'),
     ('cartoon2d','2D cartoon','Hand-drawn 2D cartoon, clean outlines and expressive characters.'),
+    ('chibi','Chibi','Chibi character illustration: clearly oversized heads, small compact bodies about 2 to 3 heads tall, short limbs, large expressive eyes and small noses. Rich painterly storybook rendering, softly modeled faces, detailed hair, clothing and environments, warm cinematic lighting and tactile painted textures. Preserve specified adult age cues for adult characters and each character identity, species, clothing and distinguishing features consistently across views and scenes. Apply this visual treatment to the requested story setting; do not impose a specific setting or outfit.'),
     ('anime','Anime','Anime illustration, detailed environments and expressive line work.'),
     ('watercolor','Akvarel','Watercolor illustration with paper texture and delicate pigment washes.'),
     ('comic','Strip','Graphic novel illustration, bold ink lines and dramatic composition.'),

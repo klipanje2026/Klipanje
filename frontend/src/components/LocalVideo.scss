@@ -20,6 +20,8 @@
  .local-video-save small {font-size:9px;color:var(--ui-muted);max-width:170px;}
  .local-video-save button {border:1px solid var(--ui-border);background:var(--ui-raised);color:var(--ui-text);border-radius:6px;padding:6px 9px;cursor:pointer;font-size:10px;}
  .local-video-opening {position:absolute;inset:0;background:var(--ui-stage);color:var(--ui-text);z-index:30;display:grid;place-items:center;}
+ .local-editor-scroll {flex:1;min-height:0;min-width:0;overflow:auto;overflow-anchor:none;}
+ .local-editor-scroll>.local-editor-tools {overflow:visible;}
  .local-editor-tools {border:0;padding:0;margin:0;color:var(--ui-text);min-width:0;font-size:12px;}
  .local-editor-tools label {display:flex;flex-direction:column;gap:8px;font-size:11px;margin:15px 0;color:var(--ui-muted);}
  .local-editor-tools select,.local-editor-tools textarea,.local-editor-tools input:not([type=range]):not([type=file]) {font:inherit;box-sizing:border-box;width:100%;border:1px solid var(--ui-border);border-radius:7px;background:var(--ui-raised);color:var(--ui-text);padding:9px;outline-color:var(--ui-accent);}

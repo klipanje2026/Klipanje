@@ -15,6 +15,18 @@ class NarrationSyncTests(ProductionTests):
         self.assertIn('/with-timestamps',provider.call_args.args[0])
         self.assertEqual(provider.call_args.kwargs['json']['voice_settings']['speed'],1.15)
 
+    @override_settings(LOCAL_APP=True, ELEVENLABS_API_KEY='test-only')
+    def test_turbo_routes_to_dialogue_and_rejects_unknown_models(self):
+        payload = {'audio_base64': 'YWJj', 'content_type': 'audio/wav', 'alignment': None}
+        with patch('studio.ai.voice_guard', return_value=None), patch('studio.eleven_dialogue.synthesize', return_value=payload) as provider:
+            result = self.client.post('/api/narration', {'voiceId': 'test', 'text': 'A', 'model': 'eleven_v4_turbo', 'timestamps': True}, content_type='application/json')
+            self.assertEqual(result.status_code, 200)
+            self.assertEqual(result.json(), payload)
+            self.assertEqual(provider.call_args.args[1]['model'], 'eleven_v4_turbo')
+            bad = self.client.post('/api/narration', {'voiceId': 'test', 'text': 'A', 'model': 'unknown'}, content_type='application/json')
+            self.assertEqual(bad.status_code, 400)
+            self.assertEqual(provider.call_count, 1)
+
     def test_grouped_frames_use_combined_context_and_validate_membership(self):
         self.script.segments.extend([{'id':'two','start':5,'end':7,'text':'Friends arrive.'},{'id':'three','start':7,'end':9,'text':'They rest.'}])
         self.script.save()

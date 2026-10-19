@@ -49,7 +49,7 @@ def overview(request):
 class ProjectDetails(serializers.Serializer):
     name = serializers.CharField(max_length=160)
     description = serializers.CharField(max_length=10000, allow_blank=True)
-    style = serializers.ChoiceField(choices=['', 'realistic', 'cinematic', 'cartoon3d',
+    style = serializers.ChoiceField(choices=['', 'realistic', 'cinematic', 'cartoon3d', 'chibi',
                                              'cartoon2d', 'anime', 'watercolor', 'comic', 'clay'])
 
 
