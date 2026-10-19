@@ -350,3 +350,89 @@
  .script-ai-actions {gap:8px;margin:8px 0;}
  @media(max-width:600px){padding:10px;.script-name-chapter{grid-template-columns:1fr;}.script-name-chapter>button{grid-column:auto;justify-self:start;}}
 }
+
+.local-editor-tools .sound-library {display:grid;gap:8px;}
+.local-editor-tools .sound-library-item {display:grid;grid-template-columns:minmax(0,1fr) 28px;gap:5px;padding:7px;border:1px solid var(--ui-border);border-radius:7px;}
+.local-editor-tools .sound-library-item>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;align-self:center;}
+.local-editor-tools .sound-library-item audio{grid-column:1/-1;width:100%;height:28px;}
+.local-editor-tools .audio-envelope-controls{display:grid;gap:8px;padding-top:10px;}
+.local-editor-tools .audio-envelope-controls label{margin:0;}
+.local-editor-tools .audio-envelope-controls small,.local-editor-tools .sound-library small{font-size:10px;line-height:1.4;}
+
+/* Script writing, book reading and voice production share the same saved draft. */
+.script-panel .script-workflow-tabs {flex-wrap:wrap;gap:5px;}
+.script-panel .script-workflow-tabs button {font-size:11px;padding:8px 11px;}
+.script-book {max-width:760px;margin:12px auto;}
+.script-book nav {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;font-size:12px;}
+.script-book-page {background:#faf5e8;color:#342d26;border-radius:4px 12px 12px 4px;box-shadow:inset 8px 0 16px #65523c12,0 8px 24px #0002;padding:24px 36px 18px 46px;border-left:5px solid #cabda5;min-height:320px;position:relative;}
+.script-book-page header {font-size:11px;letter-spacing:.1em;border-bottom:1px solid #c8bda8;padding-bottom:12px;margin-bottom:18px;}
+.script-book-page>div {font-family:Georgia,serif;font-size:15px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;}
+.script-book-page footer {text-align:center;font-size:11px;margin-top:20px;color:#857865;}
+.script-book>small {display:block;margin:12px 0;font-size:11px;}
+.script-narration-studio {font-size:12px;}
+.script-narration-studio fieldset {padding:0;border:0;min-width:0;}
+.script-narration-studio h3 {font-size:13px;margin:0;}
+.script-narration-studio button,.script-narration-studio select,.script-narration-studio input {font-size:11px;padding:7px 9px;min-width:0;}
+.script-narration-studio label {font-size:11px;display:grid;gap:5px;margin:0;}
+.script-narration-studio small {font-size:10px;line-height:1.5;display:block;color:var(--ui-muted);}
+.script-cast {padding:14px;border:1px solid var(--ui-border);border-radius:10px;margin:12px 0;}
+.script-cast header,.script-generation-actions {display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
+.script-cast-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:12px 0;}
+.script-voice-scene {display:grid;grid-template-columns:minmax(0,1.3fr) minmax(220px,1fr);gap:18px;border:1px solid var(--ui-border);border-radius:10px;padding:14px;margin:12px 0;}
+.script-voice-scene>div {display:grid;align-content:start;gap:10px;min-width:0;}
+.script-voice-scene header {display:flex;justify-content:space-between;gap:8px;}
+.script-voice-scene textarea {font-size:12px;line-height:1.5;min-height:96px;width:100%;}
+.script-scene-options {display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;}
+.script-scene-recording {padding:12px;background:var(--ui-surface);border-radius:8px;}
+.script-narration-studio audio {width:100%;height:32px;}
+.script-generation-message {padding:12px;border:1px solid var(--ui-border);border-radius:8px;}
+.script-backgrounds {margin-top:20px;border-top:1px solid var(--ui-border);padding:14px 0;}
+.script-backgrounds summary {cursor:pointer;padding:6px 0;font-size:13px;}
+.script-backgrounds .sound-library {display:grid;gap:8px;max-width:520px;margin:12px 0;}
+.script-backgrounds .sound-library-item {display:grid;grid-template-columns:1fr 32px;gap:8px;padding:10px;border:1px solid var(--ui-border);border-radius:8px;}
+.script-backgrounds .sound-library-item audio {grid-column:1/-1;}
+.script-background-row {display:grid;grid-template-columns:1fr 2fr auto;align-items:center;gap:10px;margin:10px 0;}
+.script-music-sources {display:grid;gap:7px;padding:14px;border:1px solid var(--ui-border);border-radius:8px;margin-top:14px;}
+.script-music-sources a {text-decoration:underline;text-underline-offset:3px;}
+@media(max-width:900px){.script-voice-scene{grid-template-columns:1fr;}.script-background-row{grid-template-columns:1fr;}.script-book-page{padding:20px;}.script-book-page>div{font-size:14px;}}
+
+.script-panel .script-cast header select,.script-panel .script-generation-actions>select {width:auto;max-width:220px;flex:0 1 220px;}
+.script-panel .script-book-page>div {font-weight:400;}
+.script-panel .script-book-page strong {font-weight:600;}
+.script-panel .script-voice-scene .local-check {display:flex;align-items:center;gap:7px;}
+.script-panel .script-voice-scene .local-check input {width:14px;height:14px;padding:0;}
+
+/* Reading occupies the screen; narration editing stays in a compact strip. */
+.local-dialog.script-book-dialog {width:min(1100px,96vw)!important;max-width:96vw!important;height:94dvh;max-height:94dvh!important;padding:16px 24px!important;box-sizing:border-box;overflow:hidden;}
+.script-book-dialog .local-dialog-header {margin:0 0 8px!important;padding:0!important;}
+.script-book-dialog .local-dialog-header h2 {font-size:16px;}
+.script-book-dialog .script-book {max-width:940px;margin:0 auto;height:calc(100% - 48px);display:flex;flex-direction:column;min-height:0;}
+.script-book-dialog .script-book nav {flex:none;margin:0 0 8px;}
+.script-book-dialog .script-book-page {flex:1;min-height:0;overflow:auto;padding:18px 34px;}
+.script-book-dialog .script-book-page header {display:none;}
+.script-book-dialog .script-book-page>div {font-size:16px;line-height:1.55;font-weight:400!important;}
+.script-book-dialog .script-book-page strong {font-weight:600;}
+.script-book-dialog .script-book>small {margin:6px 0 0;font-size:10px;}
+.script-panel .compact-script-studio .script-voice-top {display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin:10px 0;}
+.script-panel .compact-script-studio .script-voice-top label {width:170px;}
+.script-panel .compact-script-studio label {font-size:10px;gap:4px;}
+.script-panel .compact-script-studio select,.script-panel .compact-script-studio input {width:100%;min-height:32px;padding:5px 7px;font-size:11px;}
+.script-panel .compact-script-studio button {padding:6px 10px;font-size:11px;}
+.script-panel .script-active-speaker {display:flex;align-items:center;gap:10px;padding:8px 0;margin:0 0 10px;border:0;}
+.script-active-speaker>img,.script-speaker-placeholder {width:64px;height:64px;object-fit:cover;border-radius:8px;}
+.script-active-speaker>div {width:min(340px,100%);display:grid;gap:6px;}
+.script-panel .script-compact-scene {display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(200px,2fr) repeat(2,minmax(100px,.8fr)) 70px;align-items:start;gap:8px;}
+.script-panel .script-compact-scene:not(:has(label:nth-child(5))) {grid-template-columns:minmax(160px,1.2fr) minmax(200px,2fr) minmax(110px,.8fr) 70px;}
+.script-panel .script-compact-scene textarea {min-height:58px;height:58px;padding:6px 8px;font-size:12px;line-height:1.45;margin:0;resize:vertical;}
+.script-panel .compact-script-studio .local-narration-tags {max-width:410px;margin:8px 0;}
+.script-panel .script-generate-play,.script-panel .script-take-row {display:flex;align-items:center;gap:12px;margin:8px 0;}
+.script-generate-play audio,.script-take-row audio {max-width:370px;height:30px;}
+.script-panel .script-takes {padding:10px 0;margin:0;border-top:1px solid var(--ui-border);}
+.script-panel .script-takes h3 {font-size:12px;margin:0 0 7px;}
+.script-panel .script-take-tuning {font-size:11px;margin:8px 0;}
+@media(max-width:1100px){.script-panel .script-compact-scene,.script-panel .script-compact-scene:not(:has(label:nth-child(5))){grid-template-columns:repeat(3,minmax(0,1fr));}.script-panel .script-compact-text{grid-column:span 2;}}
+@media(max-width:600px){.script-panel .script-compact-scene,.script-panel .script-compact-scene:not(:has(label:nth-child(5))){grid-template-columns:1fr 1fr;}.script-panel .script-compact-text{grid-column:1/-1;}.script-generate-play,.script-take-row{flex-wrap:wrap;}.local-dialog.script-book-dialog{padding:12px!important;}.script-book-dialog .script-book-page{padding:14px;}}
+
+.klipanje-shell .script-panel .compact-script-studio label {margin:0!important;padding:0!important;}
+.klipanje-shell .script-panel .compact-script-studio :is(select,input,textarea) {margin:0!important;}
+.klipanje-shell .script-panel .compact-script-studio button {padding:6px 10px!important;}

@@ -1,3 +1,4 @@
+from studio import sound_library
 from studio import regional_voices
 from django.http import JsonResponse
 from django.urls import include, path, re_path
@@ -11,6 +12,8 @@ router.register('projects', projects.ProjectViewSet, basename='projects')
 router.register('chapters', scripts.ChapterViewSet, basename='chapters')
 router.register('scripts', scripts.ScriptViewSet, basename='scripts')
 urlpatterns = [
+    path('api/sounds', sound_library.sounds),
+    path('api/sounds/<uuid:pk>/content', sound_library.content),
     re_path(r'^admin(?:/.*)?$', administration.entry),
     path('api/administration', administration.overview),
     path('api/administration/projects/<uuid:pk>', administration.update_project),

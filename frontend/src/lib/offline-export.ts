@@ -1,10 +1,11 @@
+import {audioEnvelopeGain,type AudioEnvelope} from './audio-envelope';
 import {exportRange} from './export-range';
 import {collectTextureFills,prepareTextureFill} from './caption-texture-fill';
 import {prepareCollectionResources,beginCollectionExport} from './collection-captions';
 import {mixCaptionSounds,type CaptionSoundEvent} from './caption-sounds';
 import type {DecodedFrame} from './frame-source';
 import type {Input,CanvasSink,AudioBufferSink,WrappedAudioBuffer} from 'mediabunny';
-export type ExportClip={id:string;file:File;start:number;inPoint:number;outPoint:number;video:boolean;volume:number};
+export type ExportClip={audioEnvelope?:AudioEnvelope;id:string;file:File;start:number;inPoint:number;outPoint:number;video:boolean;volume:number};
 type Runtime={clip:ExportClip;input:Input;sink?:CanvasSink;frame?:DecodedFrame;audio?:AsyncGenerator<WrappedAudioBuffer,void,unknown>;pending?:WrappedAudioBuffer;done?:boolean};
 
 export function exportVideoBitrate(width:number,height:number,fps:number){
@@ -61,7 +62,7 @@ export async function offlineExport(options:{preserveLeadingGap?:boolean;texture
      const block=r.pending,b=block.buffer;const globalStart=r.clip.start+block.timestamp-r.clip.inPoint,globalEnd=globalStart+b.duration;
      if(globalEnd<=audioTime){r.pending=undefined;continue;}if(globalStart>=end)break;
      const from=Math.max(first,Math.ceil(Math.max(globalStart,r.clip.start)*rate)),to=Math.min(last,Math.ceil(Math.min(globalEnd,r.clip.start+r.clip.outPoint-r.clip.inPoint)*rate));
-     for(let channel=0;channel<2;channel++){const dest=mixed.getChannelData(channel),src=b.getChannelData(Math.min(channel,b.numberOfChannels-1));for(let i=from;i<to;i++){const p=(i/rate-globalStart)*b.sampleRate,index=Math.max(0,Math.floor(p)),fraction=p-index;dest[i-first]+=(src[index]||0)*(1-fraction)*r.clip.volume+(src[Math.min(index+1,src.length-1)]||0)*fraction*r.clip.volume;}}
+     for(let channel=0;channel<2;channel++){const dest=mixed.getChannelData(channel),src=b.getChannelData(Math.min(channel,b.numberOfChannels-1));for(let i=from;i<to;i++){const p=(i/rate-globalStart)*b.sampleRate,index=Math.max(0,Math.floor(p)),fraction=p-index;const gain=r.clip.volume*audioEnvelopeGain(r.clip.audioEnvelope,r.clip.inPoint+i/rate-r.clip.start);dest[i-first]+=((src[index]||0)*(1-fraction)+(src[Math.min(index+1,src.length-1)]||0)*fraction)*gain;}}
      if(globalEnd>=end)break;r.pending=undefined;
     }
    }

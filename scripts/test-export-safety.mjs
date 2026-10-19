@@ -23,8 +23,8 @@ console.log('Export media success/error/timeout and converted preview isolation 
 
 const offlineCode=ts.transpileModule(await fs.readFile('frontend/src/lib/offline-export.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
 const soundCode=ts.transpileModule(await fs.readFile('frontend/src/lib/caption-sounds.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-const clockModule={},rangeModule={};
-for(const [name,module] of [['caption-clock',clockModule],['export-range',rangeModule]]) {
+const clockModule={},rangeModule={},envelopeModule={};
+for(const [name,module] of [['caption-clock',clockModule],['export-range',rangeModule],['audio-envelope',envelopeModule]]) {
  const compiled=ts.transpileModule(await fs.readFile(`frontend/src/lib/${name}.ts`,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  runInNewContext(compiled,{exports:module});
 }
@@ -32,7 +32,7 @@ const soundModule={};runInNewContext(soundCode,{exports:soundModule,require:name
 assert.equal(soundModule.captionSounds([{id:'s',text:'Test',start:2,end:3}],{captionSound:'pop'})[0].start,1.9,'Caption sound follows the same lead as the rendered words');
 const textureCode=ts.transpileModule(await fs.readFile('frontend/src/lib/caption-texture-fill.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
 const textureModule={};runInNewContext(textureCode,{exports:textureModule});
-const offlineModule={};runInNewContext(offlineCode,{exports:offlineModule,require:name=>{if(name==='./export-range')return rangeModule;if(name==='./collection-captions')return {};if(name==='./caption-sounds')return soundModule;if(name==='./caption-texture-fill')return textureModule;throw new Error(`Unexpected import: ${name}`);}});
+const offlineModule={};runInNewContext(offlineCode,{exports:offlineModule,require:name=>{if(name==='./audio-envelope')return envelopeModule;if(name==='./export-range')return rangeModule;if(name==='./collection-captions')return {};if(name==='./caption-sounds')return soundModule;if(name==='./caption-texture-fill')return textureModule;throw new Error(`Unexpected import: ${name}`);}});
 for(const [width,height] of [[1920,1080],[3840,2160],[2160,3840]])for(const fps of [29.97,59.94,30000/1001,60000/1001,30,60]){
  const bitrate=offlineModule.exportVideoBitrate(width,height,fps);
  assert.ok(Number.isSafeInteger(bitrate)&&bitrate>0,'Fractional camera framerates produce a positive integer bitrate');
