@@ -450,3 +450,7 @@
 .local-dialog.script-book-dialog .script-book-page>div {background-image:none!important;}
 .script-panel .script-interval-toolbar {position:sticky;top:0;z-index:4;gap:10px;padding:10px 0;background:var(--k-card);border-bottom:1px solid color-mix(in srgb,currentColor 15%,transparent);}
 .script-panel .script-undo-button:not(:disabled) {border-color:var(--k-accent);color:var(--k-accent);font-weight:600;}
+
+.script-take-row>span {min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:240px;white-space:nowrap;}
+.local-editor-tools .narration-library-row {height:auto;min-height:30px;flex-wrap:wrap;}
+.local-editor-tools .narration-library-row audio {width:100%;height:28px;order:2;}

@@ -85,6 +85,20 @@ class CreativeWorkspaceTests(TestCase):
         result=self.client.post('/api/creative/prompt',{'script':str(self.script.pk),'model':'gpt-image-2.5-sunburst','prompt':'A forest without characters'},content_type='application/json')
         self.assertEqual(result.json()['references'],[])
 
+    def test_delete_narration_clears_selection_and_preserves_other_takes(self):
+        asset = MediaAsset.objects.create(project=self.project, name='take.wav', file='test/take.wav', size=12, content_type='audio/wav')
+        other = MediaAsset.objects.create(project=self.project, name='other.wav', file='test/other.wav', size=12, content_type='audio/wav')
+        self.script.photo_settings = {'narrationPlan': {'scenes': {'a': {'assetId': str(asset.pk), 'speaker': 'narrator'}, 'b': {'assetId': str(other.pk)}}, 'backgrounds': []}}
+        self.script.save()
+        result = self.client.delete(f'/api/assets/{asset.pk}')
+        self.assertEqual(result.status_code, 204)
+        self.script.refresh_from_db()
+        scenes = self.script.photo_settings['narrationPlan']['scenes']
+        self.assertNotIn('assetId', scenes['a'])
+        self.assertEqual(scenes['a']['speaker'], 'narrator')
+        self.assertEqual(scenes['b']['assetId'], str(other.pk))
+        self.assertTrue(MediaAsset.objects.filter(pk=other.pk).exists())
+
     def test_gallery_acceptance_is_private_and_preserves_generation_metadata(self):
         asset=MediaAsset.objects.create(project=self.project,name='scene.png',file='test/scene.png',size=12,content_type='image/png',metadata={'gallery':False,'model':'gpt-image-2.5-flare','scriptId':str(self.script.pk)})
         route=f'/api/assets/{asset.pk}'

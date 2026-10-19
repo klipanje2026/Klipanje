@@ -136,5 +136,20 @@ def asset_delete(request, pk):
         asset.metadata=asset_metadata(asset.project,{**asset.metadata,**update});asset.save(update_fields=['metadata'])
         return Response(asset_payload(asset))
     with transaction.atomic():
+        from .models import LocalScript
+        for script in LocalScript.objects.select_for_update().filter(project=asset.project):
+            settings = script.photo_settings or {}
+            plan = settings.get('narrationPlan') or {}
+            changed = False
+            for scene in (plan.get('scenes') or {}).values():
+                if scene.get('assetId') == str(asset.pk):
+                    scene.pop('assetId')
+                    changed = True
+            if str(asset.pk) in plan.get('backgrounds', []):
+                plan['backgrounds'] = [item for item in plan['backgrounds'] if item != str(asset.pk)]
+                changed = True
+            if changed:
+                script.photo_settings = settings
+                script.save(update_fields=['photo_settings', 'updated_at'])
         asset.delete()
     return Response(status=204)

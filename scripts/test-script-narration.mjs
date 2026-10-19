@@ -16,6 +16,7 @@ let slots=[],cursor=0,assets=[],calls=[],uploads=0,failUpload=false,results=[];
 const react={useEffect:()=>{},useState:v=>{const i=cursor++;if(!(i in slots))slots[i]=v;return[slots[i],v=>{slots[i]=typeof v==='function'?v(slots[i]):v;}];},useRef:v=>{const i=cursor++;return slots[i]??={current:v};}};
 const jsx=(type,props)=>({type,props});
 const modules={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'../lib/api':{apiFetch:async(url,options)=>{calls.push(JSON.parse(options.body));return{ok:true,json:async()=>({audio_base64:'AA==',alignment:{},content_type:'audio/mpeg'})};},apiJson:async()=>({voices:[]})},'../lib/production':{uploadAsset:async(project,file,metadata)=>{uploads++;if(failUpload){failUpload=false;throw Error('Upload test');}const asset={id:'asset'+uploads,name:file.name,metadata,url:'/audio',contentType:'audio/wav'};assets.push(asset);return asset;}},'../lib/narration-sync':{alignmentWords:()=>[]},'../lib/narration-audio':{prepareNarration:async()=>({blob:new Blob(['audio']),duration:2.1})},'../lib/script-narration':helpers,'./ProductionWorkspace':{useAssets:()=>({assets,setAssets:fn=>{assets=fn(assets);},error:'',loading:false})},'./NarrationTags':{},'./SoundLibrary':{},'../lib/voice-wav':{}};
+modules['./LocalDialog']={localConfirm:async()=>false};
 const mod={};runInNewContext(compile('frontend/src/components/ScriptNarrationStudio.tsx'),{exports:mod,require:name=>{assert.ok(name in modules,name);return modules[name];},Blob,File,atob,Uint8Array,Date,Map,Error});
 const props={script:{id:'s',project:'p',title:'Test',segments:rows,photo_settings:{keepQuotes:true}},characters:[{id:'rabbit',name:'Zeko'}],plan:{mode:'dialogue',voices:{narrator:'voice1',rabbit:'voice2'},scenes:{a:{model:'eleven_flash_v2_5'},b:{speaker:'rabbit',model:'eleven_v4_turbo',tone:'[mad]',speed:1.1}},backgrounds:[]},onPlan:()=>{},onText:()=>{},onDuration:()=>{},onResult:(id,a)=>results.push([id,a]),beforeGenerate:async()=>true,onBusy:()=>{}};
 const render=()=>{cursor=0;return mod.ScriptNarrationStudio(props);};
@@ -37,3 +38,11 @@ assert.ok(divided.length>1);assert.equal(divided.join(''),exact);
 assert.ok(divided.every(s=>s.length<=17));
 assert.equal(measured.fitBookPages('',()=>true).length,1);
 console.log('Measured pagination: one-page fit, overflow and lossless text passed.');
+
+// Gallery membership is explicit; adding a take does not make a paid generation.
+tree=render();const take=assets[0];assert.equal(take.metadata.gallery,false);
+modules['../lib/api'].apiJson=async(url,options)=>({...take,metadata:{...take.metadata,...JSON.parse(options.body).metadata}});
+await find(tree,'Dodaj u galeriju naracija').props.onClick();await settle();
+assert.equal(assets[0].metadata.gallery,true);assert.equal(calls.length,1);
+tree=render();await find(tree,'Obriši naraciju').props.onClick();await settle();assert.equal(assets.length,1,'Cancel deletion preserves the take');
+console.log('Narration gallery membership and cancelled deletion passed.');
