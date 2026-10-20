@@ -99,6 +99,18 @@ class CreativeWorkspaceTests(TestCase):
         self.assertEqual(scenes['b']['assetId'], str(other.pk))
         self.assertTrue(MediaAsset.objects.filter(pk=other.pk).exists())
 
+    def test_delete_media_preserves_saved_timeline_reference(self):
+        asset = MediaAsset.objects.create(project=self.project, name='used.wav', file='test/used.wav', size=12, content_type='audio/wav')
+        doc = {'editor': 'edita', 'files': [{'key': 'clip-source', 'id': str(asset.pk)}], 'data': {'clips': [{'assetId': 'clip-source'}]}}
+        self.script.storyboard = doc
+        self.script.save()
+        self.assertEqual(self.client.delete(f'/api/assets/{asset.pk}').status_code, 204)
+        asset.refresh_from_db()
+        self.assertTrue(asset.metadata['archived'])
+        self.assertFalse(asset.metadata['gallery'])
+        self.script.refresh_from_db()
+        self.assertEqual(self.script.storyboard, doc)
+
     def test_gallery_acceptance_is_private_and_preserves_generation_metadata(self):
         asset=MediaAsset.objects.create(project=self.project,name='scene.png',file='test/scene.png',size=12,content_type='image/png',metadata={'gallery':False,'model':'gpt-image-2.5-flare','scriptId':str(self.script.pk)})
         route=f'/api/assets/{asset.pk}'

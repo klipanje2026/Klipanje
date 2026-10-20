@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+import ts from 'typescript';
+const compile=path=>ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;
+let slots=[],cursor=0,calls=0,uploads=0,added=[],saved=0;
+const react={useState:v=>{const i=cursor++;if(!(i in slots))slots[i]=typeof v==='function'?v():v;return [slots[i],next=>{slots[i]=typeof next==='function'?next(slots[i]):next;}];},useRef:v=>{const i=cursor++;return slots[i]??={current:v};}};
+const jsx=(type,props)=>({type,props});
+const ranges={};runInNewContext(compile('frontend/src/lib/narration-frame-ranges.ts'),{exports:ranges});
+const timing=new WeakMap();
+const mods={react,'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:'fragment'},'./LanguageDropdown/LanguageDropdown':{},'../lib/narration-frame-ranges':ranges,'./LocalVideoStorage':{rememberRemoteFile:()=>{}},'../lib/api':{apiFetch:async()=>{calls++;return {ok:true,json:async()=>({audio_base64:'AA==',alignment:{}})};}},'../lib/production':{uploadAsset:async()=>({id:'take'+ ++uploads})},'../lib/narration-sync':{alignmentWords:()=>[],narrationText:t=>t,rememberMediaTiming:(f,t)=>timing.set(f,t)},'../lib/narration-audio':{prepareNarration:async()=>({blob:new Blob(['audio']),duration:6})},'../lib/voice-wav':{audioBufferSegmentToWav:()=>new Blob(['slice'])}};
+const exp={};runInNewContext(compile('frontend/src/components/LocalNarrationBatch.tsx'),{exports:exp,require:k=>{assert.ok(k in mods,k);return mods[k];},Blob,File,Uint8Array,atob,Date,Map,AudioContext:class{decodeAudioData(){return Promise.resolve({sampleRate:24000});}close(){return Promise.resolve();}}});
+const props={beforeGenerate:async()=>{saved++;return true;},tone:'',onBusy:()=>{},model:'eleven_flash_v2_5',script:{id:'s',project:'p',title:'Story',photo_settings:{},segments:[{id:'a',text:'One two',start:0,end:3},{id:'b',text:'Three four',start:3,end:6}]},text:'One two Three four',segment:'',voice:'voice',start:0,disabled:false,onAdd:async files=>{added.push(...files);return true;}};
+const render=()=>{cursor=0;return exp.LocalNarrationBatch(props);};
+const all=(node,pred)=>{if(!node||typeof node!=='object')return [];return [...(pred(node)?[node]:[]),...[node.props?.children].flat(Infinity).flatMap(c=>all(c,pred))];};
+let tree=render();const checkboxes=all(tree,n=>n.type==='input'&&n.props.type==='checkbox');checkboxes[1].props.onChange({target:{checked:true}});
+tree=render();const buttons=all(tree,n=>n.type==='button'&&n.props.children==='Generiši naraciju');
+assert.equal(buttons.length,3,'One button per frame plus whole selection');
+await buttons[2].props.onClick();await new Promise(r=>setTimeout(r,30));
+assert.equal(calls,1,'Whole selection makes a single paid request');assert.equal(saved,1);assert.equal(added.length,2);
+assert.deepEqual(added.map(f=>timing.get(f).segmentIds[0]),['a','b']);
+assert.equal(timing.get(added[0]).narration.duration,3);assert.equal(timing.get(added[1]).narration.duration,3);
+assert.equal(props.script.segments.length,2);assert.equal(props.script.segments[0].text,'One two');
+tree=render();await all(tree,n=>n.type==='button'&&n.props.children==='Generiši naraciju')[0].props.onClick();await new Promise(r=>setTimeout(r,30));assert.equal(calls,2);assert.equal(added.length,3);assert.equal(timing.get(added[2]).segmentIds[0],'a');
+console.log('One request sliced to original frames, per-frame generation and save-before-request passed.');
+
+// Leaving for photos waits for save; failed save leaves the current editor intact.
+const listeners={},locations=[],destinations=[];let finishSave;
+const leaveExports={};
+const leaveReact={useEffect:fn=>fn(),useRef:v=>({current:v}),useState:v=>[v,n=>destinations.push(n)]};
+const location={href:'http://local/videa?project=p',origin:'http://local',pathname:'/videa',search:'?project=p',assign:url=>locations.push(url)};
+const window={location,addEventListener:()=>{},removeEventListener:()=>{},dispatchEvent:()=>{}};
+const document={body:{},addEventListener:(type,fn)=>listeners[type]=fn,removeEventListener:()=>{}};
+runInNewContext(compile('frontend/src/components/EditorLeaveGuard.tsx'),{exports:leaveExports,require:k=>k==='react'?leaveReact:k==='react-dom'?{createPortal:x=>x}:k==='react/jsx-runtime'?{jsx,jsxs:jsx}:{SaveBeforeLeaving:'dialog'},window,document,location,URL,Event});
+const click=()=>listeners.click({button:0,target:{closest:()=>({href:'http://local/fotografije?project=p',hasAttribute:()=>false})},preventDefault(){},stopPropagation(){}});
+leaveExports.EditorLeaveGuard({active:true,localProject:'p',onSave:()=>new Promise(resolve=>{finishSave=resolve;})});click();assert.equal(locations.length,0);finishSave(true);await Promise.resolve();assert.equal(locations.length,1);
+leaveExports.EditorLeaveGuard({active:true,localProject:'p',onSave:async()=>false});click();await Promise.resolve();assert.equal(locations.length,1);assert.ok(destinations.length>0);
+console.log('Photo navigation waits for successful save; failed save stays in editor.');

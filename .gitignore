@@ -24,3 +24,6 @@ backups/
 *.log
 LOCAL_CHANGES.md
 /workspace/
+
+# Private local media-recovery snapshots
+backend/local-recovery/

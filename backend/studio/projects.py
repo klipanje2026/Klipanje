@@ -151,5 +151,12 @@ def asset_delete(request, pk):
             if changed:
                 script.photo_settings = settings
                 script.save(update_fields=['photo_settings', 'updated_at'])
-        asset.delete()
+        # Saved editor documents must retain their media even when removed from the gallery.
+        referenced = any(any(ref.get('id') == str(asset.pk) for ref in (doc or {}).get('files', []))
+                         for doc in LocalScript.objects.filter(project=asset.project).values_list('storyboard', flat=True))
+        if referenced:
+            asset.metadata = {**asset.metadata, 'gallery': False, 'archived': True}
+            asset.save(update_fields=['metadata'])
+        else:
+            asset.delete()
     return Response(status=204)

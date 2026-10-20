@@ -59,3 +59,23 @@ assert.ok(estimateSpeech('Zdravo, prijatelju, kako si danas!')>estimateSpeech('Z
 const timed=[{id:'x',text:'Jedan',start:0,end:3,timingSource:'narration',words:[{text:'Jedan',start:1,end:2}]},{id:'y',text:'Dva',start:3,end:5,words:[{text:'Dva',start:3.5,end:4}]}];
 const joined=mergeSpeechCaptions(timed,'x');
 assert.equal(joined[0].end,5);assert.equal(joined[0].words[1].start,3.5);
+
+const shakeRect=strength=>{painted.length=0;drawStillScene(coverContext,images,{...still,motion:'shake',shakeStrength:strength},1,1);return painted[0].slice(1);};
+const zero=shakeRect(0),full=shakeRect(1),gentle=shakeRect(undefined);
+assert.deepEqual(zero,[0,0,100,100]);
+assert.ok(Math.abs(gentle[2]-101.5)<1e-8);assert.ok(Math.abs(full[2]-106)<1e-8);
+assert.ok(Math.abs((gentle[0]+gentle[2]/2-50)-(full[0]+full[2]/2-50)*.25)<1e-8);
+assert.deepEqual(shakeRect(-1),zero);assert.deepEqual(shakeRect(2),full);
+console.log('Shake strength: zero, gentle default, full strength and clamped bounds passed.');
+
+const {surpriseMotion}=await loadTestModule('lib/still-scenes.tsx','work/local-timeline-tests');
+assert.deepEqual(surpriseMotion(0,5),{scale:1,x:0,y:0});
+assert.deepEqual(surpriseMotion(.6,5),{scale:1,x:0,y:0});
+assert.deepEqual(surpriseMotion(.1,5,0),{scale:1,x:0,y:-0});
+const peak=surpriseMotion(.108,5),settle=surpriseMotion(.5,5);
+assert.ok(peak.scale>1.18);assert.ok(settle.scale<peak.scale);
+assert.deepEqual(surpriseMotion(.1,.1),{scale:1,x:0,y:0});
+assert.equal(surpriseMotion(.216,5,.6,1.2).scale,peak.scale);
+painted.length=0;drawStillScene(coverContext,images,{...still,motion:'surprise'},.108,1);
+assert.ok(Math.abs(painted[0][3]-100*peak.scale)<1e-8);
+console.log('Surprise: fast focus, zero strength, settling, duration and shared draw passed.');

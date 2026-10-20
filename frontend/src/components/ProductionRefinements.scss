@@ -351,10 +351,12 @@
  @media(max-width:600px){padding:10px;.script-name-chapter{grid-template-columns:1fr;}.script-name-chapter>button{grid-column:auto;justify-self:start;}}
 }
 
-.local-editor-tools .sound-library {display:grid;gap:8px;}
-.local-editor-tools .sound-library-item {display:grid;grid-template-columns:minmax(0,1fr) 28px;gap:5px;padding:7px;border:1px solid var(--ui-border);border-radius:7px;}
+.local-editor-tools .sound-library {display:grid;gap:6px;}
+.local-editor-tools .sound-library-item {display:grid;grid-template-columns:minmax(0,1fr) 24px;align-items:center;gap:4px 8px;padding:6px 7px;border:1px solid var(--ui-border);border-radius:7px;}
 .local-editor-tools .sound-library-item>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;align-self:center;}
-.local-editor-tools .sound-library-item audio{grid-column:1/-1;width:100%;height:28px;}
+.local-editor-tools .sound-library-item audio{grid-column:1/-1;width:100%;height:28px;margin:0;}
+.local-editor-tools .sound-library-item>button{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:24px;height:24px;min-height:24px;padding:4px;margin:0;border-radius:5px;line-height:1;}
+.local-editor-tools .sound-library-item>button svg{display:block;width:14px;height:14px;flex:none;}
 .local-editor-tools .audio-envelope-controls{display:grid;gap:8px;padding-top:10px;}
 .local-editor-tools .audio-envelope-controls label{margin:0;}
 .local-editor-tools .audio-envelope-controls small,.local-editor-tools .sound-library small{font-size:10px;line-height:1.4;}
@@ -452,5 +454,42 @@
 .script-panel .script-undo-button:not(:disabled) {border-color:var(--k-accent);color:var(--k-accent);font-weight:600;}
 
 .script-take-row>span {min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:240px;white-space:nowrap;}
-.local-editor-tools .narration-library-row {height:auto;min-height:30px;flex-wrap:wrap;}
-.local-editor-tools .narration-library-row audio {width:100%;height:28px;order:2;}
+.local-editor-tools .narration-library-row {height:30px;min-height:30px;flex-wrap:nowrap;}
+.local-editor-tools .narration-library-row button {flex-shrink:0;}
+
+.local-editor-tools .narration-library-row button {display:inline-flex!important;align-items:center;justify-content:center;line-height:1;}
+.local-editor-tools .narration-library-row button svg {display:block;width:14px!important;height:14px!important;flex:none;}
+
+.photo-workspace .photo-generate-footer > button {padding-top:6px;padding-bottom:6px;}
+.photo-workspace .photo-generation-progress {margin:12px 0 0;}
+
+.script-save-bottom {flex-wrap:wrap;gap:12px;}
+.script-save-bottom .script-save-summary {flex:1 1 220px;display:flex;flex-direction:column;gap:4px;}
+.script-save-bottom .script-save-summary small {font-size:11px;color:var(--k-muted);}
+
+.local-caption-panel .local-caption-only {display:flex;flex-direction:row;align-items:center;gap:7px;margin:6px 0;font-size:11px;}
+.local-caption-panel .local-caption-only input {width:14px;height:14px;margin:0;flex:none;}
+
+.local-caption-tabs.local-effects-tabs {grid-template-columns:repeat(2,minmax(0,1fr));}
+.local-effects-tabs button {font-size:11px;}
+
+.local-edita-video .scene-effect-grid,.special-effect-picker {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.special-effect-picker>button {display:flex;align-items:center;justify-content:center;height:42px;margin:0!important;padding:8px!important;}
+.local-effects-tabs {flex-shrink:0;}
+.local-effects-tabs svg {width:18px;height:18px;}
+
+.video-studio-app .overlay-floating-inspector {width:320px;}
+.video-studio-app .overlay-floating-inspector .overlay-actions {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px;}
+.video-studio-app .overlay-floating-inspector .overlay-actions button {margin:0;}
+@media(min-width:1200px){.video-studio-app .overlay-floating-inspector {height:88%;max-height:88%;}}
+@media(max-width:1199px){.video-studio-app .overlay-floating-inspector {width:100%;max-height:65dvh;}}
+
+.local-caption-tabs.local-effects-tabs {border-bottom:0!important;}
+.special-effect-picker>button {height:30px;min-height:30px;font-size:10px!important;gap:6px;padding:5px 7px!important;}
+.special-effect-picker>button svg {width:15px;height:15px;flex:none;}
+
+.composition-images {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:240px;overflow:auto;}
+.composition-images label {position:relative;min-width:0;margin:0!important;gap:3px!important;}
+.composition-images img {width:100%;height:80px;object-fit:cover;border-radius:6px;}
+.composition-images small {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%;font-size:9px;}
+.composition-images input {position:absolute;top:5px;left:5px;width:16px!important;}

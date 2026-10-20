@@ -26,11 +26,12 @@ export function alignmentWords(alignment:unknown):CaptionWord[]{
 export function fitNarration(segments:Segment[],timing:NarrationTiming,start:number):Segment[]{
  const ids=new Set(timing.segmentIds),targets=segments.filter(s=>(ids.has(s.id)||!!s.sourceSceneId&&ids.has(s.sourceSceneId))).sort((a,b)=>a.start-b.start);
  if(!timing.sync||!targets.length)return segments;
- const words=timing.words.length?timing.words:timing.text.trim().split(/\s+/).filter(Boolean).map((text,i,all)=>({text,start:timing.duration*i/all.length,end:timing.duration*(i+1)/all.length}));
+ const sourceWords=targets.flatMap(s=>s.text.trim().split(/\s+/).filter(Boolean));
+ const words=timing.words.length===sourceWords.length?timing.words:sourceWords.map((text,i,all)=>({text,start:timing.duration*i/all.length,end:timing.duration*(i+1)/all.length}));
  const weights=targets.map(s=>Math.max(1,s.text.trim().split(/\s+/).length)),total=weights.reduce((a,b)=>a+b,0);
  const changes=new Map<string,Segment>();let count=0,weight=0;
  targets.forEach((s,i)=>{weight+=weights[i];const next=i===targets.length-1?words.length:Math.round(words.length*weight/total);const own=words.slice(count,next);const from=i===0?start:start+(own[0]?.start??timing.duration*weight/total);const end=i===targets.length-1?start+timing.duration:start+(words[next]?.start??timing.duration);
-  changes.set(s.id,{...s,timingSource:timing.words.length?'narration':'estimate',start:from,end:Math.max(from+.01,end),text:own.map(w=>w.text).join(' ')||s.text,words:own.map(w=>({...w,start:start+w.start,end:start+w.end}))});count=next;
+  changes.set(s.id,{...s,timingSource:timing.words.length?'narration':'estimate',start:from,end:Math.max(from+.01,end),text:s.text,words:s.text.trim().split(/\s+/).filter(Boolean).map((text,j,all)=>{const aligned=own.length===all.length?own[j]:undefined;return {text,start:aligned?start+aligned.start:from+(Math.max(from+.01,end)-from)*j/all.length,end:aligned?start+aligned.end:from+(Math.max(from+.01,end)-from)*(j+1)/all.length};})});count=next;
  });
  const oldEnd=targets[targets.length-1].end,delta=start+timing.duration-oldEnd;
  return segments.map(s=>changes.get(s.id)||(!(ids.has(s.id)||!!s.sourceSceneId&&ids.has(s.sourceSceneId))&&s.role!=='title'&&s.start>=oldEnd?shiftSegment(s,delta):s));

@@ -39,3 +39,20 @@ const explicit=buildPhotoPlan(['a','b'],{a:2,b:1},[{id:'old',segment:'a',text:'O
 assert.equal(explicit.length,2);assert.ok(explicit.every(item=>item.prompt==='Both friends in one forest scene'));
 assert.throws(()=>buildPhotoPlan(['a','b'],{a:1,b:1},[],[['a','b']],{'a|b':''}),/prompt/);
 console.log('Narration timing, quote handling, linked media and grouped photo checks passed.');
+
+// A short/different provider transcript must never replace defined captions with words.
+const mismatch=fitNarration(original,{...timing,segmentIds:['a','b'],text:'One',words:[{text:'One',start:0,end:1}],duration:3},0);
+assert.deepEqual(mismatch.map(s=>s.text),original.map(s=>s.text));
+assert.deepEqual(mismatch.map(s=>s.id),original.map(s=>s.id));
+assert.equal(mismatch[1].end,3);assert.ok(mismatch[0].end<=mismatch[1].start);
+const {narrationFrameRanges}=await loadTestModule('lib/narration-frame-ranges.ts','work/narration-sync-tests');
+const cuts=narrationFrameRanges(['one two','three four'],[{text:'one',start:0,end:.5},{text:'two',start:.5,end:1},{text:'three',start:1.5,end:2},{text:'four',start:2,end:3}],3);
+assert.deepEqual(cuts,[{start:0,end:1.5},{start:1.5,end:3}]);
+const {editorIntervals,reconcileScriptEditor}=await loadTestModule('lib/script-editor-sync.ts','work/narration-sync-tests');
+const script={segments:original};const data={clips:[],captions:{__script:{segments:[{...original[0],text:'Broken',position:{x:20,y:30}}]}}};
+const reconciled=reconcileScriptEditor(data,script);
+assert.deepEqual(reconciled.captions.__script.segments.map(s=>s.text),original.map(s=>s.text));
+assert.deepEqual(reconciled.captions.__script.segments[0].position,{x:20,y:30});
+reconciled.captions.__script.segments[0].text='Edited in video';
+assert.equal(editorIntervals(reconciled,script)[0].text,'Edited in video');
+console.log('Narration preserves authored captions; frame cuts and script/editor round-trip passed.');
