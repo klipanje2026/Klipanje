@@ -79,3 +79,10 @@ assert.equal(surpriseMotion(.216,5,.6,1.2).scale,peak.scale);
 painted.length=0;drawStillScene(coverContext,images,{...still,motion:'surprise'},.108,1);
 assert.ok(Math.abs(painted[0][3]-100*peak.scale)<1e-8);
 console.log('Surprise: fast focus, zero strength, settling, duration and shared draw passed.');
+
+const motionRect=(motion,time)=>{painted.length=0;drawStillScene(coverContext,images,{...still,...motion},time,1);return painted[0].slice(1);};
+assert.notDeepEqual(motionRect({motion:'shake',shakeSpeed:.3},1),motionRect({motion:'shake',shakeSpeed:2},1));
+assert.equal(motionRect({motion:'shake',shakeSpeed:.3},1)[2],motionRect({motion:'shake',shakeSpeed:2},1)[2]);
+for(const motion of ['zoom-in','zoom-out'])assert.deepEqual(motionRect({motion,zoomStrength:0,scale:2},0),motionRect({motion,zoomStrength:0,scale:2},3));
+assert.ok(motionRect({motion:'zoom-in',zoomStrength:.8},3)[2]>motionRect({motion:'zoom-in',zoomStrength:.1},3)[2]);
+console.log('Shake speed changes frequency independently of strength; zoom intensity zero is stationary.');

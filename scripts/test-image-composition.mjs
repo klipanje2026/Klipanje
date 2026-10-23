@@ -36,3 +36,9 @@ for(const borderStyle of ['wood','paper']){
 }
 assert.equal(stack[2].x,0);assert.ok(stack[2].y>0);assert.equal(stack[3].x+stack[3].w,100);
 console.log('Overlap fills the frame as a grid; wood/paper frames render without gaps and preserve image interiors.');
+
+assert.equal(compositionBoxes(4,'grid',6,35)[0].w,35);
+assert.equal(compositionBoxes(4,'grid',6,35)[1].x,35);
+assert.equal(compositionBoxes(4,'strips',6,50,'horizontal')[3].y,75);
+assert.equal(compositionBoxes(4,'strips',6,50,'horizontal')[3].w,100);
+console.log('Grid split and horizontal strip controls use the shared composition geometry.');

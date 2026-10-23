@@ -1,8 +1,9 @@
-export type ImageComposition={items:{assetId:string;at:number}[];layout:'grid'|'strips'|'overlap';gap:number;border:number;borderStyle:'solid'|'dashed'|'double'|'wood'|'paper';overlap?:number;color:string;animation:'fade'|'slide'|'none'};
-export function compositionBoxes(count:number,layout:ImageComposition['layout'],overlap=6){
+export type ImageComposition={items:{assetId:string;at:number}[];layout:'grid'|'strips'|'overlap';gap:number;border:number;borderStyle:'solid'|'dashed'|'double'|'wood'|'paper';overlap?:number;stripDirection?:'vertical'|'horizontal';gridSplit?:number;color:string;animation:'fade'|'slide'|'none'};
+export function compositionBoxes(count:number,layout:ImageComposition['layout'],overlap=6,gridSplit=50,stripDirection:'vertical'|'horizontal'='vertical'){
+ const split=layout==='grid'?Math.max(25,Math.min(75,gridSplit)):50;
  const amount=Math.max(0,Math.min(20,overlap))/2;
  return Array.from({length:count},(_,i)=>{
-  const box=layout==='strips'?{x:i*100/count,y:0,w:100/count,h:100}:count===2?{x:i*50,y:0,w:50,h:100}:count===3&&i===2?{x:0,y:50,w:100,h:50}:{x:(i%2)*50,y:Math.floor(i/2)*50,w:50,h:50};
+  const box=layout==='strips'?(stripDirection==='horizontal'?{x:0,y:i*100/count,w:100,h:100/count}:{x:i*100/count,y:0,w:100/count,h:100}):count===2?{x:i?split:0,y:0,w:i?100-split:split,h:100}:count===3&&i===2?{x:0,y:50,w:100,h:50}:{x:i%2?split:0,y:Math.floor(i/2)*50,w:i%2?100-split:split,h:50};
   if(layout!=='overlap')return box;
   const left=Math.max(0,box.x-amount),top=Math.max(0,box.y-amount);
   return {x:left,y:top,w:Math.min(100,box.x+box.w+amount)-left,h:Math.min(100,box.y+box.h+amount)-top};
@@ -17,7 +18,7 @@ function textureFrame(ctx:CanvasRenderingContext2D,x:number,y:number,w:number,h:
  ctx.restore();
 }
 export function drawComposition(ctx:CanvasRenderingContext2D,images:Map<string,HTMLImageElement>,value:ImageComposition,elapsed:number){
- const W=ctx.canvas.width,H=ctx.canvas.height,unit=Math.min(W,H)/100,boxes=compositionBoxes(value.items.length,value.layout,value.overlap);
+ const W=ctx.canvas.width,H=ctx.canvas.height,unit=Math.min(W,H)/100,boxes=compositionBoxes(value.items.length,value.layout,value.overlap,value.gridSplit,value.stripDirection);
  value.items.forEach((item,i)=>{
   const image=images.get(item.assetId);if(!image||elapsed<item.at)return;
   const p=Math.min(1,(elapsed-item.at)/.4),box=boxes[i],gap=value.layout==='overlap'?0:value.gap*unit;

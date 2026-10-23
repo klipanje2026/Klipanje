@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-export function StudioIcon({ name, style }: { name: 'cut' | 'music' | 'reset' | 'alignLeft' | 'alignCenter' | 'alignRight' | 'devices' | 'underline' | 'behindPerson' | 'letterCase' | 'splitWords' | 'joinWords' | 'filters' | 'transitions' | 'sticker' | 'text' | 'elements' | 'mute' | 'sound' | 'language' | 'search' | 'plus' | 'newVideo' | 'newCaptions' | 'copy' | 'trash' | 'download' | 'frame' | 'skipStart' | 'voice' | 'timelineShow' | 'timelineHide' | 'hand' | 'pointer' | 'undo' | 'redo' | 'ratio' | 'arrow' | 'back' | 'play' | 'pause' | 'captions' | 'video' | 'spark' | 'check' | 'menu' | 'close' | 'chevron' | 'settings'; style?: CSSProperties }) {
+export function StudioIcon({ name, style }: { name: 'save' | 'cut' | 'music' | 'reset' | 'alignLeft' | 'alignCenter' | 'alignRight' | 'devices' | 'underline' | 'behindPerson' | 'letterCase' | 'splitWords' | 'joinWords' | 'filters' | 'transitions' | 'sticker' | 'text' | 'elements' | 'mute' | 'sound' | 'language' | 'search' | 'plus' | 'newVideo' | 'newCaptions' | 'copy' | 'trash' | 'download' | 'frame' | 'skipStart' | 'voice' | 'timelineShow' | 'timelineHide' | 'hand' | 'pointer' | 'undo' | 'redo' | 'ratio' | 'arrow' | 'back' | 'play' | 'pause' | 'captions' | 'video' | 'spark' | 'check' | 'menu' | 'close' | 'chevron' | 'settings'; style?: CSSProperties }) {
   const paths = {
     music:<><path d="M9 18V5l11-2v13 M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></>,
     reset:<><path d="M3 10a9 9 0 1 1 2 9 M3 4v6h6"/></>,
@@ -49,6 +49,7 @@ export function StudioIcon({ name, style }: { name: 'cut' | 'music' | 'reset' | 
     video: <><rect x="3" y="6" width="13" height="12" rx="3" /><path d="m16 10 5-3v10l-5-3" /></>,
     spark: <><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5zM20 2v4m-2-2h4" /></>,
     check: <path d="m5 12 4 4L19 6" />,
+    save: <><path d="M5 3h12l4 4v14H3V3h2Z"/><path d="M7 3v6h10V3M7 21v-8h10v8"/></>,
     menu: <path d="M4 7h16M4 12h16M4 17h16" />,
     close: <path d="m6 6 12 12M6 18 18 6" />,
   };

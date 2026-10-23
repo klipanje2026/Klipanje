@@ -1,9 +1,9 @@
 import {formatSeconds} from '../lib/format-seconds';
 import {useState} from 'react';
 import {sceneFilters,sceneTransitions,filterCss,type SceneEffects} from '../lib/scene-effects';
-export function SceneEffectsPanel({allowBlink=false,previewImage,mode,clip,disabled,onChange,onPreview,time}:{allowBlink?:boolean;previewImage?:string;mode:'filters'|'transitions';clip?:SceneEffects&{name:string;start:number;inPoint:number;outPoint:number};disabled:boolean;onChange:(patch:SceneEffects)=>void;onPreview:(time:number)=>void;time:number}){
- const [category,setCategory]=useState<string|null>(null);const presets=mode==='filters'?sceneFilters.filter(p=>p.id!=='blink'||allowBlink):sceneTransitions;
- const length=clip?clip.outPoint-clip.inPoint:0;const current=mode==='filters'?clip?.filter:clip?.transition;
+export function SceneEffectsPanel({onlyBlink=false,allowBlink=false,previewImage,mode,clip,disabled,onChange,onPreview,time}:{onlyBlink?:boolean;allowBlink?:boolean;previewImage?:string;mode:'filters'|'transitions';clip?:SceneEffects&{name:string;start:number;inPoint:number;outPoint:number};disabled:boolean;onChange:(patch:SceneEffects)=>void;onPreview:(time:number)=>void;time:number}){
+ const [category,setCategory]=useState<string|null>(null);const presets=mode==='filters'?sceneFilters.filter(p=>onlyBlink?p.id==='blink'&&allowBlink:p.id!=='blink'||allowBlink):sceneTransitions;
+ const length=clip?clip.outPoint-clip.inPoint:0;const rawCurrent=mode==='filters'?clip?.filter:clip?.transition;const current=rawCurrent&&presets.some(p=>p.id===rawCurrent.id)?rawCurrent:undefined;
  const start=clip?.filter?Math.max(clip.inPoint,clip.filter.start):clip?.inPoint||0;
  return <div className={`scene-effects-library ${mode}`}>
  <p>{clip?`Scena: ${clip.name}`:'Odaberi kadar na vremenskoj liniji.'}</p>
