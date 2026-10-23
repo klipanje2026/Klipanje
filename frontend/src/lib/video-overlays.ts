@@ -1,5 +1,4 @@
-import {drawFlag} from './flag-animation';
-export type Overlay = {id:string; kind:'flag'|'clock'|'sleep'|'text'|'rect'|'ellipse'|'arrow'|'heart'|'star'; text:string; color:string; background:string; x:number; y:number; width:number; height:number; rotation:number; opacity:number; start:number; end:number; bold:boolean; fontFamily?:string; fontSize?:number; italic?:boolean; underline?:boolean; align?:'left'|'center'|'right'; uppercase?:boolean; lineHeight?:number; strokeColor?:string; strokeWidth?:number; shadowColor?:string; shadowBlur?:number; shadowOffset?:number; verticalAlign?:'top'|'middle'|'bottom'; verticalText?:boolean; letterSpacing?:number; backgroundOpacity?:number; shadowOpacity?:number; shadowDistance?:number; shadowAngle?:number; glow?:boolean; animation?:'none'|'fade'|'rise'|'pop'|'slide'|'typewriter'; animationDuration?:number;sleepSpeed?:number;clockMinutes?:number;clockSpeed?:number;flagCountry?:'ba'|'hr'|'rs';flagSpeed?:number;flagStrength?:number;flagPole?:boolean;flagShape?:'rectangle'|'pennant';flagArrival?:'none'|'left'|'right'|'top'};
+export type Overlay = {id:string; kind:'clock'|'sleep'|'text'|'rect'|'ellipse'|'arrow'|'heart'|'star'; text:string; color:string; background:string; x:number; y:number; width:number; height:number; rotation:number; opacity:number; start:number; end:number; bold:boolean; fontFamily?:string; fontSize?:number; italic?:boolean; underline?:boolean; align?:'left'|'center'|'right'; uppercase?:boolean; lineHeight?:number; strokeColor?:string; strokeWidth?:number; shadowColor?:string; shadowBlur?:number; shadowOffset?:number; verticalAlign?:'top'|'middle'|'bottom'; verticalText?:boolean; letterSpacing?:number; backgroundOpacity?:number; shadowOpacity?:number; shadowDistance?:number; shadowAngle?:number; glow?:boolean; animation?:'none'|'fade'|'rise'|'pop'|'slide'|'typewriter'; animationDuration?:number;sleepSpeed?:number;clockMinutes?:number;clockSpeed?:number};
 export type OverlayPreset = {id:string; category:string; name:string; symbol:string; value:Partial<Overlay>};
 export const overlayPresets:OverlayPreset[] = [
  {id:'subtitle',category:'Naslovi',name:'Podnaslov',symbol:'Priča',value:{kind:'text',text:'Mala ideja. Velika priča.',bold:false,height:12}},
@@ -29,7 +28,7 @@ export function createOverlay(preset:OverlayPreset,time:number,duration:number):
 }
 export function restoreOverlays(value:unknown):Overlay[] {
  if(!Array.isArray(value))return [];
- return value.filter((o):o is Overlay=>!!o&&typeof o.id==='string'&&['flag','clock','sleep','text','rect','ellipse','arrow','heart','star'].includes(o.kind)&&typeof o.text==='string'&&typeof o.color==='string'&&typeof o.background==='string'&&[o.x,o.y,o.width,o.height,o.rotation,o.opacity,o.start,o.end].every(Number.isFinite)&&o.width>0&&o.height>0&&o.end>o.start);
+ return value.filter((o):o is Overlay=>!!o&&typeof o.id==='string'&&['clock','sleep','text','rect','ellipse','arrow','heart','star'].includes(o.kind)&&typeof o.text==='string'&&typeof o.color==='string'&&typeof o.background==='string'&&[o.x,o.y,o.width,o.height,o.rotation,o.opacity,o.start,o.end].every(Number.isFinite)&&o.width>0&&o.height>0&&o.end>o.start);
 }
 export function drawOverlays(ctx:CanvasRenderingContext2D,items:Overlay[],time:number) {
  for(const o of items){
@@ -37,8 +36,7 @@ export function drawOverlays(ctx:CanvasRenderingContext2D,items:Overlay[],time:n
   const w=ctx.canvas.width*o.width/100,h=ctx.canvas.height*o.height/100;
   const motion=overlayMotion(o,time);
   ctx.save();ctx.translate(ctx.canvas.width*(o.x+motion.x)/100,ctx.canvas.height*(o.y+motion.y)/100);ctx.rotate(o.rotation*Math.PI/180);ctx.scale(motion.scale,motion.scale);ctx.globalAlpha=o.opacity/100*motion.alpha;ctx.fillStyle=o.color;
-  if(o.kind==='flag'){drawFlag(ctx,o,time,w,h);
-  }else if(o.kind==='clock'){
+  if(o.kind==='clock'){
    const r=Math.min(w,h)*.46;
    const minutes=clockMinutesAt(o,time),angle=minutes*Math.PI/30;
    ctx.save();ctx.shadowColor='rgba(0,0,0,.3)';ctx.shadowBlur=r*.12;ctx.shadowOffsetY=r*.04;
@@ -125,7 +123,6 @@ export function overlayMotion(o:Overlay,time:number) {
  const animation=o.animation||(o.kind==='text'?'fade':'none');
  const duration=Math.max(.1,Math.min(o.animationDuration||.6,o.end-o.start));
  const p=Math.max(0,Math.min(1,(time-o.start)/duration)),ease=1-Math.pow(1-p,3);
- if(o.kind==='flag'){const arrival=o.flagArrival||'none';return {alpha:1,x:arrival==='left'?-(o.x+o.width)*(1-ease):arrival==='right'?(100-o.x+o.width)*(1-ease):0,y:arrival==='top'?-(o.y+o.height)*(1-ease):0,scale:1,characters:undefined};}
  return {alpha:animation==='none'||animation==='typewriter'?1:ease,
   x:animation==='slide'?-8*(1-ease):0,y:animation==='rise'?6*(1-ease):0,
   scale:animation==='pop'?.65+.35*ease:1,
