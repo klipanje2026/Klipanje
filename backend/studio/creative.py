@@ -20,6 +20,7 @@ from .models import LocalScript, MediaAsset
 from .projects import asset_payload
 from .story_rules import STORY_RULES,FRAME_RULES,PROFILE_RULES
 from .image_spend import record_image
+from .continuity import continuity
 
 logger = logging.getLogger(__name__)
 
@@ -106,20 +107,14 @@ def prepare(request):
         segment={**combined[0],'text':' '.join(s['text'] for s in combined),'end':combined[-1]['end']}
         data['segment']=combined[0]['id']
         data['segments']=[s['id'] for s in combined]
-    context_text=((segment or {}).get('text',script.content)+' '+data['prompt']).casefold()
     characters=script.project.brief.get('characters',[])
-    identities=[]
-    for character in characters:
-        name=character.get('name','').strip()
-        if name and re.search(r'(?<!\w)'+re.escape(name.casefold())+r'(?!\w)',context_text):
-            identities.append(character)
-            visual_ids=[character.get('referenceId'),character.get('views',{}).get('body-front')]
-            for outfit in character.get('outfits',[]):
-                if outfit.get('name') and outfit['name'].casefold() in context_text:
-                    visual_ids.append(outfit.get('views',{}).get('body-front'))
-            for visual_id in filter(None,visual_ids):
-                identifier=serializers.UUIDField().run_validation(visual_id)
-                if identifier not in data['references']:data['references'].append(identifier)
+    try:
+        identities,scene,continuity_refs=continuity(script.project.brief,script.image_prompt+'\n'+data['prompt'],(segment or {}).get('text',script.content))
+    except ValueError as error:
+        raise serializers.ValidationError(str(error))
+    for visual_id in continuity_refs:
+        identifier=serializers.UUIDField().run_validation(visual_id)
+        if identifier not in data['references']:data['references'].append(identifier)
     if len(data['references'])>16: raise serializers.ValidationError('Odabrani kadar koristi više od 16 referenci. Smanji izbor za taj kadar.')
     found={a.pk:a for a in script.project.assets.filter(pk__in=data['references'],content_type__in=['image/png','image/jpeg','image/webp'])}
     refs=[found[identifier] for identifier in data['references'] if identifier in found]
@@ -139,9 +134,10 @@ def prepare(request):
         'Storytelling rules: '+str(brief.get('storyRules','')),
         'Project notes: '+json.dumps(brief.get('notes',[]),ensure_ascii=False),
         'Framing: '+data.get('aspect','original')+' aspect ratio. Keep all essential subjects centered with room for cropping.',
-        'Characters: '+json.dumps(brief.get('characters',[]),ensure_ascii=False),
+        'Environment continuity: '+json.dumps({'name':scene.get('name'),'prompt':scene.get('prompt')} if scene else {},ensure_ascii=False),
+        'Keep the defined environment layout, materials, colors and permanent props consistent. Do not add characters merely because they have a profile. Apply each selected clothing description only to its named character.',
         'Characters present in this scene: '+json.dumps(identities,ensure_ascii=False),
-        'Reference identity mapping: '+json.dumps([{'image':i+1,'characters':[c.get('name') for c in characters if c.get('referenceId')==str(a.pk)]} for i,a in enumerate(refs)],ensure_ascii=False),
+        'Reference identity mapping: '+json.dumps([{'image':i+1,'environment':scene.get('name') if scene and scene.get('referenceId')==str(a.pk) else None,'characters':[c.get('name') for c in characters if c.get('referenceId')==str(a.pk) or str(a.pk) in c.get('views',{}).values() or any(str(a.pk) in o.get('views',{}).values() for o in c.get('outfits',[]))]} for i,a in enumerate(refs)],ensure_ascii=False),
         'Preserve the exact identities, facial features, proportions and hair of named characters. Use the explicitly requested named outfit when present, otherwise their default clothing. Change pose, action and scene as requested; never replace the character.',
         'Visual style: '+style[2],
         'Shared direction: '+script.image_prompt,

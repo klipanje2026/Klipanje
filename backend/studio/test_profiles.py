@@ -88,3 +88,22 @@ class ProfileTests(TestCase):
     @override_settings(ELEVENLABS_API_KEY='test-only')
     def test_sound_effect_generation_removed(self):
         self.assertEqual(self.client.post('/api/sound-effect', {'text':'Dog'}, content_type='application/json').status_code, 404)
+
+    def test_scene_and_outfit_expansion_preview_and_reference_access(self):
+        reference=MediaAsset.objects.create(project=self.project,name='room.png',file='unused.png',content_type='image/png',size=10)
+        self.project.brief['scenes']=[{'name':'Room','prompt':'White blanket, beige headboard','isDefault':True,'referenceId':str(reference.pk)}]
+        self.project.save()
+        script=LocalScript.objects.create(project=self.project,owner=self.user,title='Test',content='Mila walks.',segments=[{'id':'one','text':'Mila walks.','start':0,'end':3}])
+        body={'script':str(script.pk),'segment':'one','prompt':'[Lik: Mila; Odjeća: Kiša]','model':'gpt-image-2.5-flare'}
+        with patch('studio.creative.request_image') as paid:
+            response=self.client.post('/api/creative/prompt',body,content_type='application/json')
+            self.assertEqual(response.status_code,200,response.content)
+            self.assertIn('White blanket',response.json()['prompt'])
+            self.assertIn('Yellow raincoat',response.json()['prompt'])
+            self.assertNotIn('Blue coat',response.json()['prompt'])
+            self.assertEqual(response.json()['references'][0]['id'],str(reference.pk))
+            paid.assert_not_called()
+            foreign_project=Project.objects.create(created_by=self.other,workspace=self.project.workspace,name='Private')
+            foreign=MediaAsset.objects.create(project=foreign_project,name='private.png',file='unused.png',content_type='image/png',size=10)
+            self.project.brief['scenes'][0]['referenceId']=str(foreign.pk);self.project.save()
+            self.assertEqual(self.client.post('/api/creative/prompt',body,content_type='application/json').status_code,400)

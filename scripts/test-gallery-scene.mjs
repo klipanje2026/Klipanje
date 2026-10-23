@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {loadTestModule} from './test-ts-module.mjs';
+const {galleryScene}=await loadTestModule('lib/gallery-order.ts','work/gallery-tests');
+const script={segments:[{id:'a',text:'Kerim provodi petak u svojoj sobi za racunarom.'},{id:'b',text:'Maja ustaje rano i otvara prozor sobe.'}],photo_settings:{}};
+const asset=metadata=>({metadata});
+assert.equal(galleryScene(asset({segmentId:'b'}),script),1);
+assert.equal(galleryScene(asset({segmentId:'stale',fullPrompt:'Narration context: Kerim provodi petak u svojoj sobi za kompjuterom. Maja ustaje rano i otvara prozor sobe.\nScene direction: room'}),script),0);
+assert.equal(galleryScene(asset({fullPrompt:'Narration context: Maja ustaje rano i otvara prozor sobe.\nScene direction: room'}),script),1);
+assert.equal(galleryScene(asset({prompt:'Unrelated scene prompt long enough'}),script),-1);
+assert.equal(galleryScene(asset({fullPrompt:'Narration context: Maja ustaje rano i otvara prozor sobe.\nScene direction: room'}),{...script,segments:[script.segments[1],script.segments[0],{...script.segments[1],id:'c'}]}),-1);
+console.log('Gallery recovery: IDs, changed wording, contiguous context, ambiguity and unknown frames passed.');

@@ -86,3 +86,10 @@ assert.equal(motionRect({motion:'shake',shakeSpeed:.3},1)[2],motionRect({motion:
 for(const motion of ['zoom-in','zoom-out'])assert.deepEqual(motionRect({motion,zoomStrength:0,scale:2},0),motionRect({motion,zoomStrength:0,scale:2},3));
 assert.ok(motionRect({motion:'zoom-in',zoomStrength:.8},3)[2]>motionRect({motion:'zoom-in',zoomStrength:.1},3)[2]);
 console.log('Shake speed changes frequency independently of strength; zoom intensity zero is stationary.');
+
+const extraMotionDraw=(motion,time)=>{const args=[];const canvas={canvas:{width:100,height:100},globalAlpha:1,save(){},restore(){},translate(){},drawImage(...a){args.push(a.slice(1));}};drawStillScene(canvas,images,{...still,motion,zoomStrength:.2},time,1);return args[0];};
+assert.notDeepEqual(extraMotionDraw('pan-up',1),extraMotionDraw('pan-up',4));
+assert.notDeepEqual(extraMotionDraw('pan-up',1),extraMotionDraw('pan-down',1));
+assert.deepEqual(extraMotionDraw('breathe',0),extraMotionDraw('breathe',5));
+assert.ok(extraMotionDraw('breathe',2.5)[2]>extraMotionDraw('breathe',0)[2]);
+console.log('New vertical pans and breathing zoom use shared canvas rendering with a clean return.');
