@@ -15,7 +15,14 @@ function contextContains(context:string,text:string){
  return false;
 }
 /** Resolve saved IDs first, then recover only unambiguous stored text/prompt matches. */
+const sceneCache=new WeakMap<Script['segments'],WeakMap<Script['photo_settings'],WeakMap<Asset['metadata'],number>>>();
 export function galleryScene(asset:Asset,script:Script){
+ let settings=sceneCache.get(script.segments);if(!settings){settings=new WeakMap();sceneCache.set(script.segments,settings);}
+ let entries=settings.get(script.photo_settings);if(!entries){entries=new WeakMap();settings.set(script.photo_settings,entries);}
+ const saved=entries.get(asset.metadata);if(saved!==undefined)return saved;
+ const result=resolveGalleryScene(asset,script);entries.set(asset.metadata,result);return result;
+}
+function resolveGalleryScene(asset:Asset,script:Script){
  const direct=script.segments.findIndex(s=>s.id===asset.metadata.segmentId||asset.metadata.segmentIds?.includes(s.id));
  if(direct>=0)return direct;
  const context=normalized(asset.metadata.fullPrompt?.match(/Narration context:\s*([\s\S]*?)(?:\n\s*Scene direction:|$)/i)?.[1]||'');

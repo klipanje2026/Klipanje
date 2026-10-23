@@ -1,45 +1,25 @@
 import {LogoMark} from '../LogoMark';
 import {useDismissHeaderMenus} from '../../lib/use-dismiss-header-menus';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { ProjectPicker, type ProjectKind } from '../ProjectPicker';
 import { StudioIcon } from '../StudioIcon/StudioIcon';
 import { ThemePicker } from '../ThemePicker';
 import { AppUpdateNotice } from '../AppUpdateNotice';
-import { apiJson, resetCsrf } from '../../lib/api';
-import { useAuth } from '../../context/auth-context';
+import {AccountMenu} from '../AccountMenu';
+import '../MainLayout.scss';
+
 
 export function EditorLayout() {
   useDismissHeaderMenus();
-  const { session, refresh } = useAuth();
   const location = useLocation();
   const videoEditor = ['/video-editor','/videa'].includes(location.pathname);
-  const [menu, setMenu] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
   const [picker, setPicker] = useState<ProjectKind | null>(null);
-  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.documentElement.dataset.editorSkin = 'aqua';
     return () => { delete document.documentElement.dataset.editorSkin; };
   }, []);
-  useEffect(() => {
-    const close = (event: PointerEvent) => { if (!profileRef.current?.contains(event.target as Node)) setMenu(false); };
-    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setMenu(false); };
-    document.addEventListener('pointerdown', close);
-    document.addEventListener('keydown', escape);
-    return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', escape); };
-  }, []);
-
-  async function signOut() {
-    setBusy(true);
-    setError('');
-    try { await apiJson('/api/auth/logout', { method: 'POST' }); resetCsrf(); await refresh(); }
-    catch { setError('Odjava nije uspjela. Pokušaj ponovo.'); }
-    finally { setBusy(false); }
-  }
-
   return <div className={'editor-layout is-editing-workspace' + (!videoEditor ? ' is-subtitle-workspace' : '')}>
     <div className="workspace-header-static">
       <header className={'editor-navbar ' + (videoEditor ? 'is-video' : 'is-captions')} aria-label={videoEditor ? 'Alati video editora' : 'Alati editora titlova'}>
@@ -56,19 +36,8 @@ export function EditorLayout() {
         <div className="editor-navbar-utilities">
           <div className="editor-navbar-commands" id="workspace-header-commands" />
           {!videoEditor&&<button type="button" className="editor-navbar-utility" title="Spremljeni projekti" aria-label="Otvori spremljeni projekt" onClick={() => setPicker(videoEditor ? 'video' : 'subtitles')}><StudioIcon name="menu" /></button>}
-          <div className="workspace-profile" ref={profileRef}>
-            <button data-no-tooltip className="workspace-profile-trigger" aria-label={'Korisnički meni: ' + session.user?.username} aria-expanded={menu} aria-controls="workspace-user-menu" onClick={() => setMenu(!menu)}>
-              <span className="workspace-avatar">{session.user?.username.slice(0, 1)}</span><StudioIcon name="chevron" />
-            </button>
-            {menu && <div className="workspace-user-menu" id="workspace-user-menu">
-              <div className="workspace-user-identity"><div><strong>{session.user?.name}</strong><small>@{session.user?.username}</small></div></div>
-              <a href={location.pathname==='/videa'?location.pathname+location.search:'/videa?saved=1'} onClick={e=>{if(location.pathname==='/videa'){e.preventDefault();window.dispatchEvent(new Event('klipanje-saved-videos'));}setMenu(false);}}>Spremljeni videi</a><a href="/promjena-lozinke">Promijeni lozinku</a>
-              {session.user?.isStaff && <a href="/administracija"><span><StudioIcon name="settings" />Administracija</span></a>}
-              <details className="workspace-theme-list"><summary>Teme</summary><ThemePicker /></details>
-              <button className="workspace-signout" disabled={busy} onClick={() => void signOut()}><span><StudioIcon name="back" />{busy ? 'Odjava…' : 'Odjavi se'}</span></button>
-              {error && <p role="alert">{error}</p>}
-            </div>}
-          </div>
+          <details className="production-themes"><summary>Teme <StudioIcon name="chevron"/></summary><ThemePicker/></details>
+          <AccountMenu/>
           <div className="workspace-theme-slot" />
           <div className="editor-navbar-action" id="workspace-header-action" />
         </div>

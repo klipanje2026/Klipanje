@@ -9,3 +9,13 @@ assert.equal(galleryScene(asset({fullPrompt:'Narration context: Maja ustaje rano
 assert.equal(galleryScene(asset({prompt:'Unrelated scene prompt long enough'}),script),-1);
 assert.equal(galleryScene(asset({fullPrompt:'Narration context: Maja ustaje rano i otvara prozor sobe.\nScene direction: room'}),{...script,segments:[script.segments[1],script.segments[0],{...script.segments[1],id:'c'}]}),-1);
 console.log('Gallery recovery: IDs, changed wording, contiguous context, ambiguity and unknown frames passed.');
+
+const cachedAsset=asset({segmentId:'b'});
+assert.equal(galleryScene(cachedAsset,script),1);
+assert.equal(galleryScene(cachedAsset,script),1);
+assert.equal(galleryScene(cachedAsset,{...script,segments:[...script.segments].reverse()}),0);
+assert.equal(galleryScene({...cachedAsset,metadata:{segmentId:'a'}},script),0);
+const promptAsset=asset({prompt:'A sufficiently detailed bedroom scene prompt'});
+assert.equal(galleryScene(promptAsset,script),-1);
+assert.equal(galleryScene(promptAsset,{...script,photo_settings:{prompts:{b:[{text:promptAsset.metadata.prompt}]}}}),1);
+console.log('Gallery memo invalidates for changed scene order, metadata and prompt settings.');
