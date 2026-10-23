@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.cache import never_cache
 from rest_framework import serializers
@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from .models import LocalAccount, Project
+from .models import LocalAccount, Project, ImageSpend, NarrationSpend
 
 
 def entry(request, **kwargs):
@@ -23,6 +23,7 @@ def project_payload(project):
         'description': brief.get('description', ''), 'style': brief.get('style', ''),
         'scriptCount': project.script_count, 'assetCount': project.asset_count,
         'updatedAt': project.updated_at.isoformat(),
+        'usage': project_usage(project),
     }
 
 
@@ -43,6 +44,7 @@ def overview(request):
                    'lastLogin': user.last_login.isoformat() if user.last_login else None}
                   for user in get_user_model().objects.order_by('id')],
         'projects': [project_payload(project) for project in project_list()],
+        'usage': image_totals(ImageSpend.objects.all()),
     })
 
 
@@ -67,3 +69,23 @@ def update_project(request, pk):
         project.brief = brief
         project.save(update_fields=['name', 'brief', 'updated_at'])
     return Response(project_payload(project_list().get(pk=pk)))
+
+
+def image_totals(rows):
+    return {'images': rows.count(), 'estimatedUsd': float(rows.aggregate(total=Sum('estimated_usd'))['total'] or 0),
+            'unpriced': rows.filter(estimated_usd__isnull=True).count()}
+
+
+def project_usage(project):
+    images = image_totals(ImageSpend.objects.filter(project=project))
+    # Historical assets have no ledger link. Keep this partial history separate,
+    # rather than assigning old account-wide costs to projects by guesswork.
+    historical = [a.metadata for a in project.assets.all() if a.content_type.startswith('image/')
+                  and a.metadata.get('fullPrompt') and not a.metadata.get('spendId') and not a.metadata.get('localCrop')]
+    images['historicalImages'] = len(historical)
+    images['historicalUsd'] = sum(float(m.get('estimatedUsd') or 0) for m in historical)
+    images['historicalUnpriced'] = sum(m.get('estimatedUsd') is None for m in historical)
+    voices = NarrationSpend.objects.filter(project=project)
+    totals = voices.aggregate(characters=Sum('characters'), credits=Sum('credits'))
+    return {**images, 'narrations': voices.count(), 'characters': totals['characters'] or 0,
+            'credits': float(totals['credits'] or 0), 'unknownCredits': voices.filter(credits__isnull=True).count()}

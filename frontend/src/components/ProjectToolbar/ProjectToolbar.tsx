@@ -21,7 +21,7 @@ import { cachedMedia, cacheMedia } from '../../lib/project-media-cache';
 type Asset = { id: string; name: string; contentType: string; size: number; url: string; previewUrl?: string };
 type Project = { updated_at?:string; id: string; name: string; workspace: string;
   state: { version?: number; data?: Record<string, unknown>; files?: { key: string; id: string }[] } };
-export type ProjectSaveHandle = {save: () => Promise<boolean>};
+export type ProjectSaveHandle = {save: () => Promise<boolean>;getSaveError?:()=>string};
 type Props = { hasMedia:boolean; autoSaveKey?:string; backgroundFile?: File | null; onPreview?: (url: string) => void; saveHandle?: Ref<ProjectSaveHandle>; kind: 'subtitles' | 'video'; disabled?: boolean; compact?: boolean;
   snapshot: () => Promise<ProjectSnapshot>; restore: (data: Record<string, unknown>, files: Map<string, File>) => void | Promise<void> };
 

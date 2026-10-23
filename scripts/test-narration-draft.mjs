@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+const code=ts.transpileModule(readFileSync('frontend/src/lib/narration-draft.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {narrationRequestText,narrationDraftRows}=await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
+assert.equal(narrationRequestText('[angry] Ne!','[angry]','eleven_v4_turbo'),'[angry] Ne!');
+assert.equal(narrationRequestText('Ne!','[angry]','eleven_v4_turbo'),'[angry] Ne!');
+assert.equal(narrationRequestText('Ne!','[angry]','eleven_flash_v2_5'),'Ne!');
+assert.equal(narrationRequestText('Hej. [laughs] Dobro.','[angry]','eleven_v4_turbo'),'Hej. [laughs] Dobro.');
+const rows=[{id:'a',text:'Dobro jutro.'},{id:'b',text:'Jos spavam.\nIdi ti.'}];
+const result=narrationDraftRows(rows,'[excited] Dobro jutro.\n[angry] Jos spavam.\nIdi ti.');
+assert.equal(result[0].text,'[excited] Dobro jutro.');assert.equal(result[1].text,'[angry] Jos spavam.\nIdi ti.');assert.deepEqual(result.map(r=>r.id),['a','b']);assert.equal(rows[0].text,'Dobro jutro.');
+assert.throws(()=>narrationDraftRows(rows,'jedan red'),/prijelome/);
+console.log('Narration tags: visible payload, no duplicate prefix, frame draft preservation passed.');

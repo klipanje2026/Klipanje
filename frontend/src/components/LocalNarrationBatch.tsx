@@ -1,3 +1,6 @@
+import {NarrationVersions} from './NarrationVersions';
+import type {Asset} from '../lib/production';
+import {narrationRequestText,narrationDraftRows} from '../lib/narration-draft';
 import {StyleDropdown} from './LanguageDropdown/LanguageDropdown';
 import {useRef,useState} from 'react';
 import {apiFetch} from '../lib/api';
@@ -7,7 +10,7 @@ import {prepareNarration} from '../lib/narration-audio';
 import {audioBufferSegmentToWav} from '../lib/voice-wav';
 import {alignmentWords,narrationText,rememberMediaTiming,type NarrationTiming} from '../lib/narration-sync';
 import {narrationFrameRanges} from '../lib/narration-frame-ranges';
-export function LocalNarrationBatch({voiceName,beforeGenerate,tone,onBusy,model,script,text,segment,voice,start,disabled,onAdd}:{voiceName?:string;beforeGenerate?:()=>Promise<boolean>;tone:string;onBusy:(busy:boolean)=>void;model:string;script:Script;text:string;segment:string;voice:string;start:number;disabled:boolean;onAdd:(files:File[],start:number,role:'narration')=>Promise<boolean>}){
+export function LocalNarrationBatch({takes=[],onUseTake,voiceName,beforeGenerate,tone,onBusy,model,script,text,segment,voice,start,disabled,onAdd}:{takes?:Asset[];onUseTake?:(take:Asset)=>void;voiceName?:string;beforeGenerate?:()=>Promise<boolean>;tone:string;onBusy:(busy:boolean)=>void;model:string;script:Script;text:string;segment:string;voice:string;start:number;disabled:boolean;onAdd:(files:File[],start:number,role:'narration')=>Promise<boolean>}){
  const [split,setSplit]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[done,setDone]=useState<string[]>([]);
  const [speed,setSpeed]=useState(()=>{try{return Math.max(.7,Math.min(1.2,Number(localStorage.getItem('klipanje-speed-'+script.id))||1));}catch{return 1;}}),[sync,setSync]=useState(true),[placement,setPlacement]=useState<NarrationTiming['placement']>('scene');
  const running=useRef(false),responses=useRef(new Map<string,{blob:Blob;words:ReturnType<typeof alignmentWords>}>()),uploaded=useRef(new Map<string,File>());
@@ -15,7 +18,8 @@ export function LocalNarrationBatch({voiceName,beforeGenerate,tone,onBusy,model,
  const clear=()=>{responses.current.clear();uploaded.current.clear();setDone([]);setMessage('');};
  async function generate(only?:string){
   if(running.current)return;
-  const rows=only?frames.filter(s=>s.id===only):split?frames:[];
+  let rows=only?frames.filter(s=>s.id===only):split?frames:[];
+  if(rows.length){try{const draft=narrationDraftRows(frames,text);rows=only?draft.filter(s=>s.id===only):draft;}catch(error){setMessage((error as Error).message);return;}}
   const source=rows.length?rows.map(s=>s.text).join('\n'):text;
   const key=JSON.stringify([rows.map(s=>s.id),source,voice,model,tone,speed,split]);
   running.current=true;setBusy(true);onBusy(true);setMessage('Generisanje naracije…');
@@ -24,7 +28,7 @@ export function LocalNarrationBatch({voiceName,beforeGenerate,tone,onBusy,model,
    if(!source.trim())throw new Error('Nema teksta za naraciju.');
    if(model!=='eleven_v4_turbo'&&/\[[^\]\r\n]+\]/.test(source))throw new Error('Audio tagovi traže V4 Turbo.');
    let ready=responses.current.get(key);
-   if(!ready){const response=await apiFetch('/api/narration',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({voiceId:voice,text:(model==='eleven_v4_turbo'&&tone?tone+' ':'')+narrationText(source,script.photo_settings.keepQuotes!==false),speed,model,timestamps:true})});if(!response.ok){const error=await response.json();throw new Error(error.error||'Generisanje nije uspjelo.');}const result=await response.json();ready={blob:new Blob([Uint8Array.from(atob(result.audio_base64),c=>c.charCodeAt(0))],{type:result.content_type||'audio/mpeg'}),words:alignmentWords(result.alignment)};responses.current.set(key,ready);}
+   if(!ready){const response=await apiFetch('/api/narration',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({script:script.id,voiceId:voice,text:narrationRequestText(narrationText(source,script.photo_settings.keepQuotes!==false),tone,model),speed,model,timestamps:true})});if(!response.ok){const error=await response.json();throw new Error(error.error||'Generisanje nije uspjelo.');}const result=await response.json();ready={blob:new Blob([Uint8Array.from(atob(result.audio_base64),c=>c.charCodeAt(0))],{type:result.content_type||'audio/mpeg'}),words:alignmentWords(result.alignment)};responses.current.set(key,ready);}
    const prepared=await prepareNarration(ready.blob,false);
    const ranges=rows.length?narrationFrameRanges(rows.map(s=>s.text),ready.words,prepared.duration):[{start:0,end:prepared.duration}];
    const context=rows.length>1?new AudioContext():undefined;
@@ -48,8 +52,8 @@ export function LocalNarrationBatch({voiceName,beforeGenerate,tone,onBusy,model,
  <StyleDropdown label="Postavljanje" value={placement} onChange={e=>{setPlacement(e.target.value as NarrationTiming['placement']);clear();}}><option value="scene">Na trenutni početak kadra</option><option value="append">Iza posljednje naracije</option><option value="manual">Na upisano vrijeme</option></StyleDropdown>
  <label className="local-check"><input type="checkbox" checked={sync} onChange={e=>{setSync(e.target.checked);clear();}}/>Uskladi trajanje titlova i povezanih slika s govorom</label>
  <label className="local-check"><input type="checkbox" checked={split} disabled={!frames.length} onChange={e=>{setSplit(e.target.checked);clear();}}/>Rastavi na postojeće kadrove</label>
- {split&&<><small>Jedna generacija odabranog teksta, zatim rezovi po tvojim postojećim kadrovima.</small>{frames.map(s=><div className="narration-batch-part" key={s.id}><span>Kadar {script.segments.indexOf(s)+1} · {s.text}</span><button type="button" disabled={!voice} onClick={()=>void generate(s.id)}>Generiši naraciju</button></div>)}</>}
+ {split&&<><small>Jedna generacija odabranog teksta, zatim rezovi po tvojim postojećim kadrovima.</small>{frames.map(s=><div className="frame-narration-entry" key={s.id}><div className="narration-batch-part"><span>Kadar {script.segments.indexOf(s)+1} · {s.text}</span><button type="button" disabled={!voice} onClick={()=>void generate(s.id)}>Generiši naraciju</button></div><NarrationVersions takes={takes.filter(a=>a.metadata.segmentId===s.id||a.metadata.segmentIds?.includes(s.id))} onUse={take=>onUseTake?.(take)}/></div>)}</>}
  <button type="button" disabled={!voice||!(split?frames.length:text.trim())} onClick={()=>void generate()}>{busy?'Generišem…':done.length?'Nastavi / dodaj naraciju':'Generiši naraciju'}</button>
- {done.length>0&&<button type="button" onClick={clear}>Nova generacija</button>}
+ {!split&&segment&&<NarrationVersions takes={takes.filter(a=>a.metadata.segmentId===segment||a.metadata.segmentIds?.includes(segment))} onUse={take=>onUseTake?.(take)}/>}{done.length>0&&<button type="button" onClick={clear}>Nova generacija</button>}
  </fieldset>{message&&<p role="status">{message}</p>}</section>;
 }

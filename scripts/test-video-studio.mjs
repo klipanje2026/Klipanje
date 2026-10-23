@@ -344,3 +344,13 @@ console.log('Manual headers and keywords override suggestions only for their sou
  assert.equal(legacy.filter(s=>s.role==='title').length,1);
 }
 console.log('Manual titles replace generated slots without duplicate headings or speech changes.');
+const sped={...source,playbackRate:2,inPoint:1.25,outPoint:1.75};
+assert.ok(Math.abs(captionsAtTime([sped],documents,10.2)[0].sourceTime-2.9)<1e-8);
+const spedTimeline=timelineCaptions([sped],documents);
+assert.equal(spedTimeline.segments[0].start,10);
+assert.equal(spedTimeline.segments[0].end,10.5);
+const spedPrior=spedTimeline.segments[0];
+const spedEdited=applyTimelineCaptionEdit(document.segments[0],spedPrior,{...spedPrior,start:10.1,end:10.4},sped);
+assert.ok(Math.abs(spedEdited.start-2.7)<1e-8);
+assert.ok(Math.abs(spedEdited.end-3.3)<1e-8);
+console.log('Per-clip speed keeps source captions and timeline edits aligned.');

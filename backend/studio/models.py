@@ -26,6 +26,17 @@ class LocalScript(models.Model):
         ordering = ['-updated_at']
 
 
+class VideoVersion(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    script = models.ForeignKey(LocalScript, on_delete=models.CASCADE, related_name='video_versions')
+    title = models.CharField(max_length=160)
+    snapshot = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
 class UserFeedback(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -487,6 +498,7 @@ class ProjectChapter(models.Model):
         ordering = ['created_at']
 
 class ImageSpend(models.Model):
+    project = models.ForeignKey(Project, null=True, on_delete=models.SET_NULL)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     model = models.CharField(max_length=80)
@@ -496,6 +508,8 @@ class ImageSpend(models.Model):
 
 
 class LibrarySound(models.Model):
+    fade_in = models.FloatField(default=0)
+    category = models.CharField(max_length=8, choices=[("sound", "Sound effect"), ("music", "Background music")], default="sound")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -505,3 +519,12 @@ class LibrarySound(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         ordering = ['name', 'created_at']
+
+
+class NarrationSpend(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, null=True, on_delete=models.SET_NULL)
+    model = models.CharField(max_length=80)
+    characters = models.PositiveIntegerField()
+    credits = models.DecimalField(max_digits=14, decimal_places=4, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)

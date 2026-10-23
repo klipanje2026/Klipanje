@@ -39,7 +39,7 @@ assert.equal(imageOutputEstimate('9:16').usd,0.01029);
 const {localMediaLanes}=await loadTestModule('lib/local-media-lanes.ts','work/creative-tests');
 const base={assetId:'a',start:0,inPoint:0,outPoint:4,layer:1};
 const media=[{...base,id:'image',type:'video',groupId:'g'},{...base,id:'voice',type:'audio',audioRole:'narration'},{...base,id:'sound',type:'audio',audioRole:'sound'},{...base,id:'original',type:'audio',groupId:'g'}];
-assert.deepEqual(localMediaLanes(media).map(l=>[l.key,l.clips.map(c=>c.id)]),[['images',['image']],['narration',['voice']],['sounds',['sound','original']]]);
+assert.deepEqual(localMediaLanes(media).map(l=>[l.key,l.clips.map(c=>c.id)]),[['images',['image']],['narration',['voice']],['sounds',['sound','original']],['music',[]]]);
 const {rulerTicks}=await loadTestModule('lib/video-layout.ts','work/creative-tests');
 const late=rulerTicks(21600,2592000,{start:18000,end:18007});
 assert.ok(late.length<20&&late.every(t=>t.time>=18000&&t.time<=18007));
@@ -56,3 +56,8 @@ for(const [direction,x,y] of [['slide-left',-50,0],['slide-right',50,0],['slide-
 drawStillScene(ctx,images,{...still,filter:{id:'mono',start:0,end:5,strength:100}},1,1);
 assert.match(ctx.filter,/grayscale/);
 console.log('Directional image entrances and shared image filter drawing passed.');
+
+const withMusic=localMediaLanes([...media,{id:'music',type:'audio',audioRole:'music',start:0,inPoint:0,outPoint:10,layer:1}]);
+assert.deepEqual(withMusic.at(-1).clips.map(c=>c.id),['music']);
+assert.ok(!withMusic.find(l=>l.key==='narration').clips.some(c=>c.id==='music'));
+console.log('Music has its own bottom lane and is excluded from narration and short sounds.');

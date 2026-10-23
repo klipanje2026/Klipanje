@@ -22,3 +22,17 @@ assert.ok(stack[0].x+stack[0].w>stack[1].x);
 assert.equal(compositionBoxes(4,'strips')[3].x,75);
 assert.equal(compositionBoxes(2,'grid')[0].h,100);
 console.log('Composition staggered timing, four-image layout, fades, gaps, borders and overlap passed on real canvas.');
+
+for(const count of [2,3,4]){
+ ctx.clearRect(0,0,400,400);
+ drawComposition(ctx,images,{...value,items:value.items.slice(0,count),layout:'overlap',gap:8},5);
+ for(let y=0;y<400;y+=10)for(let x=0;x<400;x+=10)assert.equal(pixel(x,y)[3],255,`Gap at ${x},${y} for ${count} images`);
+}
+for(const borderStyle of ['wood','paper']){
+ ctx.clearRect(0,0,400,400);drawComposition(ctx,images,{...value,border:3,borderStyle},5);
+ assert.deepEqual(pixel(100,100),[255,0,0,255]);
+ assert.equal(pixel(2,2)[3],255);
+ assert.notDeepEqual(pixel(2,2),pixel(100,2));
+}
+assert.equal(stack[2].x,0);assert.ok(stack[2].y>0);assert.equal(stack[3].x+stack[3].w,100);
+console.log('Overlap fills the frame as a grid; wood/paper frames render without gaps and preserve image interiors.');

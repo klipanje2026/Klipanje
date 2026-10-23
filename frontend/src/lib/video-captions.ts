@@ -1,9 +1,10 @@
+import {clipRate,clipSourceTime} from './clip-speed';
 import {captionPlaybackTime} from './caption-clock';
 import {activeCaptionSegments} from './caption-selection';
 import type { CaptionSettings, Segment, StyleKey } from '../config/captions/presets';
 
 export type VideoCaptions = { topics?: {header:string;keywords:string[]}; segments: Segment[]; activeStyle: StyleKey; captionSettings: CaptionSettings };
-export type CaptionClip = { id: string; assetId: string; type: string; start: number; inPoint: number; outPoint: number; layer: number };
+export type CaptionClip = { playbackRate?:number; id: string; assetId: string; type: string; start: number; inPoint: number; outPoint: number; layer: number };
 
 // Captions live in source time, so trims, cuts, duplicates and moves follow the video.
 export function captionsAtTime<T extends CaptionClip>(clips: T[], documents: Record<string, VideoCaptions>, time: number) {
@@ -11,9 +12,9 @@ export function captionsAtTime<T extends CaptionClip>(clips: T[], documents: Rec
     .sort((a, b) => a.layer - b.layer).flatMap(clip => {
       const document = documents[clip.assetId];
       if (!document) return [];
-      const sourceTime = clip.inPoint + time - clip.start;
+      const sourceTime = clipSourceTime(clip,time);
       const captionTime=captionPlaybackTime(sourceTime);
-      return activeCaptionSegments(document.segments,captionTime,document.activeStyle,document.captionSettings,clip.outPoint).map(segment=>({clip,document,segment:segment.frameAnimationStart===undefined?segment:{...segment,frameAnimationStart:Math.max(clip.inPoint,segment.frameAnimationStart),frameAnimationEnd:Math.min(clip.outPoint,segment.frameAnimationEnd??segment.end)},sourceTime,captionTime}));
+      return activeCaptionSegments(document.segments,captionTime,document.activeStyle,document.captionSettings,clip.outPoint*clipRate(clip)).map(segment=>({clip,document,segment:segment.frameAnimationStart===undefined?segment:{...segment,frameAnimationStart:Math.max(clip.inPoint*clipRate(clip),segment.frameAnimationStart),frameAnimationEnd:Math.min(clip.outPoint*clipRate(clip),segment.frameAnimationEnd??segment.end)},sourceTime,captionTime}));
     });
 }
 
@@ -22,11 +23,11 @@ export function timelineCaptions(clips: CaptionClip[], documents: Record<string,
   if (!first) return;
   const document = documents[first.assetId];
   const segments = clips.filter(c => c.type === 'video').flatMap(clip => (documents[clip.assetId]?.segments ?? []).flatMap(s => {
-    const start = Math.max(s.start, clip.inPoint), end = Math.min(s.end, clip.outPoint);
+    const start = Math.max(s.start, clip.inPoint*clipRate(clip)), end = Math.min(s.end, clip.outPoint*clipRate(clip));
     if (start >= end) return [];
     const offset = clip.start - clip.inPoint;
-    return [{ ...s, id: `${clip.id}-${s.id}`, sourceCaptionId:s.sourceCaptionId?`${clip.id}-${s.sourceCaptionId}`:undefined, start: start + offset, end: end + offset,
-      words: s.words?.filter(w => w.end > start && w.start < end).map(w => ({ ...w, start: Math.max(start,w.start)+offset, end: Math.min(end,w.end)+offset })) }];
+    return [{ ...s, id: `${clip.id}-${s.id}`, sourceCaptionId:s.sourceCaptionId?`${clip.id}-${s.sourceCaptionId}`:undefined, start: start/clipRate(clip) + offset, end: end/clipRate(clip) + offset,
+      words: s.words?.filter(w => w.end > start && w.start < end).map(w => ({ ...w, start: Math.max(start,w.start)/clipRate(clip)+offset, end: Math.min(end,w.end)/clipRate(clip)+offset })) }];
   })).sort((a,b) => a.start-b.start);
   return { ...document, segments };
 }
@@ -40,6 +41,6 @@ export function applyTimelineCaptionEdit(source:Segment, prior:Segment, next:Seg
  const start=Math.max(clip.inPoint,Math.min(clip.outPoint-length,next.start-offset));
  const end=Math.min(clip.outPoint,start+length);
  const moving=Math.abs((next.start-prior.start)-(next.end-prior.end))<.001;
- const delta=moving?start-(prior.start-offset):0;
- return {...source,...metadata,start,end,words:source.words?.map(w=>({...w,start:w.start+delta,end:w.end+delta}))};
+ const delta=moving?(start-(prior.start-offset))*clipRate(clip):0;
+ return {...source,...metadata,start:start*clipRate(clip),end:end*clipRate(clip),words:source.words?.map(w=>({...w,start:w.start+delta,end:w.end+delta}))};
 }

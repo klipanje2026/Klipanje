@@ -1,3 +1,4 @@
+import {clipRate,clipSourceTime} from './clip-speed';
 import {audioEnvelopeGain,type AudioEnvelope} from './audio-envelope';
 import {exportRange} from './export-range';
 import {collectTextureFills,prepareTextureFill} from './caption-texture-fill';
@@ -5,7 +6,7 @@ import {prepareCollectionResources,beginCollectionExport} from './collection-cap
 import {mixCaptionSounds,type CaptionSoundEvent} from './caption-sounds';
 import type {DecodedFrame} from './frame-source';
 import type {Input,CanvasSink,AudioBufferSink,WrappedAudioBuffer} from 'mediabunny';
-export type ExportClip={audioEnvelope?:AudioEnvelope;id:string;file:File;start:number;inPoint:number;outPoint:number;video:boolean;volume:number};
+export type ExportClip={playbackRate?:number;audioEnvelope?:AudioEnvelope;id:string;file:File;start:number;inPoint:number;outPoint:number;video:boolean;volume:number};
 type Runtime={clip:ExportClip;input:Input;sink?:CanvasSink;frame?:DecodedFrame;audio?:AsyncGenerator<WrappedAudioBuffer,void,unknown>;pending?:WrappedAudioBuffer;done?:boolean};
 
 export function exportVideoBitrate(width:number,height:number,fps:number){
@@ -38,10 +39,10 @@ export async function offlineExport(options:{preserveLeadingGap?:boolean;texture
     const stats=await track.computePacketStats(120);fps=Math.max(fps,stats.averagePacketRate||30);
     runtime.sink=new m.CanvasSink(track,{poolSize:2});runtime.frame=Object.assign(document.createElement('canvas'),{videoWidth:width,videoHeight:height,currentTime:0,currentSrc:clip.id,readyState:4});runtime.frame.width=width;runtime.frame.height=height;
    }
-   if(clip.volume>0){const track=await input.getPrimaryAudioTrack();if(track){if(!await track.canDecode())throw new Error('Zvuk ovog formata nije moguće izvesti.');const sink:AudioBufferSink=new m.AudioBufferSink(track);runtime.audio=sink.buffers(clip.inPoint,clip.outPoint);}}
+   if(clip.volume>0){const track=await input.getPrimaryAudioTrack();if(track){if(!await track.canDecode())throw new Error('Zvuk ovog formata nije moguće izvesti.');const sink:AudioBufferSink=new m.AudioBufferSink(track);runtime.audio=sink.buffers(clip.inPoint*clipRate(clip),clip.outPoint*clipRate(clip));}}
   }
   fps=Math.max(1,Math.min(240,options.fps||fps||30));
-  const sourceTiming=options.sourceTiming&&!options.fps;
+  const sourceTiming=options.sourceTiming&&!options.fps&&options.clips.every(c=>clipRate(c)===1);
   const canvas=document.createElement('canvas'),aspect=options.aspect||sourceWidth/sourceHeight;
   canvas.width=options.width||Math.max(2,Math.round(Math.min(sourceWidth,sourceHeight*aspect)/2)*2);
   canvas.height=options.height||Math.max(2,Math.round(canvas.width/aspect/2)*2);
@@ -59,10 +60,10 @@ export async function offlineExport(options:{preserveLeadingGap?:boolean;texture
    for(const r of runtimes){if(!r.audio||r.done)continue;
     while(true){
      if(!r.pending){const item=await r.audio.next();if(item.done){r.done=true;break;}r.pending=item.value;}
-     const block=r.pending,b=block.buffer;const globalStart=r.clip.start+block.timestamp-r.clip.inPoint,globalEnd=globalStart+b.duration;
+     const block=r.pending,b=block.buffer;const globalStart=r.clip.start+block.timestamp/clipRate(r.clip)-r.clip.inPoint,globalEnd=globalStart+b.duration/clipRate(r.clip);
      if(globalEnd<=audioTime){r.pending=undefined;continue;}if(globalStart>=end)break;
      const from=Math.max(first,Math.ceil(Math.max(globalStart,r.clip.start)*rate)),to=Math.min(last,Math.ceil(Math.min(globalEnd,r.clip.start+r.clip.outPoint-r.clip.inPoint)*rate));
-     for(let channel=0;channel<2;channel++){const dest=mixed.getChannelData(channel),src=b.getChannelData(Math.min(channel,b.numberOfChannels-1));for(let i=from;i<to;i++){const p=(i/rate-globalStart)*b.sampleRate,index=Math.max(0,Math.floor(p)),fraction=p-index;const gain=r.clip.volume*audioEnvelopeGain(r.clip.audioEnvelope,r.clip.inPoint+i/rate-r.clip.start);dest[i-first]+=((src[index]||0)*(1-fraction)+(src[Math.min(index+1,src.length-1)]||0)*fraction)*gain;}}
+     for(let channel=0;channel<2;channel++){const dest=mixed.getChannelData(channel),src=b.getChannelData(Math.min(channel,b.numberOfChannels-1));for(let i=from;i<to;i++){const p=(i/rate-globalStart)*b.sampleRate*clipRate(r.clip),index=Math.max(0,Math.floor(p)),fraction=p-index;const gain=r.clip.volume*audioEnvelopeGain(r.clip.audioEnvelope,r.clip.inPoint+i/rate-r.clip.start);dest[i-first]+=((src[index]||0)*(1-fraction)+(src[Math.min(index+1,src.length-1)]||0)*fraction)*gain;}}
      if(globalEnd>=end)break;r.pending=undefined;
     }
    }
@@ -92,7 +93,7 @@ export async function offlineExport(options:{preserveLeadingGap?:boolean;texture
   }else{
    for(let index=0;index<Math.ceil(options.duration*fps);index++){
     const time=index/fps,frames=new Map<string,DecodedFrame>();
-    for(const r of runtimes){if(!r.sink||time<r.clip.start||time>=r.clip.start+r.clip.outPoint-r.clip.inPoint)continue;const sourceTime=r.clip.inPoint+time-r.clip.start,sample=await r.sink.getCanvas(sourceTime);if(sample)frames.set(r.clip.id,update(r,sample.canvas,sourceTime));}
+    for(const r of runtimes){if(!r.sink||time<r.clip.start||time>=r.clip.start+r.clip.outPoint-r.clip.inPoint)continue;const sourceTime=clipSourceTime(r.clip,time),sample=await r.sink.getCanvas(sourceTime);if(sample)frames.set(r.clip.id,update(r,sample.canvas,sourceTime));}
     await emit(time,Math.min(1/fps,options.duration-time),frames);
    }
   }

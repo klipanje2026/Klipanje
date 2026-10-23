@@ -9,7 +9,7 @@ from .models import LibrarySound
 
 TYPES = {'.wav':'audio/wav','.mp3':'audio/mpeg','.ogg':'audio/ogg','.m4a':'audio/mp4','.aac':'audio/aac','.flac':'audio/flac'}
 def payload(item):
-    return {'id':str(item.pk),'name':item.name,'url':f'/api/sounds/{item.pk}/content','contentType':item.content_type,'size':item.size}
+    return {'id':str(item.pk),'name':item.name,'url':f'/api/sounds/{item.pk}/content','category':item.category,'fadeIn':item.fade_in,'contentType':item.content_type,'size':item.size}
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -17,12 +17,15 @@ def sounds(request):
     if not settings.LOCAL_APP: return Response(status=404)
     if request.method == 'GET':
         return Response([payload(s) for s in LibrarySound.objects.filter(owner=request.user)], headers={'Cache-Control':'private, no-store'})
+    category=request.data.get('category','sound')
+    if category not in ('sound','music'):
+        return Response({'error':'Odaberi zvučni efekat ili BG muziku.'},status=400)
     upload=request.FILES.get('file')
     if not upload or Path(upload.name).suffix.lower() not in TYPES:
         return Response({'error':'Odaberi WAV, MP3, OGG, M4A, AAC ili FLAC zvuk.'},status=400)
     if not upload.size or upload.size>settings.MAX_PROJECT_UPLOAD_BYTES:
         return Response({'error':'Datoteka je prazna ili prevelika.'},status=413)
-    item=LibrarySound.objects.create(owner=request.user,name=Path(upload.name).name[:255],file=upload,content_type=TYPES[Path(upload.name).suffix.lower()],size=upload.size)
+    item=LibrarySound.objects.create(owner=request.user,category=category,name=Path(upload.name).name[:255],file=upload,content_type=TYPES[Path(upload.name).suffix.lower()],size=upload.size)
     return Response(payload(item),status=201)
 
 @api_view(['GET'])

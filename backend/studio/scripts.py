@@ -1,15 +1,58 @@
+import hashlib
 import json
+from django.db import transaction
+from django.utils import timezone
+from rest_framework.exceptions import APIException
 import math
 from rest_framework import serializers, viewsets
-from .models import LocalScript, ProjectChapter
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from copy import deepcopy
+from .models import LocalScript, ProjectChapter, VideoVersion
+
+
+def storyboard_revision(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+
+
+class MontageConflict(APIException):
+    status_code = 409
+    default_detail = 'Novija montaža je već spremljena. Ovaj stariji tab je ne smije prepisati. Ponovo otvori video za nastavak iz spremljene verzije.'
 
 
 class ScriptSerializer(serializers.ModelSerializer):
+    storyboardRevision = serializers.SerializerMethodField()
+    expectedStoryboardRevision = serializers.CharField(write_only=True, required=False)
+    expectedScriptUpdatedAt = serializers.DateTimeField(write_only=True, required=False)
+
+    def get_storyboardRevision(self, instance):
+        return storyboard_revision(instance.storyboard)
+
+    def update(self, instance, validated_data):
+        expected = validated_data.pop('expectedStoryboardRevision', None)
+        expected_script = validated_data.pop('expectedScriptUpdatedAt', None)
+        with transaction.atomic():
+            current = LocalScript.objects.select_for_update().get(pk=instance.pk)
+            if expected_script is not None and current.updated_at != expected_script:
+                raise MontageConflict('Skripta je u međuvremenu promijenjena. Osvježi sadržaj prije spremanja.')
+            if 'storyboard' in validated_data and current.storyboard.get('editor') == 'edita':
+                if expected != storyboard_revision(current.storyboard):
+                    raise MontageConflict()
+            if validated_data.get('storyboard', {}).get('editor') == 'edita':
+                validated_data['storyboard'] = {**validated_data['storyboard'], 'savedAt': timezone.now().isoformat()}
+            return super().update(current, validated_data)
+
+    def create(self, validated_data):
+        validated_data.pop('expectedStoryboardRevision', None)
+        validated_data.pop('expectedScriptUpdatedAt', None)
+        return super().create(validated_data)
+
     content = serializers.CharField(max_length=100000, allow_blank=True, trim_whitespace=False)
 
     class Meta:
         model = LocalScript
-        fields = ['id', 'project', 'chapter', 'title', 'content', 'segments', 'image_prompt', 'photo_settings', 'storyboard', 'created_at', 'updated_at']
+        fields = ['id', 'project', 'chapter', 'title', 'content', 'segments', 'image_prompt', 'photo_settings', 'storyboard', 'created_at', 'updated_at', 'storyboardRevision', 'expectedStoryboardRevision', 'expectedScriptUpdatedAt']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def validate_project(self, project):
@@ -75,6 +118,47 @@ class ScriptViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    @action(detail=True, methods=['get', 'post'])
+    def versions(self, request, pk=None):
+        script = self.get_object()
+        if request.method == 'GET':
+            return Response([{'id':str(v.pk), 'title':v.title, 'created_at':v.created_at} for v in script.video_versions.all()])
+        with transaction.atomic():
+            script = LocalScript.objects.select_for_update().get(pk=script.pk)
+            if request.data.get('expectedStoryboardRevision') != storyboard_revision(script.storyboard):
+                raise MontageConflict()
+            if script.storyboard.get('editor') != 'edita':
+                raise serializers.ValidationError('Prvo spremi video.')
+            title = request.data.get('title') or f"Verzija {script.video_versions.count()+1}"
+            if not isinstance(title, str) or len(title)>160:
+                raise serializers.ValidationError('Naziv verzije je predugačak.')
+            version = VideoVersion.objects.create(script=script, title=title, snapshot=video_snapshot(script))
+        return Response({'id':str(version.pk), 'title':version.title, 'created_at':version.created_at}, status=201)
+
+    @action(detail=True, methods=['post'], url_path=r'versions/(?P<version_id>[^/.]+)/restore')
+    def restore_version(self, request, pk=None, version_id=None):
+        script = self.get_object()
+        with transaction.atomic():
+            script = LocalScript.objects.select_for_update().get(pk=script.pk)
+            if request.data.get('expectedStoryboardRevision') != storyboard_revision(script.storyboard):
+                raise MontageConflict()
+            version = get_object_or_404(VideoVersion, pk=version_id, script=script)
+            # Keep the current edit as a recoverable checkpoint before explicit restore.
+            if script.storyboard.get('editor') == 'edita':
+                VideoVersion.objects.create(script=script, title='Prije otvaranja verzije · '+timezone.localtime().strftime('%d.%m.%Y %H:%M'), snapshot=video_snapshot(script))
+            for field in VIDEO_SNAPSHOT_FIELDS:
+                if field in version.snapshot:
+                    setattr(script, field, deepcopy(version.snapshot[field]))
+            script.storyboard = {**script.storyboard, 'savedAt':timezone.now().isoformat()}
+            script.save()
+        return Response(self.get_serializer(script).data)
+
+
+VIDEO_SNAPSHOT_FIELDS = ('content', 'segments', 'image_prompt', 'photo_settings', 'storyboard')
+
+def video_snapshot(script):
+    return {field:deepcopy(getattr(script, field)) for field in VIDEO_SNAPSHOT_FIELDS}
 
 
 class ChapterSerializer(serializers.ModelSerializer):

@@ -19,6 +19,7 @@ import './components/ProductionRefinements.scss';
 import { ChangePassword } from './pages/ChangePassword';
 import { Administration } from './pages/Administration';
 
+const VideoTools = lazy(() => import('./pages/VideoTools').then(module => ({default:module.VideoTools})));
 const ProductionVideo = lazy(() => import('./pages/ProductionVideo').then(module => ({ default: module.ProductionVideo })));
 
 
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/promjena-lozinke" element={<ChangePassword/>}/>
           <Route element={<MainLayout/>}>
             <Route path="/" element={<LocalHome/>}/>
+            <Route path="/video-alati" element={<VideoTools/>}/>
             <Route path="/projekti" element={<Projects/>}/>
             <Route path="/administracija" element={<Administration/>}/>
             <Route path="/skripte" element={<LocalScripts/>}/>

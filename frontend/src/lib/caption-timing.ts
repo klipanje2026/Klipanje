@@ -34,13 +34,14 @@ export function resizeCaptionRipple(segments: Segment[], id: string, end: number
   const index = segments.findIndex(segment => segment.id === id);
   if (index < 0 || !Number.isFinite(end)) return segments;
   const selected = segments[index];
+  if(selected.independentTiming)return trimCaption(segments,id,'end',end,duration);
   const lastEnd = Math.max(...segments.slice(index).map(segment => segment.end));
   const delta = Math.max(selected.start + .1 - selected.end, Math.min(Math.max(0, duration - lastEnd), end - selected.end));
   const scale = (selected.end + delta - selected.start) / Math.max(.001, selected.end - selected.start);
   return segments.map((segment, i) => i < index ? segment : i === index ? {
     ...segment, end: segment.end + delta,
     words: segment.words?.map(word => ({ ...word, start: selected.start + (word.start - selected.start) * scale, end: selected.start + (word.end - selected.start) * scale })),
-  } : { ...segment, start: segment.start + delta, end: segment.end + delta,
+  } : segment.independentTiming?segment:{ ...segment, start: segment.start + delta, end: segment.end + delta,
     words: segment.words?.map(word => ({ ...word, start: word.start + delta, end: word.end + delta })),
   });
 }
@@ -109,4 +110,12 @@ export function mergeCaptionWithNext(segments:Segment[],id:string):Segment[] {
  const visual=(s:Segment)=>s.visualParts?.length?s.visualParts:[{id:crypto.randomUUID(),from:0,to:tokens(s).length,position:s.position,detachedStyle:s.detachedStyle}];
  const merged:Segment={...first,visualParts:first.visualParts?.length||next.visualParts?.length?[...visual(first),...visual(next).map(p=>({...p,from:p.from+offset,to:p.to+offset}))]:undefined,end:next.end,text:[first.text.trim(),next.text.trim()].filter(Boolean).join(' '),words:[...words(first),...words(next)],wordStyles:combine(first.wordStyles,next.wordStyles),wordOffsets:combine(first.wordOffsets,next.wordOffsets),hiddenTitleWords:[...(first.hiddenTitleWords||[]),...(next.hiddenTitleWords||[]).map(i=>i+offset)],keywordWord:first.keywordWord??(next.keywordWord==null?null:next.keywordWord+offset),headingWord:first.headingWord??(next.headingWord==null?null:next.headingWord+offset),frameAnimationEnd:next.frameAnimationEnd??first.frameAnimationEnd};
  return segments.filter(s=>s.id!==next.id).map(s=>s.id===id?merged:s.sourceCaptionId===next.id?{...s,sourceCaptionId:id,sourceWord:s.sourceWord===undefined?undefined:s.sourceWord+offset}:s);
+}
+
+/** Explicit repair: replace compressed word timestamps across the chosen interval only. */
+export function redistributeCaptionWords(segment:Segment):Segment {
+ const tokens=segment.text.trim().split(/\s+/).filter(Boolean);
+ if(!tokens.length||segment.end<=segment.start)return segment;
+ const duration=segment.end-segment.start;
+ return {...segment,words:tokens.map((text,i)=>({text,start:segment.start+duration*i/tokens.length,end:segment.start+duration*(i+1)/tokens.length}))};
 }

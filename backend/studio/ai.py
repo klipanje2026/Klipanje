@@ -143,6 +143,7 @@ def status(request):
         return Response({'error': 'Stanje ElevenLabs računa trenutno nije dostupno.'}, status=502)
 
 class NarrationInput(serializers.Serializer):
+    script = serializers.UUIDField(required=False)
     model = serializers.ChoiceField(choices=['eleven_flash_v2_5', 'eleven_v4_turbo'], default='eleven_flash_v2_5')
     timestamps = serializers.BooleanField(default=False)
     voiceId = serializers.RegexField(r'^[A-Za-z0-9_-]+$', max_length=100)
@@ -180,6 +181,8 @@ def stream_audio(path, capability, billing_request=None, tracking_request=None, 
             upstream.read()
             audio.close()
             return failure(upstream, capability)
+        if capability == 'narator':
+            record_narration(billing_request, {'text':kwargs.get('json',{}).get('text',''), 'model':kwargs.get('json',{}).get('model_id','')}, upstream.headers.get('character-cost'))
         # Receive before sending headers so interrupted audio returns a useful error.
         for chunk in upstream.iter_bytes(chunk_size=64 * 1024):
             audio.write(chunk)
@@ -222,12 +225,19 @@ def narration(request):
     serializer = NarrationInput(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
+    project = None
+    if data.get('script'):
+        from django.shortcuts import get_object_or_404
+        from .models import LocalScript
+        project = get_object_or_404(LocalScript, pk=data['script'], owner=request.user).project
+    request.narration_project = project
     if data['model'] == 'eleven_v4_turbo':
         if not settings.LOCAL_APP:
             return Response({'error': 'V4 Turbo je trenutno dostupan samo u lokalnom editoru.'}, status=400)
         from .eleven_dialogue import synthesize, DialogueError
         try:
             result = provider_call(request, 'elevenlabs', 'narration', lambda: synthesize(settings.ELEVENLABS_API_KEY, data), input_chars=len(data['text']))
+            record_narration(request, data)
             if data['timestamps']:
                 return Response(result, headers={'Cache-Control': 'no-store'})
             import base64
@@ -243,6 +253,7 @@ def narration(request):
                 json={'text':data['text'],'model_id':'eleven_flash_v2_5','language_code':'hr',
                       'voice_settings':{'stability':data['stability'],'similarity_boost':data['similarity'],'speed':data['speed']}}))
             if not upstream.is_success:return failure(upstream,'naraciju')
+            record_narration(request, data, upstream.headers.get('character-cost'))
             result=upstream.json()
             if not isinstance(result.get('audio_base64'),str):raise ValueError('Missing audio')
             return Response({'audio_base64':result['audio_base64'],'alignment':result.get('alignment') or result.get('normalized_alignment')},headers={'Cache-Control':'no-store'})
@@ -297,3 +308,18 @@ def clean_audio(request):
     if not audio.size or audio.size>25*1024*1024:
         return Response({'error':'Za čišćenje govora odaberi zvučni zapis do 25 MB.'},status=413)
     return stream_audio('/v1/audio-isolation','čišćenje govora',tracking_request=request,files={'audio':(audio.name,audio.file,audio.content_type)})
+
+
+def record_narration(request, data, cost=None):
+    if not request or not request.user.is_authenticated:
+        return
+    from decimal import Decimal, InvalidOperation
+    from .models import NarrationSpend
+    try:
+        credits = Decimal(str(cost))
+        if not credits.is_finite() or credits < 0:
+            credits = None
+    except (InvalidOperation, TypeError, ValueError):
+        credits = None
+    NarrationSpend.objects.create(user=request.user, project=getattr(request, 'narration_project', None),
+                                  model=data['model'], characters=len(data['text']), credits=credits)

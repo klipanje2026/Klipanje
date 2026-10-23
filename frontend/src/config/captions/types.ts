@@ -52,6 +52,7 @@ export type Segment = {
   visualParts?: {id:string;from:number;to:number;position?:{x:number;y:number};detachedStyle?:{style:StyleKey;settings:CaptionSettings}}[];
   renderPartId?: string;
   sourceSceneId?: string;
+  independentTiming?: boolean;
   timingSource?: 'narration' | 'estimate';
   keywordWord?: number | null;
   headingWord?: number | null;

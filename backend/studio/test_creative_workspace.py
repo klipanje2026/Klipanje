@@ -155,3 +155,28 @@ class CreativeWorkspaceTests(TestCase):
             self.assertTrue(all(not v['available'] for v in result.json()['voices']))
             self.assertTrue(all(v['previewUrl'] for v in result.json()['voices']))
         cache.clear()
+
+    def test_filler_keeps_story_context_without_changing_intervals(self):
+        self.project.brief = {'description': 'A quiet weekend', 'storyRules': 'Keep the same home'}
+        self.project.save()
+        self.script.image_prompt = 'Warm morning light'
+        self.script.segments = [{'id': 'scene-one', 'start': 0, 'end': 3, 'text': 'A walk.'}]
+        self.script.save()
+        body = {'script': str(self.script.pk), 'filler': True, 'model': 'gpt-image-2.5-flare', 'prompt': 'Sunlight on the curtains'}
+        response = self.client.post('/api/creative/prompt', body, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        for text in ['A quiet weekend', 'Keep the same home', 'Warm morning light', 'A walk.', 'Sunlight on the curtains', 'standalone filler']:
+            self.assertIn(text, response.json()['prompt'])
+        for invalid in [{'prompt': ''}, {'segment': 'scene-one'}, {'segments': ['scene-one']}]:
+            response = self.client.post('/api/creative/prompt', {**body, **invalid}, content_type='application/json')
+            self.assertEqual(response.status_code, 400)
+        with TemporaryDirectory() as directory, override_settings(MEDIA_ROOT=directory, OPENAI_API_KEY='test-only'), patch('studio.creative.request_image') as provider:
+            provider.return_value = (b'fake-image', MagicMock(estimated_usd=None))
+            response = self.client.post('/api/creative/generate', body, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        asset = self.project.assets.get()
+        self.assertTrue(asset.metadata['filler'])
+        self.assertFalse(asset.metadata['gallery'])
+        self.assertEqual(asset.metadata['segmentIds'], [])
+        self.script.refresh_from_db()
+        self.assertEqual(self.script.segments, [{'id': 'scene-one', 'start': 0, 'end': 3, 'text': 'A walk.'}])

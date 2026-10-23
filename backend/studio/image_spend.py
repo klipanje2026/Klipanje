@@ -17,9 +17,9 @@ def image_cost(model, usage):
     if usage.get('input_tokens') != text + image: return None
     return (Decimal(text)*5 + Decimal(image)*8 + Decimal(output)*30) / Decimal(1000000)
 
-def record_image(user, model, usage):
+def record_image(user, model, usage, project_id=None):
     usage = usage if isinstance(usage,dict) else {}
-    return ImageSpend.objects.create(user=user,model=model,usage=usage,estimated_usd=image_cost(model,usage))
+    return ImageSpend.objects.create(user=user,project_id=project_id,model=model,usage=usage,estimated_usd=image_cost(model,usage))
 
 @api_view(['GET'])
 def status(request):

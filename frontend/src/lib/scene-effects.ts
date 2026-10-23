@@ -2,6 +2,7 @@ export type SceneFilter = {id:string;start:number;end:number;strength:number};
 export type SceneTransition = {id:string;duration:number};
 export type SceneEffects = {filter?:SceneFilter;transition?:SceneTransition};
 export const sceneFilters = [
+ {id:'blink',name:'Treptanje',category:'Pokret',values:[1,1,1,0,0,0]},
  {id:'warm',name:'Toplo',category:'Film',values:[1.04,1.12,1.15,.22,0,0]},
  {id:'cinema',name:'Kino',category:'Film',values:[.95,1.3,.75,.12,0,0]},
  {id:'vintage',name:'Vintage',category:'Film',values:[1.08,.88,.7,.45,0,0]},
@@ -23,8 +24,18 @@ export const sceneTransitions = [
  {id:'slide',name:'Ulazak sa strane',category:'Pokret'},
  {id:'iris',name:'Krug',category:'Pokret'},
 ];
+/** Opens sleepy eyes, blinks once, then resolves to an unobstructed sharp frame. */
+export function blinkState(filter:SceneFilter|undefined,time:number){
+ if(filter?.id!=='blink'||time<filter.start||time>=filter.end)return {opening:1,blur:0,active:false};
+ const p=Math.max(0,Math.min(1,(time-filter.start)/Math.max(.001,filter.end-filter.start)));
+ const smooth=(v:number)=>{const t=Math.max(0,Math.min(1,v));return t*t*(3-2*t);};
+ const opening=p<.38?smooth(p/.38):p<.53?1-smooth((p-.38)/.15):smooth((p-.53)/.32);
+ const strength=Math.max(0,Math.min(1,filter.strength/100));
+ return {opening:1-(1-opening)*strength,blur:12*(1-smooth(p))*strength,active:true};
+}
 export function filterCss(filter:SceneFilter|undefined,sourceTime:number){
  if(!filter||sourceTime<filter.start||sourceTime>=filter.end)return 'none';
+ if(filter.id==='blink')return `blur(${blinkState(filter,sourceTime).blur}px)`;
  const preset=sceneFilters.find(p=>p.id===filter.id);if(!preset)return 'none';
  const t=Math.max(0,Math.min(1,filter.strength/100));const v=preset.values;
  return `brightness(${1+(v[0]-1)*t}) contrast(${1+(v[1]-1)*t}) saturate(${1+(v[2]-1)*t}) sepia(${v[3]*t}) grayscale(${v[4]*t}) hue-rotate(${v[5]*t}deg)`;
@@ -41,5 +52,13 @@ export function drawSceneEffects(ctx:CanvasRenderingContext2D,effects:SceneEffec
  const t=transitionState(effects.transition,elapsed,length);ctx.save();ctx.filter=filterCss(effects.filter,sourceTime);ctx.globalAlpha*=t.opacity;
  ctx.translate(x+w/2+t.x*w,y+h/2);ctx.scale(t.scale,t.scale);ctx.translate(-x-w/2,-y-h/2);
  if(t.progress<1&&['wipe-left','wipe-up','iris'].includes(t.id||'')){ctx.beginPath();if(t.id==='iris')ctx.arc(x+w/2,y+h/2,Math.hypot(w,h)/2*t.progress,0,Math.PI*2);else if(t.id==='wipe-up')ctx.rect(x,y+h*(1-t.progress),w,h*t.progress);else ctx.rect(x,y,w*t.progress,h);ctx.clip();}
- draw();ctx.restore();
+ draw();
+ const blink=blinkState(effects.filter,sourceTime);
+ if(blink.active&&blink.opening<1){
+  ctx.filter='none';ctx.fillStyle='#000';
+  const edge=h*(1-blink.opening)/2,curve=Math.max(0,h/2-blink.opening*h*.85);
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w,y+edge);ctx.bezierCurveTo(x+w*.65,y+curve,x+w*.35,y+curve,x,y+edge);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(x,y+h);ctx.lineTo(x+w,y+h);ctx.lineTo(x+w,y+h-edge);ctx.bezierCurveTo(x+w*.65,y+h-curve,x+w*.35,y+h-curve,x,y+h-edge);ctx.closePath();ctx.fill();
+ }
+ ctx.restore();
 }

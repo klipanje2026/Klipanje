@@ -3,7 +3,7 @@ import {StyleDropdown} from './LanguageDropdown/LanguageDropdown';
 
 const TAG_GROUPS = [
  {name:'Emocije',tags:[
-  ['mad','Ljutito'],['aggressive','Agresivno'],['bitter','Ogorčeno'],
+  ['angry','Ljutito'],['aggressive','Agresivno'],['bitter','Ogorčeno'],
   ['excited','Uzbuđeno'],['playful','Razigrano'],['amazed','Zadivljeno'],
   ['proud','Ponosno'],['optimistic','Optimistično'],['startled','Iznenađeno'],
   ['anxious','Tjeskobno'],['stressed','Pod stresom'],['scared','Uplašeno'],

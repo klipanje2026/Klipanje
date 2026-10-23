@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+import {createCanvas} from '@napi-rs/canvas';
+const source=ts.transpileModule(readFileSync('frontend/src/lib/heart-exit.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {drawHeartExit,heartExitState}=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+const canvas=createCanvas(400,300),ctx=canvas.getContext('2d');
+const clip={imageExit:'heart',imageExitDuration:2,heartX:70,heartY:40,start:0,inPoint:0,outPoint:5};
+const paint=t=>{ctx.fillStyle='#ff0000';ctx.fillRect(0,0,400,300);drawHeartExit(ctx,clip,t);};
+const pixel=(x,y)=>[...ctx.getImageData(x,y,1,1).data];
+paint(2);assert.deepEqual(pixel(0,0),[255,0,0,255]);
+paint(4.5);assert.deepEqual(pixel(280,120),[255,0,0,255]);assert.deepEqual(pixel(0,0),[0,0,0,255]);
+paint(5);assert.deepEqual(pixel(280,120),[0,0,0,255]);
+assert.equal(heartExitState(clip,3).progress,0);assert.equal(heartExitState(clip,5).progress,1);
+assert.deepEqual(JSON.parse(JSON.stringify(clip)),clip);
+paint(3.001);for(const [x,y] of [[0,0],[399,0],[0,299],[399,299]])assert.deepEqual(pixel(x,y),[255,0,0,255]);
+console.log('Heart ending: whole frame start, movable centre, black outside, fully closed ending and persistence passed.');

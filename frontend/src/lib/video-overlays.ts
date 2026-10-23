@@ -149,3 +149,11 @@ export function overlayTimelineLanes(items:Overlay[]):Overlay[][] {
  }
  return lanes;
 }
+
+// Timeline changes preserve the visual properties and animation speed.
+export function retimeOverlay(item:Overlay,mode:'move'|'start'|'end',delta:number,limit:number):Overlay {
+ const round=(n:number)=>Math.round(n*10)/10;
+ if(mode==='move'){const start=Math.max(0,Math.min(Math.max(0,limit-(item.end-item.start)),round(item.start+delta)));return {...item,start,end:start+item.end-item.start};}
+ if(mode==='start')return {...item,start:Math.max(0,Math.min(item.end-.1,round(item.start+delta)))};
+ return {...item,end:Math.min(limit,Math.max(item.start+.1,round(item.end+delta)))};
+}

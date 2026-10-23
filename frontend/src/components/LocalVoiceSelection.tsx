@@ -11,12 +11,14 @@ export function LocalVoiceSelection({model,onModel,voices,voice,onVoice,onLoad,o
  const activeGroup=chosen?(isBalkan(chosen)?'balkan':'other'):group;
  const filtered=voices.filter(v=>isBalkan(v)===(activeGroup==='balkan'));
  return <section className="local-voice-selection compact-voice-selection">
-  <header><h3>Glas naratora</h3><button type="button" onClick={onLoad} title="Osvježi glasove" aria-label="Osvježi glasove"><StudioIcon name="reset"/></button></header>
+  <header className="narrator-voice-heading"><h3>Glas naratora</h3><button type="button" onClick={onLoad} title="Osvježi glasove" aria-label="Osvježi glasove"><StudioIcon name="reset"/></button></header>
   <StyleDropdown label="Model naracije" value={model} onChange={e=>onModel(e.target.value)}><option value="eleven_flash_v2_5">Flash v2.5 · brza naracija</option><option value="eleven_v4_turbo">V4 Turbo · izražajna naracija</option></StyleDropdown>
   <div className="voice-group-switch" aria-label="Grupa glasova">{(['balkan','other'] as const).map(value=><button key={value} type="button" aria-pressed={activeGroup===value} onClick={()=>{setGroup(value);onVoice('');}}>{value==='balkan'?'Balkanski':'Ostali'}</button>)}</div>
   <StyleDropdown label="Glas" value={voice} onChange={e=>onVoice(e.target.value)}><option value="">{voices.length?'Odaberi glas':'Prvo učitaj glasove'}</option>{filtered.map(v=><option key={v.id} value={v.id} disabled={v.available===false}>{v.name}</option>)}</StyleDropdown>
   {voices.length>0&&!filtered.length&&<small>Nema glasova u ovoj grupi na tvom računu.</small>}
   {chosen?.available===false&&<small role="alert">{chosen.reason}</small>}
+  {voice&&<small className="voice-emotion-support">{model==='eleven_v4_turbo'?'Audio tagovi: podržani u V4 Turbo · emocije ovog glasa nisu pojedinačno provjerene.':'Flash v2.5 ne podržava emocije putem [tagova]. Za njih odaberi V4 Turbo.'}</small>}
+
   {model==='eleven_v4_turbo'&&<NarrationTags value={tone.replace(/^\[|\]$/g,'')} onInsert={onInsert}/>}
 
  </section>;

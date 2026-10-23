@@ -12,7 +12,7 @@ from rest_framework import serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from .models import MediaAsset, Project, PendingMediaDeletion
+from .models import MediaAsset, Project, PendingMediaDeletion, VideoVersion
 from .media_cleanup import process_deletion
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -154,6 +154,8 @@ def asset_delete(request, pk):
         # Saved editor documents must retain their media even when removed from the gallery.
         referenced = any(any(ref.get('id') == str(asset.pk) for ref in (doc or {}).get('files', []))
                          for doc in LocalScript.objects.filter(project=asset.project).values_list('storyboard', flat=True))
+        if not referenced:
+            referenced = any(any(ref.get('id') == str(asset.pk) for ref in snapshot.get('storyboard', {}).get('files', [])) for snapshot in VideoVersion.objects.filter(script__project=asset.project).values_list('snapshot', flat=True))
         if referenced:
             asset.metadata = {**asset.metadata, 'gallery': False, 'archived': True}
             asset.save(update_fields=['metadata'])

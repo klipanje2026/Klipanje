@@ -76,6 +76,7 @@ STYLES = [
 ]
 
 class ImageRequest(serializers.Serializer):
+    filler = serializers.BooleanField(default=False)
     segments = serializers.ListField(child=serializers.CharField(max_length=64),max_length=1000,required=False,default=list)
     script = serializers.UUIDField()
     segment = serializers.CharField(required=False, allow_blank=True, max_length=64, default='')
@@ -91,6 +92,8 @@ def prepare(request):
     form=ImageRequest(data=request.data); form.is_valid(raise_exception=True)
     data=form.validated_data
     script=get_object_or_404(LocalScript,pk=data['script'],owner=request.user,project__created_by=request.user)
+    if data['filler'] and (data['segment'] or data['segments'] or not data['prompt'].strip()):
+        raise serializers.ValidationError('Filler kadar treba vlastiti prompt i ne smije mijenjati intervale skripte.')
     segment=next((s for s in script.segments if s['id']==data['segment']),None)
     if data['segment'] and not segment:
         raise serializers.ValidationError('Odabrani interval više ne postoji.')
@@ -144,6 +147,7 @@ def prepare(request):
         'Shared direction: '+script.image_prompt,
         'Narration context: '+(segment['text'] if segment else script.content[:10000]),
         'Scene direction: '+data['prompt'],
+        'This is a standalone filler / cutaway shot. Follow the scene direction for its subject; use the story only for continuity, setting, style and character consistency. Do not illustrate the whole story or force every character into this image.' if data['filler'] else '',
         'Create ONE continuous composition shared by these consecutive story beats, not a collage or multiple panels.' if len(data['segments'])>1 else '',
         'Use the attached reference images to preserve appearance, clothing and environment.' if refs else '',
     ]))
@@ -165,6 +169,7 @@ def generate(request):
     data,script,refs,prompt=prepare(request)
     if not settings.OPENAI_API_KEY:
         return Response({'error':'OpenAI ključ nije postavljen u lokalnom .env fajlu.'},status=503)
+    data['project_id']=script.project_id
     result=request_image(data,refs,prompt,request.user)
     if isinstance(result,Response):return result
     raw,spend=result
@@ -177,7 +182,7 @@ def generate(request):
         except (subprocess.SubprocessError,OSError):
             return Response({'error':'Slika je generisana, ali priprema odabranog formata nije uspjela. Provjeri servis prije ponovnog generisanja.'},status=502)
     asset=MediaAsset(project=script.project,name=f'kadar-{uuid4().hex[:8]}.png',content_type='image/png',size=len(raw),metadata={
-        'gallery':False,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None,'purpose':'image','scriptId':str(script.pk),'segmentId':data['segment'],'segmentIds':data['segments'] or ([data['segment']] if data['segment'] else []),'prompt':data['prompt'],'fullPrompt':prompt,'model':data['model'],'style':data['style'],'aspect':data.get('aspect'),'references':[str(a.pk) for a in refs],
+        'spendId':str(spend.pk),'filler':data['filler'],'gallery':False,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None,'purpose':'image','scriptId':str(script.pk),'segmentId':data['segment'],'segmentIds':data['segments'] or ([data['segment']] if data['segment'] else []),'prompt':data['prompt'],'fullPrompt':prompt,'model':data['model'],'style':data['style'],'aspect':data.get('aspect'),'references':[str(a.pk) for a in refs],
     })
     with transaction.atomic():
         from .models import Project
@@ -228,7 +233,7 @@ def request_image(data,refs,prompt,user):
         if response.status_code!=200:
             return image_provider_error(response)
         result=response.json()
-        spend=record_image(user,data['model'],result.get('usage',{}))
+        spend=record_image(user,data['model'],result.get('usage',{}),data.get('project_id'))
         raw=base64.b64decode(result['data'][0]['b64_json'],validate=True)
         if not raw.startswith(b'\x89PNG\r\n\x1a\n'):
             raise ValueError('Invalid image')
@@ -302,10 +307,10 @@ def generate_character(request):
     if data['preview']:
         return Response({'prompt':prompt,'references':[{'id':str(a.pk),'name':a.name,'role':reference_roles[i]['role']} for i,a in enumerate(refs)],'view':data['view'],'model':data['model'],
             'note':'Ovo je stvarni tekst i spisak referenci. Pregled ne pokreće generisanje. Sigurnosno odbijanje ne otkriva konkretan razlog.'})
-    result=request_image({'model':data['model'],'size':'1536x1024' if sheet_mode else '1024x1536' if data['view'].startswith('body') else '1024x1024','quality':'medium'},refs,prompt,request.user)
+    result=request_image({'project_id':project.pk,'model':data['model'],'size':'1536x1024' if sheet_mode else '1024x1536' if data['view'].startswith('body') else '1024x1024','quality':'medium'},refs,prompt,request.user)
     if isinstance(result,Response):return result
     raw,spend=result
-    asset=MediaAsset(project=project,name=f"lik-{data['view']}-{uuid4().hex[:8]}.png",content_type='image/png',size=len(raw),metadata={'purpose':'character-sheet' if sheet_mode else 'reference','characterId':data['character'],'view':data['view'],'outfitId':data['outfit'],'fullPrompt':prompt,'model':data['model'],'references':[str(a.pk) for a in refs],'referenceRoles':reference_roles,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None})
+    asset=MediaAsset(project=project,name=f"lik-{data['view']}-{uuid4().hex[:8]}.png",content_type='image/png',size=len(raw),metadata={'spendId':str(spend.pk),'purpose':'character-sheet' if sheet_mode else 'reference','characterId':data['character'],'view':data['view'],'outfitId':data['outfit'],'fullPrompt':prompt,'model':data['model'],'references':[str(a.pk) for a in refs],'referenceRoles':reference_roles,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None})
     if sheet_mode:
         from .character_sheet import png_size,default_boxes
         try:

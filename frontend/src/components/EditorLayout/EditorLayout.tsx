@@ -49,6 +49,7 @@ export function EditorLayout() {
           <a href={"/skripte"+location.search}>Skripte</a>
           <a href={"/fotografije"+location.search}>Fotografije</a>
           <a href={"/videa"+location.search} aria-current={videoEditor ? 'page' : undefined}>Video editor</a>
+          <a href="/video-alati">Video alati</a>
         </nav>
         <div className="editor-navbar-project" id="workspace-header-project" />
         <div className="editor-navbar-tools" id="workspace-header-tools" />
@@ -61,7 +62,7 @@ export function EditorLayout() {
             </button>
             {menu && <div className="workspace-user-menu" id="workspace-user-menu">
               <div className="workspace-user-identity"><div><strong>{session.user?.name}</strong><small>@{session.user?.username}</small></div></div>
-              <a href="/promjena-lozinke">Promijeni lozinku</a>
+              <a href={location.pathname==='/videa'?location.pathname+location.search:'/videa?saved=1'} onClick={e=>{if(location.pathname==='/videa'){e.preventDefault();window.dispatchEvent(new Event('klipanje-saved-videos'));}setMenu(false);}}>Spremljeni videi</a><a href="/promjena-lozinke">Promijeni lozinku</a>
               {session.user?.isStaff && <a href="/administracija"><span><StudioIcon name="settings" />Administracija</span></a>}
               <details className="workspace-theme-list"><summary>Teme</summary><ThemePicker /></details>
               <button className="workspace-signout" disabled={busy} onClick={() => void signOut()}><span><StudioIcon name="back" />{busy ? 'Odjava…' : 'Odjavi se'}</span></button>

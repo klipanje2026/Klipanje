@@ -9,7 +9,8 @@ export function snapTime(start:number,length:number,points:number[],threshold:nu
 export function shiftSegment(s:Segment,delta:number):Segment{return {...s,start:s.start+delta,end:s.end+delta,words:s.words?.map(w=>({...w,start:w.start+delta,end:w.end+delta})),frameAnimationStart:s.frameAnimationStart===undefined?undefined:s.frameAnimationStart+delta,frameAnimationEnd:s.frameAnimationEnd===undefined?undefined:s.frameAnimationEnd+delta};}
 export function rippleMove(segments:Segment[],id:string,start:number,_duration?:number){
  const selected=segments.find(s=>s.id===id);if(!selected||!Number.isFinite(start))return segments;
- const lane=segments.filter(s=>s.role===selected.role&&(s.lane||0)===(selected.lane||0)).sort((a,b)=>a.start-b.start);
+ if(selected.independentTiming)return segments.map(s=>s.id===id?shiftSegment(s,Math.max(0,start)-s.start):s);
+ const lane=segments.filter(s=>!s.independentTiming&&s.role===selected.role&&(s.lane||0)===(selected.lane||0)).sort((a,b)=>a.start-b.start);
  const index=lane.findIndex(s=>s.id===id),lower=index?lane[index-1].end:0;
  const delta=Math.max(lower,start)-selected.start,ids=new Set(lane.slice(index).map(s=>s.id));
  return segments.map(s=>ids.has(s.id)?shiftSegment(s,delta):s);

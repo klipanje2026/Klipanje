@@ -57,3 +57,12 @@ node scripts/test-export-safety.mjs
 ```
 
 Izvorni zajednički renderer i dodatni Editini moduli sačuvani su radi daljnjih prerada. Marketinške stranice, CRM, naplata, affiliate i vanjske društvene prijave nisu dio aktivnih ruta lokalne aplikacije.
+
+
+## Pregled projekta i spremljeni videi
+
+Klik na projekat otvara tabove **Pregled**, **Detalji**, **Skripte i naracije** i **Fotografije**. Pregled čita postojeći sadržaj; **Uredi** vodi na glavni ekran skripte, a fotografije su odvojene na generisane i galeriju.
+
+Editor automatski sprema postojeći video. Ručno **Spremi video** nudi **Spremi postojeći** ili **Spremi kao novu verziju**. Verzija je zasebna sačuvana tačka skripte, intervala, postavki i montaže, bez dupliranja medijskih datoteka. Otvara se preko **Spremljeni videi → Verzije** u editoru ili korisničkom meniju. Pri otvaranju starije verzije trenutno stanje se prvo sačuva kao sigurnosna verzija. Galerija i generisane slike se time ne premještaju.
+
+Verzije ostaju u lokalnoj SQLite bazi; ažuriranje koda s GitHuba ne zamjenjuje bazu, galerije ni medije. Nakon ažuriranja primijeni aditivne migracije komandom `node scripts/backend.mjs migrate` ili kroz postojeće instalacijske skripte. Za potpunu sigurnosnu kopiju čuvaj bazu i `backend/media/` zajedno.

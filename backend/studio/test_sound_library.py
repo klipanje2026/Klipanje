@@ -28,3 +28,18 @@ class SoundLibraryTests(TestCase):
     def test_rejects_invalid_upload(self):
         self.assertEqual(self.client.post('/api/sounds',{'file':SimpleUploadedFile('bad.html',b'<script>')}).status_code,400)
         self.assertEqual(self.client.post('/api/sounds',{'file':SimpleUploadedFile('empty.wav',b'')}).status_code,413)
+
+    def test_upload_remembers_selected_category(self):
+        for category in ['music', 'sound']:
+            response=self.client.post('/api/sounds',{'category':category,'file':SimpleUploadedFile(category+'.wav',b'RIFFtest',content_type='audio/wav')})
+            self.assertEqual(response.status_code,201)
+            self.assertEqual(response.json()['category'],category)
+        self.assertEqual({s['category'] for s in self.client.get('/api/sounds').json()}, {'music','sound'})
+        self.assertEqual(self.client.post('/api/sounds',{'category':'other','file':SimpleUploadedFile('bad.wav',b'RIFFtest')}).status_code,400)
+
+    def test_saved_fade_default_is_returned(self):
+        from .models import LibrarySound
+        response=self.client.post('/api/sounds',{'file':SimpleUploadedFile('clock.wav',b'RIFFtest',content_type='audio/wav')})
+        self.assertEqual(response.json()['fadeIn'],0)
+        LibrarySound.objects.filter(pk=response.json()['id']).update(fade_in=.8)
+        self.assertEqual(self.client.get('/api/sounds').json()[0]['fadeIn'],.8)
