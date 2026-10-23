@@ -711,3 +711,28 @@
 :root[data-theme][data-palette] .caption-header-scope .language-dropdown-trigger {display:flex!important;align-items:center;justify-content:space-between;gap:5px;width:100%;min-width:0;border:1px solid var(--ui-border)!important;border-radius:6px!important;background:var(--ui-panel)!important;color:var(--ui-text)!important;}
 :root[data-theme][data-palette] .caption-header-scope .language-dropdown-trigger>svg {width:12px;height:12px;flex:none;}
 :root[data-theme][data-palette] .caption-header-scope .language-dropdown-trigger>span {overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+
+/* Give character references a real column instead of shrinking between paragraphs. */
+:root[data-theme][data-palette] .project-character-summary {display:grid;grid-template-columns:minmax(180px,38%) minmax(0,1fr);align-items:start;gap:16px;margin:18px 0;}
+:root[data-theme][data-palette] .project-character-references {display:grid;grid-template-columns:1fr;width:100%;max-width:none;gap:8px;}
+:root[data-theme][data-palette] .project-character-references button {display:flex;align-items:center;justify-content:center;width:100%;height:180px;overflow:hidden;background:var(--k-stage);border:1px solid var(--k-border);border-radius:9px;}
+:root[data-theme][data-palette] .project-character-references img {display:block;width:100%!important;height:100%!important;max-height:none;object-fit:contain;border-radius:0;}
+:root[data-theme][data-palette] .special-effect-picker .flag-preset-icon {width:36px;height:27px;object-fit:contain;border-radius:2px;}
+.flag-controls {display:grid;gap:10px;margin-bottom:12px;}
+.flag-controls .language-dropdown {display:grid;gap:5px;}
+.flag-controls .language-dropdown-trigger {display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;padding:7px;border:1px solid var(--ui-border);border-radius:7px;background:var(--ui-panel);color:var(--ui-text);font-size:11px;}
+.flag-controls .flag-pole-toggle {display:flex;flex-direction:row;align-items:center;gap:7px;}
+.flag-controls small {font-size:10px;line-height:1.5;color:var(--ui-muted);}
+@media(max-width:650px){:root[data-theme][data-palette] .project-character-summary {grid-template-columns:1fr;}:root[data-theme][data-palette] .project-character-references {grid-template-columns:1fr 1fr;}}
+
+/* Image-only style choices and two references side by side. */
+:root[data-theme][data-palette] .project-book-dialog .visual-style-squares {grid-template-columns:repeat(9,minmax(65px,110px))!important;}
+:root[data-theme][data-palette] .project-book-dialog .visual-style-squares button {display:block!important;aspect-ratio:1!important;padding:0!important;border:0!important;overflow:hidden;}
+:root[data-theme][data-palette] .project-book-dialog .visual-style-squares img {display:block;width:100%!important;height:100%!important;object-fit:cover!important;}
+:root[data-theme][data-palette] .project-book-dialog .visual-style-squares span {display:none!important;}
+:root[data-theme][data-palette] .project-book-dialog .visual-style-squares button>b {position:absolute;top:6px;right:6px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--k-accent);color:var(--k-button-ink);font-size:12px;}
+:root[data-theme][data-palette] .project-character-summary {display:block;}
+:root[data-theme][data-palette] .project-character-references {display:flex;flex-wrap:nowrap;align-items:center;gap:12px;margin-bottom:12px;}
+:root[data-theme][data-palette] .project-character-references button {display:block;flex:1 1 0;width:0;height:auto;padding:0!important;border:0!important;border-radius:0;background:transparent!important;box-shadow:none!important;}
+:root[data-theme][data-palette] .project-character-references button:has(img[alt="Svih pet pogleda"]) {flex:1.5 1 0;}
+:root[data-theme][data-palette] .project-character-references img {display:block;width:100%!important;height:auto!important;max-height:220px;object-fit:contain;border-radius:0;}

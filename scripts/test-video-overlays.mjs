@@ -1,8 +1,8 @@
-import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
-const code=ts.transpileModule(readFileSync('frontend/src/lib/video-overlays.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
-const {retimeOverlay,overlayTimelineLanes,clockMinutesAt,createOverlay,restoreOverlays,drawOverlays,overlayPresets,resizeOverlay,overlayMotion,rotatedOverlayAngle,shadowRgba}=await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
+import assert from 'node:assert/strict';
+import {loadTestModule} from './test-ts-module.mjs';
+const {retimeOverlay,overlayTimelineLanes,clockMinutesAt,createOverlay,restoreOverlays,drawOverlays,overlayPresets,resizeOverlay,overlayMotion,rotatedOverlayAngle,shadowRgba}=await loadTestModule('lib/video-overlays.ts','work/overlay-tests');
 const item=createOverlay(overlayPresets[0],9,10);
 assert.equal(item.start,9);assert.equal(item.end,10);
 assert.deepEqual(restoreOverlays(JSON.parse(JSON.stringify([item]))),[item]);
