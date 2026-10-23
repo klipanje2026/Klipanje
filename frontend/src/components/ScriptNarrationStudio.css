@@ -1,0 +1,48 @@
+.script-narration-studio .narration-frame-heading{display:flex;align-items:center;gap:8px;padding:8px 0}
+.script-narration-studio .narration-frame-label{flex:1;min-width:0;text-align:left;white-space:normal;border:0;background:transparent;line-height:1.5;padding:4px 0}
+.script-narration-studio .narration-chevron{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;padding:5px;border:0;background:transparent}
+.narration-chevron svg,.narration-sounds-heading svg{width:16px;height:16px;transition:transform .5s}
+.narration-chevron[aria-expanded=true] svg,.narration-sounds-heading[aria-expanded=true] svg{transform:rotate(180deg)}
+.narration-reveal{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .5s ease,opacity .5s ease}
+.narration-reveal[data-open=true]{grid-template-rows:1fr;opacity:1}
+.narration-reveal>div{min-height:0;overflow:hidden}
+.script-panel .script-narration-studio .narration-reveal .script-compact-scene{grid-template-columns:minmax(180px,1fr) repeat(3,minmax(90px,auto));margin-top:8px}
+.script-narration-studio .narration-sounds-heading{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 0;border:0;background:transparent;text-align:left}
+.narration-sound-tabs{display:flex;gap:6px;margin:8px 0 12px}
+.narration-sound-tabs button[aria-selected=true]{background:var(--k-surface-2,var(--ui-border));color:var(--k-text,var(--ui-text))}
+.script-narration-studio .sound-library-compact .sound-library-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0;min-height:0}
+.sound-library-compact .sound-library-item>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.script-narration-studio .sound-library-compact .sound-library-item>button{width:26px;height:26px;min-width:26px;padding:5px;display:grid;place-items:center;border:0}
+.sound-library-compact .sound-library-item svg,.narration-sounds .script-background-row svg{width:14px;height:14px}
+.sound-library-compact .narration-library{display:grid;gap:5px;margin:8px 0}
+@media(max-width:700px){.script-panel .script-narration-studio .narration-reveal .script-compact-scene{grid-template-columns:repeat(2,minmax(0,1fr))}.narration-frame-heading{flex-wrap:wrap}.script-narration-studio .narration-frame-label{flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){.narration-reveal,.narration-chevron svg,.narration-sounds-heading svg{transition:none}}
+
+.script-panel .script-narration-studio .script-compact-text{grid-column:auto}
+.script-panel .script-narration-studio .script-compact-scene:not(:has(label:nth-child(4))){grid-template-columns:minmax(180px,1fr) 140px 80px}
+@media(max-width:700px){.script-panel .script-narration-studio .script-compact-scene:not(:has(label:nth-child(4))){grid-template-columns:repeat(2,minmax(0,1fr))}.script-panel .script-narration-studio .script-compact-text{grid-column:1/-1}}
+
+.script-panel .compact-script-studio .narration-tag-pickers{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%}
+.script-panel .compact-script-studio .narration-tag-pickers>*{min-width:0;margin:0}
+.narration-take-count{display:block;font-size:10px;opacity:.65;margin-top:3px}
+.narration-coverage-label{font-size:11px;flex-basis:100%;opacity:.8}
+.script-panel .aligned-narration-takes{overflow-x:auto}
+.script-panel .narration-version-row{display:grid;grid-template-columns:minmax(130px,1fr) 110px minmax(150px,220px) repeat(4,28px);align-items:center;gap:6px;min-width:570px;padding:6px 0;border-bottom:1px solid var(--ui-border)}
+.narration-version-name,.narration-version-row>small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.script-panel .narration-version-row button,.script-panel .narration-trim-line button{display:grid;place-items:center;width:28px;height:28px;min-height:28px;min-width:28px;padding:6px;margin:0;border-radius:5px;box-sizing:border-box}
+.narration-version-row svg,.narration-trim-line svg{width:14px;height:14px}
+.narration-match-icon{display:grid;place-items:center;width:28px;height:28px;opacity:.3}
+.narration-match-icon[data-active=true]{opacity:1;color:var(--ui-accent-button);filter:drop-shadow(0 0 3px var(--ui-accent-button))}
+.script-panel .narration-version-action[aria-pressed=true]{color:var(--k-button-ink);background:var(--ui-accent-button);border-color:var(--ui-accent-button)}
+.narration-mini-player{display:flex;align-items:center;gap:5px;min-width:0}
+.script-panel .narration-mini-player input[type=range]{width:100%;min-width:30px;height:4px;padding:0;margin:0;accent-color:var(--ui-accent-button)}
+.narration-mini-player>span{font-size:10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.script-panel .narration-trim-line{display:flex;align-items:center;flex-wrap:nowrap;gap:8px;margin:8px 0;overflow-x:auto;white-space:nowrap;min-height:34px;font-size:11px}
+.script-panel .narration-trim-line label{display:flex;flex-direction:row;align-items:center;gap:5px;margin:0;flex:none;font-size:11px}
+.script-panel .narration-trim-line input{width:65px;min-width:65px;height:28px;min-height:28px;padding:3px 5px;margin:0;box-sizing:border-box;font-size:11px}
+:root .script-panel .script-narration-studio .narration-trim-line label{display:flex!important;flex-direction:row!important;align-items:center;gap:5px;margin:0!important}
+:root .script-panel .script-narration-studio .narration-trim-line input{width:65px!important;min-width:65px!important;height:28px!important;min-height:28px!important;margin:0!important;padding:3px 5px!important}
+:root .script-panel .script-narration-studio :is(.narration-version-row,.narration-trim-line,.narration-mini-player) button{width:28px!important;height:28px!important;min-height:28px!important;padding:6px!important;margin:0!important}
+:root .script-panel .script-narration-studio .narration-match-icon[data-active=true]{opacity:1!important;color:var(--ui-accent-button)!important}
+:root .script-panel .script-narration-studio .narration-version-action[aria-pressed=true]{background:var(--ui-accent-button)!important;color:var(--k-button-ink,var(--ui-text))!important}
+.script-panel .script-generate-play>.narration-mini-player{width:220px;flex:none}

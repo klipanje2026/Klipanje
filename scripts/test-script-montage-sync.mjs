@@ -47,3 +47,7 @@ await syncNarrations(removed,{scriptSync:{choices:{a:'new',b:'new'}}},chosen,[ta
 assert.equal(removed.clips.length,0,'same selected take intentionally removed stays removed');
 assert.equal(fetched,1);
 console.log('Script reconciliation, saved deletions, narration replacement, scene swap and detached caption timing passed.');
+
+const redivided=syncScriptDocument(data,{...script,segments:[segment('new-a',0,4,'a'),segment('new-b',4,7,'b')]});
+assert.equal(redivided.clips[0].captionId,'new-a');assert.equal(redivided.clips[0].outPoint,4);
+console.log('Re-divided scene IDs retain exact-text media links and new timing.');

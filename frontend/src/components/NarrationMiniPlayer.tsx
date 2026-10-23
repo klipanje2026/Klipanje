@@ -1,0 +1,6 @@
+import {useRef,useState} from 'react';
+import {StudioIcon} from './StudioIcon/StudioIcon';
+export function NarrationMiniPlayer({src,label}:{src:string;label:string}){
+ const audio=useRef<HTMLAudioElement>(null),[playing,setPlaying]=useState(false),[time,setTime]=useState(0),[duration,setDuration]=useState(0),[error,setError]=useState(false);
+ return <div className="narration-mini-player"><audio ref={audio} src={src} preload="metadata" onLoadedMetadata={e=>setDuration(Number.isFinite(e.currentTarget.duration)?e.currentTarget.duration:0)} onTimeUpdate={e=>setTime(e.currentTarget.currentTime)} onPlay={()=>setPlaying(true)} onPause={()=>setPlaying(false)} onEnded={()=>setPlaying(false)} onError={()=>setError(true)}/><button type="button" title={error?'Snimak nije dostupan':playing?'Pauziraj':'Poslušaj'} aria-label={`${playing?'Pauziraj':'Poslušaj'} ${label}`} disabled={error} onClick={()=>{if(playing)audio.current?.pause();else void audio.current?.play().catch(()=>setError(true));}}><StudioIcon name={playing?'pause':'play'}/></button><input type="range" aria-label={`Pozicija: ${label}`} min={0} max={duration||1} step={.01} value={time} disabled={!duration||error} onChange={e=>{if(audio.current)audio.current.currentTime=Number(e.target.value);setTime(Number(e.target.value));}}/><span>{time.toFixed(1)} / {duration.toFixed(1)} s</span></div>;
+}

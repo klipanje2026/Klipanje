@@ -5,7 +5,7 @@ from rest_framework.response import Response
 import httpx
 from .ai import json_request, missing_key
 
-# Public Voice Library IDs checked 2026-10-16. No samples or credentials are tracked.
+# Public Voice Library IDs checked 2026-10-23. No samples or credentials are tracked.
 CHOICES=[('VB7D8zswiztJjyl8LI3a','Balkanika','Balkanika'),('j96cp162VcYdsYfSp1nc','Ivan','Ivan · muški regionalni'),('7IVTG9LKLYndnFiFDLU2','Milena','Milena · ženski regionalni'),('bduxjXAljl1GoqxNnLeF','Amila','Amila · Calm, Kind, Warm'),('uWuA4P0UhkL94Z85GkOz','Amila','Amila · Warm, Calm, Deep'),('mP6GNwIkel9neaN9zZIg','Jusuf','Jusuf · Calm, Narrative')]
 CHOICES += [
     ('ej3cSsqkJiJFs2EuW9st','Emir','Emir · Patient, Calm'),
@@ -21,6 +21,16 @@ CHOICES += [
     ('DAGnQ7r9sMtV0Q44g1Mi','Nikola','Nikola · Balkan Pro'),
     ('LmECtQKlHFHPX4psgBT1','Nikola','Nikola · Deep, Serious Narrator'),
     ('ocaele7kOTNS1wQzhbSM','Marko','Marko · Deep, Calm and Narrative'),
+    ('VnqrcpsIQtSAwCasY5CP','Anja','Anja · Engaging Narration, Audiobooks'),
+    ('4vkn1E85GfXGoH86xgU7','Sara','Sara · Sharp & Professional'),
+    ('CgDf4YS1Sotf0h6n2vtV','Martin','Martin · Conversational'),
+    ('ee4SYVdD1aAhcjOJPZdt','Ana','Ana · Warm, Patient Friend'),
+    ('YSnb83dlGetP8Umttfqs','Filip','Filip · Upbeat Ad'),
+    ('sI840Q4fwRxSs9TeMlIX','Zoran','Zoran · Firm Commercial'),
+    ('NvCaXAtgUyp0d9zSgPg5','Dragan','Dragan · Confident Ad'),
+    ('PcQ1oUfPHim3ZuyULxyk','Marko','Marko · Upbeat, Punchy Creator'),
+    ('XOqEcEeTZy5lYgLrY3MI','Aleksandar','Aleksandar · Bright, Amused Creator'),
+    ('5lDS2fR0uHPW5ShjjPzv','Stefan','Stefan · Bright, Playful Creator'),
 ]
 
 @api_view(['GET'])

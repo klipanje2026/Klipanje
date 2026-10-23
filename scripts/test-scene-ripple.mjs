@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {loadTestModule} from './test-ts-module.mjs';
+const {moveSceneRipple,separateSceneOverlaps}=await loadTestModule('lib/scene-ripple.ts','work/ripple-tests');
+const {clipsFollowCaptions}=await loadTestModule('lib/local-timeline.ts','work/ripple-tests');
+const clip=(id,start,length,extra={})=>({id,type:'video',layer:1,start,inPoint:0,outPoint:length,segmentIds:[id],...extra});
+const clips=[clip('a',0,2),clip('b',3,3),clip('c',7,2),clip('voice',3,3,{type:'audio',layer:2,segmentIds:undefined,narrationSegmentIds:['b']}),clip('music',0,30,{type:'audio',layer:3,segmentIds:undefined}),clip('overlay',0,12,{layer:4,segmentIds:undefined})];
+const segments=clips.slice(0,3).map(c=>({id:c.id,text:c.id,start:c.start,end:c.start+c.outPoint,words:[{text:c.id,start:c.start,end:c.start+1}]}));
+const before=JSON.stringify({clips,segments});
+const move=moveSceneRipple(clips,segments,'b',8);
+assert.deepEqual(move.clips.map(c=>c.start),[0,8,12,8,0,0]);assert.deepEqual(move.segments.map(s=>s.start),[0,8,12]);assert.equal(move.segments[1].words[0].start,8);
+assert.equal(moveSceneRipple(clips,segments,'b',-10).clips[1].start,2);
+const overlapping=[clip('a',0,4),clip('b',2,3),clip('c',3,2)];const repaired=separateSceneOverlaps(overlapping,segments);assert.deepEqual(repaired.clips.map(c=>c.start),[0,4,7]);
+assert.deepEqual(separateSceneOverlaps(repaired.clips,repaired.segments),repaired,'repair is idempotent');
+assert.equal(JSON.stringify({clips,segments}),before,'undo snapshot is not mutated');
+const manual=clip('manual',10,5,{segmentIds:['a']});assert.equal(clipsFollowCaptions([manual],segments,segments)[0],manual,'unrelated edits must not reset manual image placement');
+console.log('Scene ripple: gaps, collisions, linked voice/words, layer isolation, repair and stable manual placement passed.');

@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+import ts from 'typescript';
+const mod={};runInNewContext(ts.transpileModule(readFileSync('frontend/src/lib/narration-coverage.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports:mod});
+const segments=Array.from({length:8},(_,i)=>({id:`new${i}`,text:`Danas nas čeka lijep kadar broj ${i+1}.`}));
+const script={id:'s',segments};
+const asset={metadata:{scriptId:'s',audioRole:'narration',segmentIds:['old'],narration:{text:segments.map(s=>s.text).join(' ')}}};
+assert.equal(mod.narrationCoverage(asset,script).ids.length,8);
+assert.equal(mod.narrationCoverageLabel(mod.narrationCoverage(asset,script).ids,segments),'Kadrovi 1–8');
+assert.equal(mod.narrationCoverage({...asset,metadata:{...asset.metadata,scriptId:'other'}},script).ids.length,0);
+assert.equal(mod.narrationCoverage({...asset,metadata:{...asset.metadata,archived:true}},script).ids.length,0);
+const single={id:'s',segments:[{id:'new',text:'Narator: Kad napokon pogleda na sat, već je subota.'}]};
+asset.metadata.narration.text='[angry] Kad napokon pogleda na sat, već je subota.';
+assert.equal(mod.narrationCoverage(asset,single).ids[0],'new');
+asset.metadata.narration.text='Neko potpuno drugo vrijeme i druga priča.';
+assert.equal(mod.narrationCoverage(asset,single).ids.length,0);
+console.log('Narration coverage: regenerated IDs, 8-frame recording, tags, unrelated text and script isolation passed.');
