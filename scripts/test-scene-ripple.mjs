@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {loadTestModule} from './test-ts-module.mjs';
-const {moveSceneRipple,separateSceneOverlaps}=await loadTestModule('lib/scene-ripple.ts','work/ripple-tests');
+const {moveSceneRipple,separateSceneOverlaps,rippleTimingEdit}=await loadTestModule('lib/scene-ripple.ts','work/ripple-tests');
 const {clipsFollowCaptions}=await loadTestModule('lib/local-timeline.ts','work/ripple-tests');
 const clip=(id,start,length,extra={})=>({id,type:'video',layer:1,start,inPoint:0,outPoint:length,segmentIds:[id],...extra});
 const clips=[clip('a',0,2),clip('b',3,3),clip('c',7,2),clip('voice',3,3,{type:'audio',layer:2,segmentIds:undefined,narrationSegmentIds:['b']}),clip('music',0,30,{type:'audio',layer:3,segmentIds:undefined}),clip('overlay',0,12,{layer:4,segmentIds:undefined})];
@@ -14,3 +14,19 @@ assert.deepEqual(separateSceneOverlaps(repaired.clips,repaired.segments),repaire
 assert.equal(JSON.stringify({clips,segments}),before,'undo snapshot is not mutated');
 const manual=clip('manual',10,5,{segmentIds:['a']});assert.equal(clipsFollowCaptions([manual],segments,segments)[0],manual,'unrelated edits must not reset manual image placement');
 console.log('Scene ripple: gaps, collisions, linked voice/words, layer isolation, repair and stable manual placement passed.');
+
+const resized=clips.map(c=>c.id==='a'?{...c,outPoint:5}:c);
+const resizedResult=rippleTimingEdit(clips,resized,segments,segments,true,true);
+assert.equal(resizedResult.clips.find(c=>c.id==='b').start,6);
+assert.equal(resizedResult.clips.find(c=>c.id==='voice').start,6);
+assert.equal(resizedResult.clips.find(c=>c.id==='music').start,0);
+assert.equal(resizedResult.segments[1].start,6);
+const captionEdit=segments.map(s=>s.id==='a'?{...s,end:5}:s);
+const captionResult=rippleTimingEdit(clips,clips,segments,captionEdit,true,false);
+assert.equal(captionResult.clips.find(c=>c.id==='b').start,6);
+const alreadyMoved=resized.map(c=>c.id==='b'||c.id==='voice'?{...c,start:6}:c);
+assert.equal(rippleTimingEdit(clips,alreadyMoved,segments,captionEdit,true,true).clips.find(c=>c.id==='b').start,6,'linked items move once');
+assert.equal(rippleTimingEdit(clips,resized,segments,segments,false,true).clips.find(c=>c.id==='b').start,5,'no overlap still works when ripple is off');
+console.log('Resize and caption edits ripple following media once; no-overlap works independently.');
+
+assert.equal(rippleTimingEdit(overlapping,overlapping,segments,segments,true,true).clips,overlapping,'non-timing edits never repair saved layout implicitly');

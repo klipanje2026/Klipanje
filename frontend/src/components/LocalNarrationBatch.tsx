@@ -10,16 +10,16 @@ import {prepareNarration} from '../lib/narration-audio';
 import {audioBufferSegmentToWav} from '../lib/voice-wav';
 import {alignmentWords,narrationText,rememberMediaTiming,type NarrationTiming} from '../lib/narration-sync';
 import {narrationFrameRanges} from '../lib/narration-frame-ranges';
-export function LocalNarrationBatch({takes=[],onUseTake,voiceName,beforeGenerate,tone,onBusy,model,script,text,segment,voice,start,disabled,onAdd}:{takes?:Asset[];onUseTake?:(take:Asset)=>void;voiceName?:string;beforeGenerate?:()=>Promise<boolean>;tone:string;onBusy:(busy:boolean)=>void;model:string;script:Script;text:string;segment:string;voice:string;start:number;disabled:boolean;onAdd:(files:File[],start:number,role:'narration')=>Promise<boolean>}){
+export function LocalNarrationBatch({selectedFrames=[],separateGeneration=false,hideTakes=false,takes=[],onUseTake,voiceName,beforeGenerate,tone,onBusy,model,script,text,segment,voice,start,disabled,onAdd}:{selectedFrames?:string[];separateGeneration?:boolean;hideTakes?:boolean;takes?:Asset[];onUseTake?:(take:Asset)=>void;voiceName?:string;beforeGenerate?:()=>Promise<boolean>;tone:string;onBusy:(busy:boolean)=>void;model:string;script:Script;text:string;segment:string;voice:string;start:number;disabled:boolean;onAdd:(files:File[],start:number,role:'narration')=>Promise<boolean>}){
  const [split,setSplit]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[done,setDone]=useState<string[]>([]);
  const [speed,setSpeed]=useState(()=>{try{return Math.max(.7,Math.min(1.2,Number(localStorage.getItem('klipanje-speed-'+script.id))||1));}catch{return 1;}}),[sync,setSync]=useState(true),[placement,setPlacement]=useState<NarrationTiming['placement']>('scene');
  const running=useRef(false),responses=useRef(new Map<string,{blob:Blob;words:ReturnType<typeof alignmentWords>}>()),uploaded=useRef(new Map<string,File>());
- const frames=segment?script.segments.filter(s=>s.id===segment):script.segments;
+ const frames=selectedFrames.length?script.segments.filter(s=>selectedFrames.includes(s.id)):segment?script.segments.filter(s=>s.id===segment):script.segments;
  const clear=()=>{responses.current.clear();uploaded.current.clear();setDone([]);setMessage('');};
  async function generate(only?:string){
-  if(running.current)return;
+  if(running.current)return false;
   let rows=only?frames.filter(s=>s.id===only):split?frames:[];
-  if(rows.length){try{const draft=narrationDraftRows(frames,text);rows=only?draft.filter(s=>s.id===only):draft;}catch(error){setMessage((error as Error).message);return;}}
+  if(rows.length){try{const draft=narrationDraftRows(frames,text);rows=only?draft.filter(s=>s.id===only):draft;}catch(error){setMessage((error as Error).message);return false;}}
   const source=rows.length?rows.map(s=>s.text).join('\n'):text;
   const key=JSON.stringify([rows.map(s=>s.id),source,voice,model,tone,speed,split]);
   running.current=true;setBusy(true);onBusy(true);setMessage('Generisanje naracije…');
@@ -40,20 +40,20 @@ export function LocalNarrationBatch({takes=[],onUseTake,voiceName,beforeGenerate
      const timing:NarrationTiming={segmentIds:ids,text:rows[i]?.text||text,words:ready.words.filter(w=>w.start<range.end&&w.end>range.start).map(w=>({...w,start:Math.max(0,w.start-range.start),end:Math.min(range.end-range.start,w.end-range.start)})),duration:range.end-range.start,sync,placement};
      let file=uploaded.current.get(partKey);
      if(!file){const blob=buffer?audioBufferSegmentToWav(buffer,range.start,range.end,buffer.sampleRate):prepared.blob;file=new File([blob],`${script.title}-${(voiceName||'naracija').replace(/[^\p{L}\p{N} -]/gu,'').slice(0,50)}-${rows[i]?script.segments.findIndex(s=>s.id===rows[i].id)+1:'cijela'}-${Date.now()}.wav`,{type:'audio/wav'});const asset=await uploadAsset(script.project,file,{voiceId:voice,voiceName:voiceName||voice,model,tone,speed,purpose:'narration',gallery:true,audioRole:'narration',scriptId:script.id,segmentId:ids[0],segmentIds:ids,narration:timing});rememberRemoteFile(file,asset.id);rememberMediaTiming(file,{narration:timing,segmentIds:ids});uploaded.current.set(partKey,file);}
-     if(!await onAdd([file],start+range.start,'narration'))throw new Error('Snimak je sačuvan. Pokušaj ponovo dodati; neće se ponovo generisati.');
+     if(!await onAdd([file],(only?frames.find(s=>s.id===only)?.start??start:start)+range.start,'narration'))throw new Error('Snimak je sačuvan. Pokušaj ponovo dodati; neće se ponovo generisati.');
      setDone(old=>old.includes(partKey)?old:[...old,partKey]);
     }
    }finally{await context?.close();}
-   setMessage('Naracija je dodana. Tvoja podjela kadrova i tekst titlova ostaju sačuvani.');
-  }catch(error){setMessage((error as Error).message);}finally{running.current=false;setBusy(false);onBusy(false);}
+   setMessage('Naracija je dodana. Tvoja podjela kadrova i tekst titlova ostaju sačuvani.');return true;
+  }catch(error){setMessage((error as Error).message);return false;}finally{running.current=false;setBusy(false);onBusy(false);}
  }
  return <section className="local-narration-generate"><fieldset disabled={busy||disabled}>
  <label className="narration-inline-control">Brzina govora · {speed.toFixed(2)}×<input type="range" min=".7" max="1.2" step=".05" value={speed} onChange={e=>{setSpeed(Number(e.target.value));try{localStorage.setItem('klipanje-speed-'+script.id,e.target.value);}catch{}clear();}}/></label>
  <StyleDropdown label="Postavljanje" value={placement} onChange={e=>{setPlacement(e.target.value as NarrationTiming['placement']);clear();}}><option value="scene">Na trenutni početak kadra</option><option value="append">Iza posljednje naracije</option><option value="manual">Na upisano vrijeme</option></StyleDropdown>
  <label className="local-check"><input type="checkbox" checked={sync} onChange={e=>{setSync(e.target.checked);clear();}}/>Uskladi trajanje titlova i povezanih slika s govorom</label>
  <label className="local-check"><input type="checkbox" checked={split} disabled={!frames.length} onChange={e=>{setSplit(e.target.checked);clear();}}/>Rastavi na postojeće kadrove</label>
- {split&&<><small>Jedna generacija odabranog teksta, zatim rezovi po tvojim postojećim kadrovima.</small>{frames.map(s=><div className="frame-narration-entry" key={s.id}><div className="narration-batch-part"><span>Kadar {script.segments.indexOf(s)+1} · {s.text}</span><button type="button" disabled={!voice} onClick={()=>void generate(s.id)}>Generiši naraciju</button></div><NarrationVersions takes={takes.filter(a=>a.metadata.segmentId===s.id||a.metadata.segmentIds?.includes(s.id))} onUse={take=>onUseTake?.(take)}/></div>)}</>}
- <button type="button" disabled={!voice||!(split?frames.length:text.trim())} onClick={()=>void generate()}>{busy?'Generišem…':done.length?'Nastavi / dodaj naraciju':'Generiši naraciju'}</button>
- {!split&&segment&&<NarrationVersions takes={takes.filter(a=>a.metadata.segmentId===segment||a.metadata.segmentIds?.includes(segment))} onUse={take=>onUseTake?.(take)}/>}{done.length>0&&<button type="button" onClick={clear}>Nova generacija</button>}
+ {split&&<><small>Jedna generacija odabranog teksta, zatim rezovi po tvojim postojećim kadrovima.</small>{frames.map(s=><div className="frame-narration-entry" key={s.id}><div className="narration-batch-part"><span>Kadar {script.segments.indexOf(s)+1} · {s.text}</span><button type="button" disabled={!voice} onClick={()=>void generate(s.id)}>Generiši naraciju</button></div>{!hideTakes&&<NarrationVersions takes={takes.filter(a=>a.metadata.segmentId===s.id||a.metadata.segmentIds?.includes(s.id))} onUse={take=>onUseTake?.(take)}/>}</div>)}</>}
+ <button type="button" disabled={!voice||!(split?frames.length:text.trim())} onClick={async()=>{if(separateGeneration&&selectedFrames.length>1){for(const frame of frames){if(!await generate(frame.id))break;}}else await generate();}}>{busy?'Generišem…':done.length?'Nastavi / dodaj naraciju':'Generiši naraciju'}</button>
+ {!hideTakes&&!split&&segment&&<NarrationVersions takes={takes.filter(a=>a.metadata.segmentId===segment||a.metadata.segmentIds?.includes(segment))} onUse={take=>onUseTake?.(take)}/>}{done.length>0&&<button type="button" onClick={clear}>Nova generacija</button>}
  </fieldset>{message&&<p role="status">{message}</p>}</section>;
 }

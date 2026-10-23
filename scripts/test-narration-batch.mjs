@@ -25,6 +25,17 @@ assert.equal(props.script.segments.length,2);assert.equal(props.script.segments[
 tree=render();await all(tree,n=>n.type==='button'&&n.props.children==='Generiši naraciju')[0].props.onClick();await new Promise(r=>setTimeout(r,30));assert.equal(calls,2);assert.equal(added.length,3);assert.equal(timing.get(added[2]).segmentIds[0],'a');
 console.log('One request sliced to original frames, per-frame generation and save-before-request passed.');
 
+
+// Selected consecutive frames: one shared recording or individual paid requests.
+slots=[];cursor=0;calls=0;uploads=0;added=[];
+props.selectedFrames=['a','b'];props.segment='a';props.separateGeneration=false;
+tree=render();await all(tree,n=>n.type==='button'&&n.props.children==='Generiši naraciju')[0].props.onClick();
+assert.equal(calls,1);assert.equal(added.length,1);assert.equal(timing.get(added[0]).segmentIds.join(','),'a,b');
+slots=[];cursor=0;calls=0;uploads=0;added=[];props.separateGeneration=true;
+tree=render();await all(tree,n=>n.type==='button'&&n.props.children==='Generiši naraciju')[0].props.onClick();
+assert.equal(calls,2);assert.equal(added.length,2);assert.equal(added.map(f=>timing.get(f).segmentIds[0]).join(','),'a,b');
+console.log('Selected frames support combined and separate generation without losing frame IDs.');
+
 // Leaving for photos waits for save; failed save leaves the current editor intact.
 const listeners={},locations=[],destinations=[];let finishSave;
 const leaveExports={};

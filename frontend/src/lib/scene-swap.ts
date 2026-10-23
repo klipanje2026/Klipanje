@@ -5,7 +5,8 @@ const ids=(c:SceneClip)=>[...c.segmentIds||[],...c.narrationSegmentIds||[],...c.
 export function swapSceneBundles<T extends SceneClip>(clips:T[],segments:Segment[],firstId:string,secondId:string){
  const a=clips.find(c=>c.id===firstId),b=clips.find(c=>c.id===secondId);if(!a||!b||a.id===b.id)return {clips,segments};
  const left=a.start<=b.start?a:b,right=left===a?b:a;
- const leftIds=new Set(ids(left)),rightIds=new Set(ids(right));
+ const bundleIds=(target:SceneClip)=>new Set(clips.filter(c=>c.id===target.id||!!target.groupId&&c.groupId===target.groupId).flatMap(ids));
+ const leftIds=bundleIds(left),rightIds=bundleIds(right);
  if([...leftIds].some(id=>rightIds.has(id)))return {clips,segments};
  const leftLength=left.outPoint-left.inPoint,rightLength=right.outPoint-right.inPoint,delta=rightLength-leftLength;
  if(left.start+leftLength>right.start+.001)return {clips,segments};

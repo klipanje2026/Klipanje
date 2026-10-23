@@ -51,3 +51,8 @@ console.log('Script reconciliation, saved deletions, narration replacement, scen
 const redivided=syncScriptDocument(data,{...script,segments:[segment('new-a',0,4,'a'),segment('new-b',4,7,'b')]});
 assert.equal(redivided.clips[0].captionId,'new-a');assert.equal(redivided.clips[0].outPoint,4);
 console.log('Re-divided scene IDs retain exact-text media links and new timing.');
+
+const grouped=[{id:'image1',type:'video',groupId:'g1',start:0,inPoint:0,outPoint:2},{id:'audio1',type:'audio',groupId:'g1',narrationSegmentIds:['s1'],start:0,inPoint:0,outPoint:2},{id:'image2',type:'video',groupId:'g2',start:3,inPoint:0,outPoint:2},{id:'audio2',type:'audio',groupId:'g2',narrationSegmentIds:['s2'],start:3,inPoint:0,outPoint:2}];
+const groupSwap=swapSceneBundles(grouped,[{id:'s1',text:'One',start:0,end:2},{id:'s2',text:'Two',start:3,end:5}],'image1','image2');
+assert.equal(groupSwap.clips.find(c=>c.id==='audio1').start,3);assert.equal(groupSwap.segments[0].start,3);assert.equal(groupSwap.segments[1].start,0);
+console.log('Grouped image, audio and caption swap together through audio scene links.');

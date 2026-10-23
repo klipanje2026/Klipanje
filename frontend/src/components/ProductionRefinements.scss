@@ -606,3 +606,22 @@
 :root .project-book-dialog .character-profile-grid .character-reference-strip img{border-radius:5px!important;object-fit:contain!important;}
 :root .project-book-dialog .character-profile-grid .character-sheet-thumb{border-radius:5px!important;object-fit:contain!important;max-width:100%!important;}
 :root .project-book-dialog .character-profile-grid>button{border-radius:8px!important;}
+
+:root[data-theme][data-palette] .local-editor-tools .narration-library-row {height:auto;min-height:30px;flex-wrap:wrap;position:relative;}
+.local-editor-tools .narration-take-text {position:static!important;display:block;flex:0 0 100%;width:100%;box-sizing:border-box;background:var(--ui-raised);padding:8px;border-radius:5px;white-space:normal;overflow-wrap:anywhere;}
+.scene-swap-ghost {position:absolute;top:2px;bottom:2px;pointer-events:none;z-index:12;background:var(--ui-raised);border:2px dashed var(--ui-accent-button);opacity:.65;overflow:hidden;border-radius:5px;}
+.scene-swap-ghost img {width:100%;height:100%;object-fit:cover;}
+.scene-swap-ghost span {position:absolute;bottom:0;left:0;background:var(--ui-raised);font-size:10px;}
+.clip-link-badge {background:var(--ui-raised);color:var(--ui-accent-button);padding:1px 4px;border-radius:3px;font-size:10px;}
+
+.local-editor-tools {box-sizing:border-box;scrollbar-gutter:stable;padding-right:12px!important;}
+.local-editor-tools fieldset,.local-editor-tools section {min-width:0;max-width:100%;box-sizing:border-box;}
+.local-editor-tools .narration-inline-control {display:grid!important;grid-template-columns:minmax(0,1fr) minmax(60px,110px);gap:8px;align-items:center;}
+.local-editor-tools input[type=range] {min-width:0;width:100%;max-width:100%;box-sizing:border-box;}
+.narration-frame-picker {border:1px solid var(--ui-border);border-radius:6px;padding:7px;}
+.narration-frame-picker[open] {max-height:260px;overflow:auto;}
+.narration-frame-picker label {display:flex!important;align-items:flex-start;gap:7px;font-size:11px;padding:5px 0;}
+.narration-frame-picker input {flex:none;width:13px!important;height:13px!important;margin:2px 0!important;}
+.all-narration-takes {margin:8px 0;}
+
+.local-editor-scroll {scrollbar-gutter:stable;padding-right:6px;box-sizing:border-box;}
