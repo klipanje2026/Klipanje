@@ -27,7 +27,7 @@ export function LocalVideoStorage({script,snapshot,restore,saveHandle,changeKey,
    if(scriptSourceKey(fresh)===sourceState.current&&JSON.stringify(scriptChoices(fresh))===JSON.stringify(choiceState.current))return false;
    if(revision.current!==fresh.storyboardRevision){setBlocked(true);ready.current=false;setMessage('Drugi prozor je spremio noviju montažu. Ponovo učitaj montažu.');return false;}
    const snap=await latest.current.snapshot();
-   if(scriptSourceKey({segments:editorIntervals(snap.data,latest.current.script)})!==sourceState.current&&!await localConfirm('Skripta je promijenjena izvan editora, a i ovdje ima izmjena teksta ili vremena. Preuzeti novu skriptu? Mediji ostaju sačuvani.','Nova verzija skripte','Preuzmi skriptu'))return false;
+   if(scriptSourceKey({segments:editorIntervals(snap.data,latest.current.script)})!==sourceState.current){setMessage('Skripta je promijenjena u drugom prozoru. Spremi trenutne izmjene prije osvježavanja.');return false;}
    const refs=snap.files.flatMap(f=>{const id=remoteFiles.get(f.file);return id?[{key:f.key,id}]:[];});
    const files=new Map(snap.files.map(f=>[f.key,f.file]));
    const prior={...snap.data,scriptSync:{sourceKey:sourceState.current,choices:choiceState.current}};
@@ -70,7 +70,7 @@ export function LocalVideoStorage({script,snapshot,restore,saveHandle,changeKey,
  }
 
  async function manualSave(){
-  const choice=await localQuestion({title:'Spremi video',message:'Postojeći video se redovno sprema. Nova verzija čuva zasebnu tačku za kasniji povratak.',options:[{value:'cancel',label:'Odustani'},{value:'version',label:'Spremi kao novu verziju'},{value:'save',label:'Spremi postojeći',primary:true}]});
+  const choice=await localQuestion({title:'Spremi video',message:'Spremi trenutne izmjene u postojeći video. Nova verzija čuva zasebnu tačku za kasniji povratak.',options:[{value:'cancel',label:'Odustani'},{value:'version',label:'Spremi kao novu verziju'},{value:'save',label:'Spremi postojeći',primary:true}]});
   if(!choice||choice==='cancel')return;
   failedKey.current='';rejectedText.current='';
   if(!await save()||choice!=='version')return;
@@ -82,7 +82,7 @@ export function LocalVideoStorage({script,snapshot,restore,saveHandle,changeKey,
       await syncNarrations(synced,doc.data,fresh,list.assets,files,doc.files);
       synced.scriptSync={sourceKey:scriptSourceKey(fresh),choices:scriptChoices(fresh)};
       if(!active)return;await latest.current.restore(synced,files);lastSaved.current=JSON.stringify(synced);}}else if(active){const snap=await latest.current.snapshot(),list=await apiJson<{assets:Asset[]}>(`/api/projects/${script.project}/assets`);const next=syncScriptDocument(snap.data,fresh),files=new Map(snap.files.map(f=>[f.key,f.file]));await syncNarrations(next,snap.data,fresh,list.assets,files,[]);if(!active)return;await latest.current.restore(next,files);}if(active){sourceState.current=scriptSourceKey(fresh);choiceState.current=scriptChoices(fresh);sourceText.current=scriptTextKey(fresh.segments);ready.current=true;setMessage(doc.editor==='edita'?`Spremljeno · ${new Date(String(fresh.storyboard.savedAt||fresh.updated_at)).toLocaleString('hr-HR')}`:'Još nije spremljeno');}}catch(e){if(active){saveError.current=(e as Error).message;setMessage(saveError.current);setBlocked(true);}}finally{if(active)setOpening(false);}})();return()=>{active=false;};},[script.id,reload]);
- useEffect(()=>{if(opening||disabled||busy||blocked||!changeKey||changeKey===savedKey.current||changeKey===failedKey.current)return;const timer=setTimeout(()=>void save(),1800);return()=>clearTimeout(timer);},[changeKey,opening,disabled,busy,blocked]);
+ useEffect(()=>{if(opening||disabled||busy||blocked||!changeKey||changeKey===savedKey.current||changeKey===failedKey.current)return;setMessage('Nespremljene izmjene');},[changeKey,opening,disabled,busy,blocked]);
  return <><EditorHeaderPortal slot="project"><div className="local-video-save"><strong>{script.title}</strong><small role="status">{opening?'Učitavanje…':message}</small>{blocked&&<button disabled={busy||opening} onClick={async()=>{if(await localConfirm('Ponovo učitati posljednju spremljenu montažu? Trenutne nespremljene izmjene bit će zamijenjene.','Ponovno učitavanje','Učitaj spremljeno')){ready.current=false;setOpening(true);setBlocked(false);setReload(value=>value+1);}}}>Ponovo učitaj montažu</button>}<button className="local-save-icon" title="Spremi video" aria-label="Spremi video" disabled={busy||opening||disabled||blocked} onClick={()=>void manualSave()}><StudioIcon name="save"/></button><button className="local-save-icon" aria-label="Spremljeni videi" title="Spremljeni videi i verzije" disabled={busy||opening} onClick={()=>window.dispatchEvent(new Event('klipanje-saved-videos'))}><StudioIcon name="menu"/></button></div></EditorHeaderPortal>{opening&&<div className="local-video-opening" role="status">Učitavanje montaže…</div>}</>;
 }
 

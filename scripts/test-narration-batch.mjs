@@ -36,8 +36,8 @@ tree=render();await all(tree,n=>n.type==='button'&&n.props.children==='Generiši
 assert.equal(calls,2);assert.equal(added.length,2);assert.equal(added.map(f=>timing.get(f).segmentIds[0]).join(','),'a,b');
 console.log('Selected frames support combined and separate generation without losing frame IDs.');
 
-// Leaving for photos waits for save; failed save leaves the current editor intact.
-const listeners={},locations=[],destinations=[];let finishSave;
+// Navigation asks first; editing itself must not trigger saving.
+const listeners={},locations=[],destinations=[];let saveCalls=0;
 const leaveExports={};
 const leaveReact={useEffect:fn=>fn(),useRef:v=>({current:v}),useState:v=>[v,n=>destinations.push(n)]};
 const location={href:'http://local/videa?project=p',origin:'http://local',pathname:'/videa',search:'?project=p',assign:url=>locations.push(url)};
@@ -45,6 +45,6 @@ const window={location,addEventListener:()=>{},removeEventListener:()=>{},dispat
 const document={body:{},addEventListener:(type,fn)=>listeners[type]=fn,removeEventListener:()=>{}};
 runInNewContext(compile('frontend/src/components/EditorLeaveGuard.tsx'),{exports:leaveExports,require:k=>k==='react'?leaveReact:k==='react-dom'?{createPortal:x=>x}:k==='react/jsx-runtime'?{jsx,jsxs:jsx}:{SaveBeforeLeaving:'dialog'},window,document,location,URL,Event});
 const click=()=>listeners.click({button:0,target:{closest:()=>({href:'http://local/fotografije?project=p',hasAttribute:()=>false})},preventDefault(){},stopPropagation(){}});
-leaveExports.EditorLeaveGuard({active:true,localProject:'p',onSave:()=>new Promise(resolve=>{finishSave=resolve;})});click();assert.equal(locations.length,0);finishSave(true);await Promise.resolve();assert.equal(locations.length,1);
-leaveExports.EditorLeaveGuard({active:true,localProject:'p',onSave:async()=>false});click();await Promise.resolve();assert.equal(locations.length,1);assert.ok(destinations.length>0);
-console.log('Photo navigation waits for successful save; failed save stays in editor.');
+leaveExports.EditorLeaveGuard({active:true,localProject:'p',onSave:async()=>{saveCalls++;return true;}});click();assert.equal(locations.length,0);assert.equal(saveCalls,0);assert.equal(destinations.at(-1),'http://local/fotografije?project=p');
+leaveExports.EditorLeaveGuard({active:true,localProject:'p',onSave:async()=>false});click();await Promise.resolve();assert.equal(locations.length,0);assert.ok(destinations.length>0);
+console.log('Photo navigation opens the leave dialog without saving or navigating prematurely.');

@@ -201,3 +201,18 @@ class CreativeWorkspaceTests(TestCase):
         self.assertEqual(asset.metadata['segmentId'],'')
         self.client.force_login(self.other)
         self.assertEqual(self.client.patch(url,{'metadata':{'segmentIds':['a']}},content_type='application/json').status_code,404)
+
+    def test_gallery_membership_survives_redivided_script_and_filler_position(self):
+        self.script.segments=[{'id':'a','text':'A','start':0,'end':1},{'id':'b','text':'B','start':1,'end':2}]
+        self.script.save()
+        asset=MediaAsset.objects.create(project=self.project,name='old.png',file='test/old.png',size=1,content_type='image/png',metadata={'scriptId':str(self.script.pk),'segmentId':'removed','segmentIds':['removed'],'gallery':False,'filler':True})
+        route=f'/api/assets/{asset.pk}'
+        for value in [True,False,True]:
+            result=self.client.patch(route,{'metadata':{'gallery':value}},content_type='application/json')
+            self.assertEqual(result.status_code,200)
+            self.assertEqual(result.json()['metadata']['gallery'],value)
+            self.assertEqual(result.json()['metadata']['segmentId'],'removed')
+        result=self.client.patch(route,{'metadata':{'fillerAfter':'a'}},content_type='application/json')
+        self.assertEqual(result.status_code,200)
+        self.assertEqual(result.json()['metadata']['fillerAfter'],'a')
+        self.assertEqual(self.client.patch(route,{'metadata':{'fillerAfter':'missing'}},content_type='application/json').status_code,400)

@@ -77,6 +77,7 @@ STYLES = [
 ]
 
 class ImageRequest(serializers.Serializer):
+    fillerAfter = serializers.CharField(required=False,allow_blank=True,max_length=64,default='')
     filler = serializers.BooleanField(default=False)
     segments = serializers.ListField(child=serializers.CharField(max_length=64),max_length=1000,required=False,default=list)
     script = serializers.UUIDField()
@@ -95,6 +96,8 @@ def prepare(request):
     script=get_object_or_404(LocalScript,pk=data['script'],owner=request.user,project__created_by=request.user)
     if data['filler'] and (data['segment'] or data['segments'] or not data['prompt'].strip()):
         raise serializers.ValidationError('Filler kadar treba vlastiti prompt i ne smije mijenjati intervale skripte.')
+    if data['fillerAfter'] and not any(s['id']==data['fillerAfter'] for s in script.segments):
+        raise serializers.ValidationError('Odaberi poziciju filler slike iz ove skripte.')
     segment=next((s for s in script.segments if s['id']==data['segment']),None)
     if data['segment'] and not segment:
         raise serializers.ValidationError('Odabrani interval više ne postoji.')
@@ -178,7 +181,7 @@ def generate(request):
         except (subprocess.SubprocessError,OSError):
             return Response({'error':'Slika je generisana, ali priprema odabranog formata nije uspjela. Provjeri servis prije ponovnog generisanja.'},status=502)
     asset=MediaAsset(project=script.project,name=f'kadar-{uuid4().hex[:8]}.png',content_type='image/png',size=len(raw),metadata={
-        'spendId':str(spend.pk),'filler':data['filler'],'gallery':False,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None,'purpose':'image','scriptId':str(script.pk),'segmentId':data['segment'],'segmentIds':data['segments'] or ([data['segment']] if data['segment'] else []),'prompt':data['prompt'],'fullPrompt':prompt,'model':data['model'],'style':data['style'],'aspect':data.get('aspect'),'references':[str(a.pk) for a in refs],
+        'spendId':str(spend.pk),'filler':data['filler'],'fillerAfter':data['fillerAfter'],'gallery':False,'estimatedUsd':float(spend.estimated_usd) if spend.estimated_usd is not None else None,'purpose':'image','scriptId':str(script.pk),'segmentId':data['segment'],'segmentIds':data['segments'] or ([data['segment']] if data['segment'] else []),'prompt':data['prompt'],'fullPrompt':prompt,'model':data['model'],'style':data['style'],'aspect':data.get('aspect'),'references':[str(a.pk) for a in refs],
     })
     with transaction.atomic():
         from .models import Project

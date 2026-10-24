@@ -15,8 +15,10 @@ function contextContains(context:string,text:string){
  return false;
 }
 /** Resolve saved IDs first, then recover only unambiguous stored text/prompt matches. */
+const emptySettings:Script['photo_settings']={};
 const sceneCache=new WeakMap<Script['segments'],WeakMap<Script['photo_settings'],WeakMap<Asset['metadata'],number>>>();
 export function galleryScene(asset:Asset,script:Script){
+ if(!script.photo_settings)script={...script,photo_settings:emptySettings};
  let settings=sceneCache.get(script.segments);if(!settings){settings=new WeakMap();sceneCache.set(script.segments,settings);}
  let entries=settings.get(script.photo_settings);if(!entries){entries=new WeakMap();settings.set(script.photo_settings,entries);}
  const saved=entries.get(asset.metadata);if(saved!==undefined)return saved;
@@ -35,13 +37,14 @@ function resolveGalleryScene(asset:Asset,script:Script){
 }
 
 export function orderedGallery(assets:Asset[],script:Script,projectName:string,order:'scene'|'created'='scene'){
- const scene=(a:Asset)=>{const i=galleryScene(a,script);return i<0?script.segments.length+1:i+1;};
- const ordered=[...assets].sort((a,b)=>(order==='scene'?scene(a)-scene(b):0)||(a.created_at||'').localeCompare(b.created_at||'')||a.id.localeCompare(b.id));
+ const scene=(a:Asset)=>{if(a.metadata.filler){const after=script.segments.findIndex(s=>s.id===a.metadata.fillerAfter);return after<0?script.segments.length+2:after+1.5;}const i=galleryScene(a,script);return i<0?script.segments.length+1:i+1;};
+ const ordered=[...assets].sort((a,b)=>(order==='scene'?scene(a)-scene(b):0)||(order==='scene'&&!a.metadata.filler&&!b.metadata.filler?(a.metadata.sequence||0)-(b.metadata.sequence||0):0)||(a.created_at||'').localeCompare(b.created_at||'')||a.id.localeCompare(b.id));
  const prefix=projectName.trim().replace(/[\\/:*?"<>|]/g,'-')||'Projekat';
  const episode=String(Number(script.title.match(/\d+/)?.[0]||1));
  const chronological=[...assets].sort((a,b)=>(a.created_at||'').localeCompare(b.created_at||'')||a.id.localeCompare(b.id));
  return ordered.map(asset=>{const index=(asset.metadata.sequence||chronological.findIndex(a=>a.id===asset.id)+1)-1;const ext=asset.contentType==='image/jpeg'?'jpg':asset.contentType==='image/webp'?'webp':asset.contentType==='image/png'?'png':asset.name.split('.').pop()||'mp4';
-  return {asset,number:index+1,name:`${prefix}-ep${episode}-${String(index+1).padStart(3,'0')}.${ext}`};
+  const after=script.segments.findIndex(s=>s.id===asset.metadata.fillerAfter);const peers=ordered.filter(a=>a.metadata.filler&&a.metadata.fillerAfter===asset.metadata.fillerAfter);const position=asset.metadata.filler?(after<0?'Filler':`${after+1}.${peers.findIndex(a=>a.id===asset.id)+1}`):galleryScene(asset,script)>=0?String(galleryScene(asset,script)+1):'Neraspoređeno';
+  return {asset,position,number:index+1,name:`${prefix}-ep${episode}-${String(index+1).padStart(3,'0')}.${ext}`};
  });
 }
 
