@@ -180,3 +180,24 @@ class CreativeWorkspaceTests(TestCase):
         self.assertEqual(asset.metadata['segmentIds'], [])
         self.script.refresh_from_db()
         self.assertEqual(self.script.segments, [{'id': 'scene-one', 'start': 0, 'end': 3, 'text': 'A walk.'}])
+
+    def test_photo_frame_assignment_multiple_clear_and_validation(self):
+        self.script.segments=[{'id':'a','text':'First','start':0,'end':2},{'id':'b','text':'Second','start':2,'end':4},{'id':'c','text':'Third','start':4,'end':6}]
+        self.script.save()
+        asset=MediaAsset.objects.create(project=self.project,name='photo.png',file='test/photo.png',size=1,content_type='image/png',metadata={'scriptId':str(self.script.pk),'prompt':'Keep original prompt','gallery':True})
+        url=f'/api/assets/{asset.pk}'
+        result=self.client.patch(url,{'metadata':{'segmentIds':['c','a','a']}},content_type='application/json')
+        self.assertEqual(result.status_code,200)
+        asset.refresh_from_db()
+        self.assertEqual(asset.metadata['segmentIds'],['a','c'])
+        self.assertEqual(asset.metadata['segmentId'],'a')
+        self.assertEqual(asset.metadata['prompt'],'Keep original prompt')
+        self.assertTrue(asset.metadata['manualFrames'])
+        self.assertEqual(self.client.patch(url,{'metadata':{'segmentIds':['foreign']}},content_type='application/json').status_code,400)
+        self.assertEqual(self.client.patch(url,{'metadata':{'segmentIds':'a'}},content_type='application/json').status_code,400)
+        self.assertEqual(self.client.patch(url,{'metadata':{'segmentIds':[]}},content_type='application/json').status_code,200)
+        asset.refresh_from_db()
+        self.assertEqual(asset.metadata['segmentIds'],[])
+        self.assertEqual(asset.metadata['segmentId'],'')
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.patch(url,{'metadata':{'segmentIds':['a']}},content_type='application/json').status_code,404)

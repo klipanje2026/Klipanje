@@ -25,6 +25,7 @@ export function galleryScene(asset:Asset,script:Script){
 function resolveGalleryScene(asset:Asset,script:Script){
  const direct=script.segments.findIndex(s=>s.id===asset.metadata.segmentId||asset.metadata.segmentIds?.includes(s.id));
  if(direct>=0)return direct;
+ if(asset.metadata.manualFrames)return -1;
  const context=normalized(asset.metadata.fullPrompt?.match(/Narration context:\s*([\s\S]*?)(?:\n\s*Scene direction:|$)/i)?.[1]||'');
  if(context){const matches=script.segments.flatMap((s,i)=>{const text=normalized(s.text.replace(/\*\*/g,'').replace(/^[^:\n]{1,30}:\s*/,''));return text.length>=8&&contextContains(context,text)?[i]:[];});if(matches.length&&matches.every((n,i)=>!i||n===matches[i-1]+1))return matches[0];}
  const prompt=normalized(asset.metadata.prompt||'');if(prompt.length<20)return -1;
@@ -42,4 +43,11 @@ export function orderedGallery(assets:Asset[],script:Script,projectName:string,o
  return ordered.map(asset=>{const index=(asset.metadata.sequence||chronological.findIndex(a=>a.id===asset.id)+1)-1;const ext=asset.contentType==='image/jpeg'?'jpg':asset.contentType==='image/webp'?'webp':asset.contentType==='image/png'?'png':asset.name.split('.').pop()||'mp4';
   return {asset,number:index+1,name:`${prefix}-ep${episode}-${String(index+1).padStart(3,'0')}.${ext}`};
  });
+}
+
+/** Separate non-adjacent selections so an image never fills unwanted scenes. */
+export function galleryFrameGroups(ids:string[],segments:Script['segments']){
+ const groups:string[][]=[];let last=-2;
+ segments.forEach((s,i)=>{if(!ids.includes(s.id))return;if(i!==last+1)groups.push([]);groups[groups.length-1].push(s.id);last=i;});
+ return groups;
 }

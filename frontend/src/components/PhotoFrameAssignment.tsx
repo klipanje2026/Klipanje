@@ -1,0 +1,12 @@
+import {useState} from 'react';
+import {LocalDialog} from './LocalDialog';
+import {StudioIcon} from './StudioIcon/StudioIcon';
+import {apiJson} from '../lib/api';
+import {jsonBody,type Asset,type Script} from '../lib/production';
+export function PhotoFrameAssignment({asset,script,onSaved,disabled=false}:{asset:Asset;script:Script;onSaved:(asset:Asset)=>void;disabled?:boolean}){
+ const [open,setOpen]=useState(false),[ids,setIds]=useState<string[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const selected=script.segments.filter(s=>(asset.metadata.segmentIds||[asset.metadata.segmentId]).includes(s.id));
+ const label=selected.length?'Kadrovi '+selected.map(s=>script.segments.indexOf(s)+1).join(' + '):'Poveži s kadrom';
+ async function save(){setBusy(true);setError('');try{const updated=await apiJson<Asset>(`/api/assets/${asset.id}`,jsonBody({metadata:{scriptId:script.id,segmentIds:ids}},'PATCH'));onSaved(updated);window.dispatchEvent(new CustomEvent('klipanje-asset-added',{detail:{project:script.project,asset:updated}}));setOpen(false);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ return <><button type="button" disabled={disabled} title={label} aria-label={`Poveži sliku s kadrovima: ${asset.name}`} onClick={()=>{setIds(selected.map(s=>s.id));setError('');setOpen(true);}}><StudioIcon name="link"/></button>{open&&<LocalDialog className="photo-frame-dialog" title="Poveži sliku s kadrovima" onClose={()=>{if(!busy)setOpen(false);}} busy={busy}><div className="photo-frame-assignment"><img src={asset.url} alt={asset.name}/><p>Označi jedan ili više kadrova. Uzastopni dijele jednu sliku; odvojeni je koriste na svojim mjestima pri uvozu.</p><div className="photo-frame-choices">{script.segments.map((s,i)=><label key={s.id}><input type="checkbox" disabled={busy} checked={ids.includes(s.id)} onChange={e=>setIds(old=>e.target.checked?[...old,s.id]:old.filter(id=>id!==s.id))}/><span><strong>Kadar {i+1}</strong> — {s.text}</span></label>)}</div><small>Veza određuje naredni uvoz. Već složena montaža se ne pomjera automatski.</small><div className="local-dialog-actions"><button disabled={busy} onClick={()=>setIds([])}>Ukloni veze</button><button disabled={busy} onClick={()=>setOpen(false)}>Odustani</button><button disabled={busy} onClick={()=>void save()}>{busy?'Spremanje…':'Spremi veze'}</button></div>{error&&<p role="alert">{error}</p>}</div></LocalDialog>}</>;
+}

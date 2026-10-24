@@ -131,8 +131,18 @@ def asset_delete(request, pk):
     asset = get_object_or_404(MediaAsset, pk=pk, project__created_by=request.user, project__workspace__memberships__user=request.user)
     if request.method=='PATCH':
         update=request.data.get('metadata')
-        if not isinstance(update,dict) or set(update)-{'gallery','segmentId','scriptId'}:raise ValidationError('Neispravna izmjena fotografije.')
+        if not isinstance(update,dict) or set(update)-{'gallery','segmentId','segmentIds','scriptId'}:raise ValidationError('Neispravna izmjena fotografije.')
         if 'gallery' in update and not isinstance(update['gallery'],bool):raise ValidationError('Neispravan status galerije.')
+        if 'segmentIds' in update:
+            ids=update['segmentIds']
+            if not isinstance(ids,list) or any(not isinstance(i,str) for i in ids):raise ValidationError('Neispravan izbor kadrova.')
+            from .models import LocalScript
+            script=get_object_or_404(LocalScript,pk=update.get('scriptId') or asset.metadata.get('scriptId'),project=asset.project,owner=request.user)
+            valid=[s.get('id') for s in script.segments]
+            if any(i not in valid for i in ids):raise ValidationError('Kadar nije dio odabrane skripte.')
+            update['segmentIds']=[i for i in valid if i in ids]
+            update['segmentId']=update['segmentIds'][0] if update['segmentIds'] else ''
+            update['manualFrames']=True
         asset.metadata=asset_metadata(asset.project,{**asset.metadata,**update});asset.save(update_fields=['metadata'])
         return Response(asset_payload(asset))
     with transaction.atomic():

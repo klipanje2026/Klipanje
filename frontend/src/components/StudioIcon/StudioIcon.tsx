@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
 
-export function StudioIcon({ name, style }: { name: 'heart' | 'eye' | 'save' | 'cut' | 'music' | 'reset' | 'alignLeft' | 'alignCenter' | 'alignRight' | 'devices' | 'underline' | 'behindPerson' | 'letterCase' | 'splitWords' | 'joinWords' | 'filters' | 'transitions' | 'sticker' | 'text' | 'elements' | 'mute' | 'sound' | 'language' | 'search' | 'plus' | 'newVideo' | 'newCaptions' | 'copy' | 'trash' | 'download' | 'frame' | 'skipStart' | 'voice' | 'timelineShow' | 'timelineHide' | 'hand' | 'pointer' | 'undo' | 'redo' | 'ratio' | 'arrow' | 'back' | 'play' | 'pause' | 'captions' | 'video' | 'spark' | 'check' | 'menu' | 'close' | 'chevron' | 'settings'; style?: CSSProperties }) {
+export function StudioIcon({ name, style }: { name: 'link' | 'heart' | 'eye' | 'save' | 'cut' | 'music' | 'reset' | 'alignLeft' | 'alignCenter' | 'alignRight' | 'devices' | 'underline' | 'behindPerson' | 'letterCase' | 'splitWords' | 'joinWords' | 'filters' | 'transitions' | 'sticker' | 'text' | 'elements' | 'mute' | 'sound' | 'language' | 'search' | 'plus' | 'newVideo' | 'newCaptions' | 'copy' | 'trash' | 'download' | 'frame' | 'skipStart' | 'voice' | 'timelineShow' | 'timelineHide' | 'hand' | 'pointer' | 'undo' | 'redo' | 'ratio' | 'arrow' | 'back' | 'play' | 'pause' | 'captions' | 'video' | 'spark' | 'check' | 'menu' | 'close' | 'chevron' | 'settings'; style?: CSSProperties }) {
   const paths = {
+    link:<><path d="m9 15 6-6M7 14l-1 1a4 4 0 0 0 6 6l3-3a4 4 0 0 0 0-6M17 10l1-1a4 4 0 0 0-6-6L9 6a4 4 0 0 0 0 6"/></>,
     eye:<><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></>,
     heart:<path d="M12 21 3.5 12.5C-3 5 7-1 12 6c5-7 15-1 8.5 6.5Z"/>,
     music:<><path d="M9 18V5l11-2v13 M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="17" cy="16" rx="3" ry="2"/></>,

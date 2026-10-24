@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {loadTestModule} from './test-ts-module.mjs';
-const {galleryScene}=await loadTestModule('lib/gallery-order.ts','work/gallery-tests');
+const {galleryScene,galleryFrameGroups}=await loadTestModule('lib/gallery-order.ts','work/gallery-tests');
 const script={segments:[{id:'a',text:'Kerim provodi petak u svojoj sobi za racunarom.'},{id:'b',text:'Maja ustaje rano i otvara prozor sobe.'}],photo_settings:{}};
 const asset=metadata=>({metadata});
 assert.equal(galleryScene(asset({segmentId:'b'}),script),1);
@@ -19,3 +19,10 @@ const promptAsset=asset({prompt:'A sufficiently detailed bedroom scene prompt'})
 assert.equal(galleryScene(promptAsset,script),-1);
 assert.equal(galleryScene(promptAsset,{...script,photo_settings:{prompts:{b:[{text:promptAsset.metadata.prompt}]}}}),1);
 console.log('Gallery memo invalidates for changed scene order, metadata and prompt settings.');
+
+assert.equal(galleryScene(asset({manualFrames:true,segmentIds:[],fullPrompt:'Narration context: Maja ustaje rano i otvara prozor sobe.'}),script),-1);
+const frames=[{id:'a'},{id:'b'},{id:'c'},{id:'d'}];
+assert.deepEqual(galleryFrameGroups(['b','a'],frames),[['a','b']]);
+assert.deepEqual(galleryFrameGroups(['d','a','b'],frames),[['a','b'],['d']]);
+assert.deepEqual(galleryFrameGroups([],frames),[]);
+console.log('Manual unassignment and consecutive/non-consecutive image groups passed.');
