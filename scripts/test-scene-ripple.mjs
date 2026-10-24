@@ -76,3 +76,26 @@ assert.equal(narrationReadyTime(2,2.1,[voiceClip],()=>ready),2.1);
 assert.equal(narrationReadyTime(2,2.1,[{...voiceClip,audioRole:'sound'}],()=>undefined),2.1);
 console.log('Shared caption boundaries redistribute 3/3/3 to 5/2/2 without moving media; narration preview waits at onset until playback is ready.');
 assert.equal(narrationReadyTime(5.99,6.01,[voiceClip],()=>({...ready,paused:true,ended:true})),6.01,'Completed audio must not trap the playhead on its final frame');
+
+const {detachStoryLinks,connectStoryLinks,patchStoryClip}=await loadTestModule('lib/story-links.ts','work/ripple-tests');
+const {moveStoryGroup}=await loadTestModule('lib/preeditor.ts','work/ripple-tests');
+const {captionsFollowClips}=await loadTestModule('lib/local-timeline.ts','work/ripple-tests');
+const authored=[clip('picture',10,10,{groupId:'old',segmentIds:['caption']}),clip('voice',12,5,{type:'audio',groupId:'old',segmentIds:undefined,narrationSegmentIds:['caption']}),clip('unrelated',30,5)];
+const caption=[{id:'caption',text:'Speech',start:12,end:17}];
+const source=JSON.stringify(authored);
+const detached=detachStoryLinks(authored,'voice');
+for(const item of detached.slice(0,2)){assert.equal(item.groupId,undefined);assert.equal(item.segmentIds,undefined);assert.equal(item.narrationSegmentIds,undefined);assert.equal(item.linksDetached,true);}
+assert.equal(detached.filter(c=>c.id!=='voice').some(c=>c.id==='picture'),true,'deleting detached voice keeps image');
+const joined=connectStoryLinks(detached,['picture','voice'],['caption'],'manual');
+assert.deepEqual(joined.map(c=>[c.start,c.inPoint,c.outPoint]),authored.map(c=>[c.start,c.inPoint,c.outPoint]),'link retains offsets and full image duration');
+const restored=JSON.parse(JSON.stringify(joined));
+const trimmed=patchStoryClip(restored,'picture',{outPoint:12});
+assert.deepEqual(trimmed[1],restored[1],'image trim cannot overwrite audio source times');
+assert.deepEqual(captionsFollowClips(restored,trimmed,caption),caption);
+assert.deepEqual(clipsFollowCaptions(trimmed,caption,caption),trimmed);
+const shifted=moveStoryGroup(restored,caption,'picture',20);
+assert.deepEqual(shifted.clips.slice(0,2).map(c=>c.start),[20,22]);assert.equal(shifted.segments[0].start,22,'20 percent caption offset survives group move');
+const detachedAgain=detachStoryLinks(restored,'picture');assert.equal(detachedAgain[1].groupId,undefined);
+assert.equal(JSON.stringify(authored),source,'undo source remains untouched');
+assert.deepEqual(detachedAgain[2],authored[2],'unrelated story remains untouched');
+console.log('Story links: detach hidden groups, delete/replace voice, offset-preserving relink, independent image trim, saved roundtrip and group move passed.');
