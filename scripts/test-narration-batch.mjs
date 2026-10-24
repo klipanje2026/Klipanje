@@ -48,3 +48,6 @@ const click=()=>listeners.click({button:0,target:{closest:()=>({href:'http://loc
 leaveExports.EditorLeaveGuard({active:true,localProject:'p',onSave:async()=>{saveCalls++;return true;}});click();assert.equal(locations.length,0);assert.equal(saveCalls,0);assert.equal(destinations.at(-1),'http://local/fotografije?project=p');
 leaveExports.EditorLeaveGuard({active:true,localProject:'p',onSave:async()=>false});click();await Promise.resolve();assert.equal(locations.length,0);assert.ok(destinations.length>0);
 console.log('Photo navigation opens the leave dialog without saving or navigating prematurely.');
+const protectedRanges=ranges.narrationFrameRanges(['One','Two'],[{text:'One',start:0,end:.6},{text:'Two',start:1,end:1.5}],2);
+assert.equal(protectedRanges[0].start,0);assert.equal(protectedRanges[0].end,.94);assert.equal(protectedRanges[1].start,.94);assert.equal(protectedRanges[1].end,2);
+console.log('Narration split retains first sample, cuts before the next onset in a pause, and preserves contiguous full duration.');

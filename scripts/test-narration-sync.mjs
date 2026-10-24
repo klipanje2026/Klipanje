@@ -47,7 +47,7 @@ assert.deepEqual(mismatch.map(s=>s.id),original.map(s=>s.id));
 assert.equal(mismatch[1].end,3);assert.ok(mismatch[0].end<=mismatch[1].start);
 const {narrationFrameRanges}=await loadTestModule('lib/narration-frame-ranges.ts','work/narration-sync-tests');
 const cuts=narrationFrameRanges(['one two','three four'],[{text:'one',start:0,end:.5},{text:'two',start:.5,end:1},{text:'three',start:1.5,end:2},{text:'four',start:2,end:3}],3);
-assert.deepEqual(cuts,[{start:0,end:1.5},{start:1.5,end:3}]);
+assert.deepEqual(cuts,[{start:0,end:1.44},{start:1.44,end:3}]);
 const {editorIntervals}=await loadTestModule('lib/script-editor-sync.ts','work/narration-sync-tests');
 const script={segments:original};
 const saved={clips:[],captions:{__script:{segments:[{...original[0],text:'Edited in video',position:{x:20,y:30}}]}}};
