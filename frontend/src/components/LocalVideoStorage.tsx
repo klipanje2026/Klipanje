@@ -27,6 +27,7 @@ export function LocalVideoStorage({script,snapshot,restore,saveHandle,changeKey,
    if(scriptSourceKey(fresh)===sourceState.current&&JSON.stringify(scriptChoices(fresh))===JSON.stringify(choiceState.current))return false;
    if(revision.current!==fresh.storyboardRevision){setBlocked(true);ready.current=false;setMessage('Drugi prozor je spremio noviju montažu. Ponovo učitaj montažu.');return false;}
    const snap=await latest.current.snapshot();
+   if(snap.data.preeditor){sourceState.current=scriptSourceKey(fresh);choiceState.current=scriptChoices(fresh);sourceText.current=scriptTextKey(fresh.segments);latest.current.script=fresh;latest.current.putScript(fresh);return true;}
    if(scriptSourceKey({segments:editorIntervals(snap.data,latest.current.script)})!==sourceState.current){setMessage('Skripta je promijenjena u drugom prozoru. Spremi trenutne izmjene prije osvježavanja.');return false;}
    const refs=snap.files.flatMap(f=>{const id=remoteFiles.get(f.file);return id?[{key:f.key,id}]:[];});
    const files=new Map(snap.files.map(f=>[f.key,f.file]));
@@ -52,7 +53,7 @@ export function LocalVideoStorage({script,snapshot,restore,saveHandle,changeKey,
     const keyAtStart=latest.current.changeKey;
     if(!keyAtStart)throw new Error('Učitavanje medija je u toku. Sačekaj završetak pa spremi video.');
     const s=await latest.current.snapshot();const freshSource=await apiJson<Script>(`/api/scripts/${latest.current.script.id}`);if(scriptSourceKey(freshSource)!==sourceState.current||JSON.stringify(scriptChoices(freshSource))!==JSON.stringify(choiceState.current)){throw new Error('Skripta je promijenjena u drugom prozoru. Editor će preuzeti nove kadrove pri osvježavanju; trenutna montaža nije prepisana.');}const files=[];for(const item of s.files){let id=remoteFiles.get(item.file);if(!id){const clips=Array.isArray(s.data.clips)?s.data.clips as {assetId:string;audioRole?:'narration'|'sound'|'music'}[]:[];const audioRole=clips.find(c=>c.assetId===item.key)?.audioRole;const asset=await uploadAsset(latest.current.script.project,item.file,{scriptId:latest.current.script.id,audioRole,purpose:item.file.type.startsWith('audio/')?(audioRole==='narration'?'narration':'audio'):'image'});id=asset.id;remoteFiles.set(item.file,id);}files.push({key:item.key,id});}const source=freshSource;
-    const intervals=editorIntervals(s.data,source);
+    const intervals=s.data.preeditor?source.segments:editorIntervals(s.data,source);
     const changedText=scriptTextKey(intervals)!==scriptTextKey(source.segments);
     const editKey=scriptTextKey(intervals);
     if(changedText&&acceptedText.current!==editKey){
@@ -87,6 +88,7 @@ export function LocalVideoStorage({script,snapshot,restore,saveHandle,changeKey,
 }
 
 async function syncNarrations(data:Record<string,unknown>,prior:Record<string,unknown>,script:Script,assets:Asset[],files:Map<string,File>,refs:{key:string;id:string}[]){
+ if(data.preeditor)return;
  const choices=scriptChoices(script),previous=(prior.scriptSync as {choices?:Record<string,string>}|undefined)?.choices;
  type Clip={id:string;assetId:string;type:string;audioRole?:string;narrationSegmentIds?:string[];start:number;inPoint:number;outPoint:number;layer:number};
  let clips=[...((data.clips||[]) as Clip[])];

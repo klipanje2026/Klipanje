@@ -115,3 +115,51 @@ class MontageSaveTests(TestCase):
         asset.refresh_from_db()
         self.assertTrue(asset.metadata['archived'])
         self.assertFalse(asset.metadata['gallery'])
+
+    def test_preeditor_replacement_keeps_source_and_backs_up_atomically(self):
+        self.script.content='Keep source *direction*'
+        self.script.segments=[{'id':'a','text':'Keep source','start':0,'end':3}]
+        self.script.save()
+        first=self.save(self.doc).json()
+        next_doc=deepcopy(self.doc)
+        next_doc['data']['preeditor']={'version':1}
+        next_doc['data']['timelineFloor']=7
+        payload={'storyboard':next_doc,'backupStoryboard':True,'expectedStoryboardRevision':first['storyboardRevision'],'expectedScriptUpdatedAt':first['updated_at']}
+        result=self.client.patch(self.url,payload,content_type='application/json')
+        self.assertEqual(result.status_code,200)
+        self.script.refresh_from_db()
+        self.assertEqual(self.script.content,'Keep source *direction*')
+        self.assertEqual(self.script.segments[0]['end'],3)
+        self.assertEqual(self.script.video_versions.count(),1)
+        self.assertEqual(self.script.video_versions.first().snapshot['storyboard']['data']['timelineFloor'],12)
+        self.assertEqual(self.client.patch(self.url,payload,content_type='application/json').status_code,409)
+        self.assertEqual(self.script.video_versions.count(),1)
+
+    def test_preeditor_draft_roundtrip_does_not_replace_timeline(self):
+        first=self.save(self.doc).json()
+        plan={'version':1,'blocks':[{'id':'custom','sourceIds':['a'],'imageIds':['photo'],'audioIds':['voice'],'captionIds':['a'],'filler':False,'duration':3}],'spacing':0.5,'entryEnabled':True}
+        response=self.client.patch(self.url,{'preeditorPlan':plan,'expectedScriptUpdatedAt':first['updated_at']},content_type='application/json')
+        self.assertEqual(response.status_code,200)
+        reloaded=self.client.get(self.url).json()
+        self.assertEqual(reloaded['photo_settings']['preeditor'],plan)
+        self.assertEqual(reloaded['storyboard'],first['storyboard'])
+        self.assertEqual(self.script.video_versions.count(),0)
+
+    def test_stale_photo_page_cannot_overwrite_preeditor_and_history_survives(self):
+        first=self.client.get(self.url).json()
+        old={'version':1,'blocks':[{'id':'old'}]}
+        new={'version':1,'blocks':[{'id':'hand-edited','duration':8.2}]}
+        saved=self.client.patch(self.url,{'preeditorPlan':old,'expectedScriptUpdatedAt':first['updated_at']},content_type='application/json').json()
+        response=self.client.patch(self.url,{'preeditorPlan':new,'expectedScriptUpdatedAt':saved['updated_at']},content_type='application/json')
+        self.assertEqual(response.status_code,200)
+        for stale in [{'format':'9:16','preeditor':old},{'format':'1:1'}]:
+            response=self.client.patch(self.url,{'photo_settings':stale},content_type='application/json')
+            self.assertEqual(response.status_code,200)
+            self.assertEqual(response.json()['photo_settings']['preeditor'],new)
+        history=self.client.get(self.url+'/preeditor-versions').json()
+        self.assertEqual([v['plan'] for v in history],[new,old])
+        self.assertEqual(self.client.patch(self.url,{'preeditorPlan':old,'expectedScriptUpdatedAt':saved['updated_at']},content_type='application/json').status_code,409)
+        self.assertEqual(self.client.patch(self.url,{'preeditorPlan':old},content_type='application/json').status_code,409)
+        stranger=get_user_model().objects.create_user(username='preeditor-stranger')
+        self.client.force_login(stranger)
+        self.assertEqual(self.client.get(self.url+'/preeditor-versions').status_code,404)

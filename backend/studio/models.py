@@ -37,6 +37,16 @@ class VideoVersion(models.Model):
         ordering = ['-created_at']
 
 
+class PreeditorVersion(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    script = models.ForeignKey(LocalScript, on_delete=models.CASCADE, related_name='preeditor_versions')
+    plan = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
 class UserFeedback(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

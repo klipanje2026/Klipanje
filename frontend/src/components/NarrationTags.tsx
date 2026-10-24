@@ -26,9 +26,9 @@ const TAG_GROUPS = [
 ] as const;
 export const NARRATION_TAGS = TAG_GROUPS.flatMap(group=>[...group.tags]);
 
-export function NarrationTags({onInsert,value}:{value?:string;onInsert:(tag:string)=>void}){
+export function NarrationTags({onInsert,value,separateReactions=false}:{value?:string;onInsert:(tag:string)=>void;separateReactions?:boolean}){
  const [group,setGroup]=useState(0);
- return <div className="local-narration-tags compact-narration-tags"><div className="narration-tag-pickers"><StyleDropdown hideLabel label="Vrsta upute" value={String(group)} onChange={e=>{setGroup(Number(e.target.value));if(value!==undefined)onInsert('');}}>{TAG_GROUPS.map((item,i)=><option key={item.name} value={i}>{item.name}</option>)}</StyleDropdown><StyleDropdown hideLabel label="Ton naracije" value={value??""} onChange={e=>{onInsert(e.target.value?`[${e.target.value}]`:"");}}><option value="">Normalno</option>{TAG_GROUPS[group].tags.map(([tag,label])=><option key={tag} value={tag}>{label}</option>)}</StyleDropdown></div></div>;
+ return <div className="local-narration-tags compact-narration-tags"><div className="narration-tag-pickers"><StyleDropdown hideLabel label="Vrsta upute" value={String(group)} onChange={e=>{setGroup(Number(e.target.value));if(value!==undefined)onInsert('');}}>{TAG_GROUPS.filter(item=>!separateReactions||item.name!=='Reakcije').map((item,i)=><option key={item.name} value={i}>{item.name}</option>)}</StyleDropdown><StyleDropdown hideLabel label="Ton naracije" value={value??""} onChange={e=>{onInsert(e.target.value?`[${e.target.value}]`:"");}}><option value="">Normalno</option>{TAG_GROUPS[group].tags.map(([tag,label])=><option key={tag} value={tag}>{label}</option>)}</StyleDropdown></div></div>;
 }
 
 export function insertNarrationTag(field:HTMLTextAreaElement|null,tag:string,onChange:(value:string)=>void){
@@ -39,4 +39,8 @@ export function insertNarrationTag(field:HTMLTextAreaElement|null,tag:string,onC
  if(field.maxLength>0&&field.value.length+insertion.length>field.maxLength)return;
  onChange(before+insertion+after);
  requestAnimationFrame(()=>{field.focus({preventScroll:true});field.setSelectionRange(at+insertion.length,at+insertion.length);});
+}
+
+export function NarrationReactions({onInsert}:{onInsert:(tag:string)=>void}){
+ return <div className="script-narration-reactions"><span>Reakcije · ubaci na kursor</span><div>{TAG_GROUPS[2].tags.map(([tag,label])=><button key={tag} type="button" title={'Ubaci ['+tag+'] na mjesto kursora'} onMouseDown={e=>e.preventDefault()} onClick={()=>onInsert('['+tag+']')}>{label}</button>)}</div></div>;
 }

@@ -15,7 +15,7 @@ export function MainLayout() {
     <header className="klipanje-header">
       <Link to="/" className="klipanje-brand"><LogoMark size={34}/>Klipanje</Link>
       <nav aria-label="Glavna navigacija">
-        <NavLink to={"/projekti"+search}>Projekti</NavLink><NavLink to={"/skripte"+search}>Skripte</NavLink><NavLink to={"/fotografije"+search}>Fotografije</NavLink><NavLink to={"/videa"+search}>Video</NavLink><NavLink to="/video-alati">Video alati</NavLink>
+        <NavLink to={"/projekti"+search}>Projekti</NavLink><NavLink to={"/skripte"+search}>Skripte</NavLink><NavLink to={"/fotografije"+search}>Fotografije</NavLink><NavLink to={"/preeditor"+search}>Preeditor</NavLink><NavLink to={"/videa"+search}>Video</NavLink><NavLink to="/video-alati">Video alati</NavLink>
       </nav>
       <div className="workspace-theme-slot"/><details className="production-themes"><summary>Teme <Icon name="chevron"/></summary><ThemePicker/></details>
       <AccountMenu/>

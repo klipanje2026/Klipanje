@@ -46,3 +46,12 @@
 :root .script-panel .script-narration-studio .narration-match-icon[data-active=true]{opacity:1!important;color:var(--ui-accent-button)!important}
 :root .script-panel .script-narration-studio .narration-version-action[aria-pressed=true]{background:var(--ui-accent-button)!important;color:var(--k-button-ink,var(--ui-text))!important}
 .script-panel .script-generate-play>.narration-mini-player{width:220px;flex:none}
+
+.script-narration-reactions{display:flex;flex-direction:column;gap:6px;margin:10px 0;font-size:11px}
+.script-narration-reactions>span{opacity:.75}
+.script-narration-reactions>div{display:flex;flex-wrap:wrap;gap:5px}
+:root .script-panel .script-narration-studio .script-narration-reactions button{font-size:11px;min-height:28px;padding:5px 9px;margin:0;transition:background .2s,border-color .2s}
+.script-narration-reactions button:hover{border-color:var(--ui-accent-button)}
+
+:root .script-panel .script-narration-studio .narration-mini-player>button{box-sizing:border-box;flex:0 0 28px;min-width:28px!important;max-width:28px!important;display:grid;place-items:center;padding:0!important}
+:root .script-panel .script-narration-studio .narration-mini-player>button svg{width:13px!important;height:13px!important}

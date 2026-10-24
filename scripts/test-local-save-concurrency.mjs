@@ -19,3 +19,8 @@ assert.equal(await staleSave(),false);
 assert.equal(stale.failedKey.current,latest.current.changeKey);
 assert.ok(stale.saveError.current.length>0);
 console.log('Source changed elsewhere: old montage cannot overwrite the new script and failed autosave is remembered.');
+
+const planned={...state,activeSave:{current:null},savedKey:{current:''},failedKey:{current:''},ready:{current:true},latest:{current:{...latest.current,changeKey:'planned',snapshot:async()=>({data:{preeditor:{version:1},clips:[]},files:[]})}},editorIntervals:()=>{throw Error('Preeditor must not rewrite the source script');}};
+const savePlanned=new Function(...Object.keys(planned),code+';return save;')(...Object.values(planned));
+assert.equal(await savePlanned(),true);
+console.log('Preeditor montage saves without deriving or deleting source script intervals.');

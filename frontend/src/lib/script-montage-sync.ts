@@ -6,6 +6,8 @@ export const scriptSourceKey=(script:Pick<Script,'segments'>)=>JSON.stringify(sc
 export const scriptTextKey=(segments:{id:string;text:string}[])=>JSON.stringify(segments.map(s=>[s.id,narrationText(s.text)]));
 export const scriptChoices=(script:Script)=>Object.fromEntries(script.segments.map(s=>[s.id,script.photo_settings.narrationPlan?.scenes[s.id]?.assetId||'']));
 export function syncScriptDocument(data:Record<string,unknown>,script:Script){
+ // A preeditor montage is an authored selection, not a mirror of every source interval.
+ if(data.preeditor)return data;
  const docs=(data.captions||{}) as Record<string,VideoCaptions>,doc=docs.__script;
  const prior=(data.scriptSync as {sourceKey?:string}|undefined)?.sourceKey;
  const legacy=doc?scriptSourceKey({segments:doc.segments.filter(s=>s.role!=='title')}):'';

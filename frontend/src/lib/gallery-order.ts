@@ -54,3 +54,9 @@ export function galleryFrameGroups(ids:string[],segments:Script['segments']){
  segments.forEach((s,i)=>{if(!ids.includes(s.id))return;if(i!==last+1)groups.push([]);groups[groups.length-1].push(s.id);last=i;});
  return groups;
 }
+
+/** Gallery membership is per asset, never per frame. Keep all versions visible. */
+export function photoCollections(assets:Asset[],scriptId:string){
+ const own=assets.filter(a=>!a.metadata.archived&&a.metadata.scriptId===scriptId&&a.contentType.startsWith('image/'));
+ return {own,pending:own.filter(a=>a.metadata.gallery===false),pictures:own.filter(a=>a.metadata.gallery!==false)};
+}

@@ -19,6 +19,7 @@ import './components/ProductionRefinements.scss';
 import { ChangePassword } from './pages/ChangePassword';
 import { Administration } from './pages/Administration';
 
+const Preeditor = lazy(() => import('./pages/Preeditor').then(module => ({default:module.Preeditor})));
 const VideoTools = lazy(() => import('./pages/VideoTools').then(module => ({default:module.VideoTools})));
 const ProductionVideo = lazy(() => import('./pages/ProductionVideo').then(module => ({ default: module.ProductionVideo })));
 
@@ -37,7 +38,7 @@ export default function App() {
             <Route path="/projekti" element={<Projects/>}/>
             <Route path="/administracija" element={<Administration/>}/>
             <Route path="/skripte" element={<LocalScripts/>}/>
-            <Route path="/fotografije" element={<Photos/>}/>
+            <Route path="/fotografije" element={<Photos/>}/><Route path="/preeditor" element={<Preeditor/>}/>
           </Route>
           <Route element={<EditorLayout />}>
           <Route path="/videa" element={<ProductionVideo/>}/>

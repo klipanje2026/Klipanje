@@ -750,3 +750,10 @@
 .completed-frames-action {display:grid;gap:8px;margin-bottom:16px;}
 .completed-frames-action>button {width:100%;}
 .completed-frames-action>small {display:block;font-size:11px;line-height:1.5;}
+.production-workspace .photo-group-prompts {display:block;}
+.production-workspace .photo-group-prompts>.photo-prompt {margin-top:12px;}
+.production-workspace .photo-prompt-actions {display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+.production-workspace .photo-prompt-actions button {font-size:11px;padding:6px 9px;}
+.photo-selected-prompts>summary .photo-section-toggle {margin-left:auto;font-size:18px;line-height:1;}
+.photo-selected-prompts>summary .photo-section-toggle::before {content:'+';}
+.photo-selected-prompts[open]>summary .photo-section-toggle::before {content:'−';}

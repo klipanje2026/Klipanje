@@ -27,3 +27,9 @@ key('range',{metaKey:false,ctrlKey:true});assert.equal(undo,2);
 assert.ok(!key('unrelated').defaultPrevented,'Project name keeps native text undo');
 modal=true;assert.ok(!key('range').defaultPrevented,'Modal inputs do not change editor history');
 console.log('Scoped header undo, drag transactions, redo, Mac/Windows shortcuts and input focus passed.');
+// The preeditor uses this same history for complete plans: save does not reset undo.
+const story={blocks:[{id:'a',imageIds:['image'],audioIds:['voice'],captionIds:['caption'],duration:3}],spacing:.5};
+h.reset(story);h.set(p=>({...p,blocks:[...p.blocks,{id:'b',imageIds:[],audioIds:[],captionIds:[],duration:4}]}));h=render();
+const changedStory=h.value;h.undo();h=render();assert.deepEqual(h.value,story);h.redo();h=render();assert.deepEqual(h.value,changedStory);
+h.undo();h.set(p=>({...p,spacing:1}));h=render();assert.equal(h.canRedo,false);assert.deepEqual(h.value.blocks,story.blocks);
+console.log('Preeditor plan undo/redo restores complete media links and invalidates redo after a new edit.');

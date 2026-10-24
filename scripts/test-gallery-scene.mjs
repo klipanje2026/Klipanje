@@ -26,3 +26,15 @@ assert.deepEqual(galleryFrameGroups(['b','a'],frames),[['a','b']]);
 assert.deepEqual(galleryFrameGroups(['d','a','b'],frames),[['a','b'],['d']]);
 assert.deepEqual(galleryFrameGroups([],frames),[]);
 console.log('Manual unassignment and consecutive/non-consecutive image groups passed.');
+
+const {photoCollections}=await loadTestModule('lib/gallery-order.ts','work/gallery-tests');
+const photo=(id,gallery)=>({id,contentType:'image/png',metadata:{scriptId:'story',segmentId:'same-frame',gallery}});
+let photos=[photo('one',false),photo('two',false),photo('three',true)];
+assert.equal(photoCollections(photos,'story').pending.length,2);
+photos=photos.map(a=>({...a,metadata:{...a.metadata,gallery:true}}));
+assert.deepEqual(photoCollections(photos,'story').pictures.map(a=>a.id),['one','two','three']);
+assert.equal(photoCollections(photos,'story').pending.length,0);
+photos=photos.map(a=>a.id==='two'?{...a,metadata:{...a.metadata,gallery:false}}:a);
+assert.deepEqual(photoCollections(photos,'story').pending.map(a=>a.id),['two']);
+assert.deepEqual(photoCollections(photos,'story').pictures.map(a=>a.id),['one','three']);
+console.log('Gallery live membership: all same-frame versions retained, moves are exclusive in both directions.');

@@ -10,6 +10,7 @@ assert.deepEqual(buildPhotoPlan(['one','two'],{one:3,two:1},prompts),[
 ]);
 assert.deepEqual(buildPhotoPlan(['overall'],{overall:1},[{id:'p',segment:'overall',text:'Overview'}]),[{segment:'',prompt:'Overview'}]);
 assert.equal(buildPhotoPlan(['one','two'],{one:0,two:1},prompts).length,1);
+assert.deepEqual(buildPhotoPlan(['two'],{old:1,two:1},prompts,[['old','two']],{'old|two':'Stale group'}),[{segment:'two',prompt:'City'}]);
 assert.throws(()=>buildPhotoPlan(['one'],{},prompts),/barem/);
 assert.throws(()=>buildPhotoPlan(['one'],{one:1},prompts),/najmanje/);
 assert.throws(()=>buildPhotoPlan(['two'],{two:2.5},prompts),/1 do 10/);
@@ -40,6 +41,12 @@ const {localMediaLanes}=await loadTestModule('lib/local-media-lanes.ts','work/cr
 const base={assetId:'a',start:0,inPoint:0,outPoint:4,layer:1};
 const media=[{...base,id:'image',type:'video',groupId:'g'},{...base,id:'voice',type:'audio',audioRole:'narration'},{...base,id:'sound',type:'audio',audioRole:'sound'},{...base,id:'original',type:'audio',groupId:'g'}];
 assert.deepEqual(localMediaLanes(media).map(l=>[l.key,l.clips.map(c=>c.id)]),[['images',['image']],['narration',['voice']],['sounds',['sound','original']],['music',[]]]);
+const storyMedia=media.map(c=>c.id==='voice'?{...c,groupId:'g',narrationSegmentIds:['scene-1']}:c);
+const storySnapshot=JSON.stringify(storyMedia);
+assert.deepEqual(localMediaLanes(storyMedia).map(l=>[l.key,l.clips.map(c=>c.id)]),[['images',['image']],['narration',['voice']],['sounds',['sound','original']],['music',[]]]);
+assert.equal(JSON.stringify(storyMedia),storySnapshot,'Lane classification must preserve timing and story links');
+const restoredStory=JSON.parse(storySnapshot);
+assert.deepEqual(localMediaLanes(restoredStory).find(l=>l.key==='narration').clips.map(c=>c.id),['voice']);
 const {rulerTicks}=await loadTestModule('lib/video-layout.ts','work/creative-tests');
 const late=rulerTicks(21600,2592000,{start:18000,end:18007});
 assert.ok(late.length<20&&late.every(t=>t.time>=18000&&t.time<=18007));

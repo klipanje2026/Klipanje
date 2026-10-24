@@ -30,3 +30,21 @@ assert.equal(rippleTimingEdit(clips,resized,segments,segments,false,true).clips.
 console.log('Resize and caption edits ripple following media once; no-overlap works independently.');
 
 assert.equal(rippleTimingEdit(overlapping,overlapping,segments,segments,true,true).clips,overlapping,'non-timing edits never repair saved layout implicitly');
+const {closeFollowingGap}=await loadTestModule('lib/close-following-gap.ts','work/ripple-tests');
+const gapClips=[clip('first',0,2,{groupId:'first'}),clip('third',8,3,{groupId:'third'}),clip('voice3',8,3,{type:'audio',audioRole:'narration',groupId:'third',segmentIds:undefined,narrationSegmentIds:['third']}),clip('fourth',14,2),clip('sound',15,1,{type:'audio',audioRole:'sound',segmentIds:undefined}),clip('bg',0,30,{type:'audio',audioRole:'music',segmentIds:undefined})];
+const gapCaptions=[{id:'first',text:'First',start:0,end:2},{id:'third',text:'Third',start:8,end:11,words:[{text:'Third',start:8,end:9}]},{id:'fourth',text:'Fourth',start:14,end:16}];
+const decorations=[{start:15,end:17},{start:0,end:30}];
+const untouched=JSON.stringify({gapClips,gapCaptions,decorations});
+const closed=closeFollowingGap(gapClips,gapCaptions,decorations,{clipId:'first'});
+assert.equal(closed.gap,6);assert.deepEqual(closed.clips.map(c=>c.start),[0,2,2,8,9,0]);
+assert.deepEqual(closed.segments.map(s=>s.start),[0,2,8]);assert.equal(closed.segments[1].words[0].start,2);
+assert.deepEqual(closed.overlays,[{start:9,end:11},{start:0,end:30}]);
+assert.equal(JSON.stringify({gapClips,gapCaptions,decorations}),untouched);
+assert.equal(closeFollowingGap(closed.clips,closed.segments,closed.overlays,{clipId:'first'}).gap,0);
+assert.equal(closeFollowingGap(gapClips,gapCaptions,decorations,{captionId:'first'}).gap,6);
+assert.equal(closeFollowingGap(gapClips,gapCaptions,decorations,{clipId:'fourth'}).gap,0);
+assert.equal(closeFollowingGap(gapClips,gapCaptions,decorations,{}).gap,0);
+const earlyVoice=gapClips.map(c=>c.id==='voice3'?{...c,start:7}:c);
+const early=closeFollowingGap(earlyVoice,gapCaptions,decorations,{clipId:'first'});
+assert.equal(early.gap,5);assert.equal(early.clips[1].start-early.clips[2].start,1);
+console.log('Close following gap: linked tail, captions/words, sounds/overlays, preserved gaps/durations, untouched background, repeat/no-op and source immutability passed.');

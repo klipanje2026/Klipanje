@@ -1,10 +1,10 @@
 import {useEffect,useRef,useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 
-export function useLocalSave<T>(data:T,persist:(value:T)=>Promise<void>,{auto=true,guardNavigation=true}:{auto?:boolean;guardNavigation?:boolean}={}){
+export function useLocalSave<T>(data:T,persist:(value:T)=>Promise<void>,{auto=true,guardNavigation=true,initiallySaved=true}:{auto?:boolean;guardNavigation?:boolean;initiallySaved?:boolean}={}){
  const navigate=useNavigate(),key=JSON.stringify(data);
  const latest=useRef({data,key,persist});latest.current={data,key,persist};
- const saved=useRef(key),pending=useRef<Promise<boolean>|null>(null);
+ const saved=useRef<string|null>(initiallySaved?key:null),pending=useRef<Promise<boolean>|null>(null);
  const [status,setStatus]=useState(''),[busy,setBusy]=useState(false);
  const dirty=key!==saved.current;
  async function save(){

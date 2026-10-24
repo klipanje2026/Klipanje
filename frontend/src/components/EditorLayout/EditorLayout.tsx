@@ -28,6 +28,7 @@ export function EditorLayout() {
           <a href="/projekti">Projekti</a>
           <a href={"/skripte"+location.search}>Skripte</a>
           <a href={"/fotografije"+location.search}>Fotografije</a>
+          <a href={"/preeditor"+location.search}>Preeditor</a>
           <a href={"/videa"+location.search} aria-current={videoEditor ? 'page' : undefined}>Video editor</a>
           <a href="/video-alati">Video alati</a>
         </nav>

@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from copy import deepcopy
-from .models import LocalScript, ProjectChapter, VideoVersion
+from .models import LocalScript, ProjectChapter, VideoVersion, PreeditorVersion
 
 
 def storyboard_revision(value):
@@ -23,6 +23,8 @@ class MontageConflict(APIException):
 
 class ScriptSerializer(serializers.ModelSerializer):
     storyboardRevision = serializers.SerializerMethodField()
+    preeditorPlan = serializers.JSONField(write_only=True, required=False)
+    backupStoryboard = serializers.BooleanField(write_only=True, required=False, default=False)
     expectedStoryboardRevision = serializers.CharField(write_only=True, required=False)
     expectedScriptUpdatedAt = serializers.DateTimeField(write_only=True, required=False)
 
@@ -30,20 +32,45 @@ class ScriptSerializer(serializers.ModelSerializer):
         return storyboard_revision(instance.storyboard)
 
     def update(self, instance, validated_data):
+        plan = validated_data.pop('preeditorPlan', None)
+        backup = validated_data.pop('backupStoryboard', False)
         expected = validated_data.pop('expectedStoryboardRevision', None)
         expected_script = validated_data.pop('expectedScriptUpdatedAt', None)
         with transaction.atomic():
             current = LocalScript.objects.select_for_update().get(pk=instance.pk)
             if expected_script is not None and current.updated_at != expected_script:
                 raise MontageConflict('Skripta je u međuvremenu promijenjena. Osvježi sadržaj prije spremanja.')
+            if plan is not None and expected_script is None:
+                raise MontageConflict('Preeditor zahtijeva provjeru posljednje spremljene verzije.')
+            if 'photo_settings' in validated_data:
+                # Cached settings from other pages never own the preeditor.
+                incoming = {**validated_data['photo_settings']}
+                incoming.pop('preeditor', None)
+                if 'preeditor' in current.photo_settings:
+                    incoming['preeditor'] = deepcopy(current.photo_settings['preeditor'])
+                validated_data['photo_settings'] = incoming
+            if plan is not None:
+                previous = current.photo_settings.get('preeditor')
+                if previous != plan:
+                    latest = current.preeditor_versions.first()
+                    if previous and (not latest or latest.plan != previous):
+                        PreeditorVersion.objects.create(script=current, plan=previous)
+                    PreeditorVersion.objects.create(script=current, plan=plan)
+                validated_data['photo_settings'] = {**validated_data.get('photo_settings', current.photo_settings), 'preeditor':plan}
             if 'storyboard' in validated_data and current.storyboard.get('editor') == 'edita':
                 if expected != storyboard_revision(current.storyboard):
                     raise MontageConflict()
+            if backup and 'storyboard' in validated_data and current.storyboard.get('editor') == 'edita':
+                VideoVersion.objects.create(script=current, title='Prije preeditora · '+timezone.localtime().strftime('%d.%m.%Y %H:%M'), snapshot=video_snapshot(current))
             if validated_data.get('storyboard', {}).get('editor') == 'edita':
                 validated_data['storyboard'] = {**validated_data['storyboard'], 'savedAt': timezone.now().isoformat()}
             return super().update(current, validated_data)
 
     def create(self, validated_data):
+        plan = validated_data.pop('preeditorPlan', None)
+        if plan is not None:
+            validated_data['photo_settings'] = {**validated_data.get('photo_settings', {}), 'preeditor':plan}
+        validated_data.pop('backupStoryboard', None)
         validated_data.pop('expectedStoryboardRevision', None)
         validated_data.pop('expectedScriptUpdatedAt', None)
         return super().create(validated_data)
@@ -52,7 +79,7 @@ class ScriptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LocalScript
-        fields = ['id', 'project', 'chapter', 'title', 'content', 'segments', 'image_prompt', 'photo_settings', 'storyboard', 'created_at', 'updated_at', 'storyboardRevision', 'expectedStoryboardRevision', 'expectedScriptUpdatedAt']
+        fields = ['id', 'project', 'chapter', 'title', 'content', 'segments', 'image_prompt', 'photo_settings', 'storyboard', 'created_at', 'updated_at', 'storyboardRevision', 'expectedStoryboardRevision', 'expectedScriptUpdatedAt', 'backupStoryboard', 'preeditorPlan']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def validate_project(self, project):
@@ -98,6 +125,11 @@ class ScriptSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Zajednički prompt je predugačak.')
         return value
 
+    def validate_preeditorPlan(self, value):
+        if not isinstance(value, dict) or value.get('version') != 1 or not isinstance(value.get('blocks'), list) or len(json.dumps(value)) > 500000:
+            raise serializers.ValidationError('Neispravan raspored preeditora.')
+        return value
+
     def validate_photo_settings(self, value):
         if not isinstance(value,dict) or len(json.dumps(value))>500000:
             raise serializers.ValidationError('Postavke fotografija su prevelike ili neispravne.')
@@ -118,6 +150,11 @@ class ScriptViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    @action(detail=True, methods=['get'], url_path='preeditor-versions')
+    def preeditor_versions(self, request, pk=None):
+        script = self.get_object()
+        return Response([{'id':str(v.pk), 'created_at':v.created_at, 'plan':v.plan} for v in script.preeditor_versions.all()[:50]])
 
     @action(detail=True, methods=['get', 'post'])
     def versions(self, request, pk=None):

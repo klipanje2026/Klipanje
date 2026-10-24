@@ -3,7 +3,7 @@ export function buildPhotoPlan(frameIds:string[], counts:Record<string,number>, 
  const output:{segment:string;segments?:string[];prompt:string}[]=[];
  for(const id of frameIds){
   const count=counts[id]||0;if(!count)continue;
-  const group=groups.find(g=>g.includes(id)&&g.every(key=>counts[key]));
+  const group=groups.find(g=>g.length>1&&g.includes(id)&&g.every(key=>key!=='overall'&&frameIds.includes(key)&&counts[key]));
   if(group&&group[0]!==id)continue;
   if(!Number.isInteger(count)||count<1||count>10)throw new Error('Odaberi od 1 do 10 fotografija po kadru.');
   const choices=group?[{text:groupPrompts[group.join('|')]??group.flatMap(key=>prompts.filter(p=>p.segment===key).map(p=>p.text)).filter(Boolean).join('\n')}]:prompts.filter(p=>p.segment===id);
