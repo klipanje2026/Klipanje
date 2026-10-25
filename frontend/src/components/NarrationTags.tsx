@@ -20,6 +20,7 @@ const TAG_GROUPS = [
   ['whispering, fearful','Šapat sa strahom'],
  ]},
  {name:'Reakcije',tags:[
+  ['neutral','Neutralno'],
   ['laughs','Smijeh'],['crying','Plač'],['sighs','Uzdah'],
   ['gasps','Dahtaj'],['clears throat','Pročišćavanje grla'],
  ]},
