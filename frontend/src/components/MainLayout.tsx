@@ -1,3 +1,4 @@
+import {LocalToolLinks} from './LocalToolLinks';
 import {LogoMark} from './LogoMark';
 import {useDismissHeaderMenus} from '../lib/use-dismiss-header-menus';
 import '@fontsource-variable/manrope';
@@ -15,7 +16,7 @@ export function MainLayout() {
     <header className="klipanje-header">
       <Link to="/" className="klipanje-brand"><LogoMark size={34}/>Klipanje</Link>
       <nav aria-label="Glavna navigacija">
-        <NavLink to={"/projekti"+search}>Projekti</NavLink><NavLink to={"/skripte"+search}>Skripte</NavLink><NavLink to={"/fotografije"+search}>Fotografije</NavLink><NavLink to={"/preeditor"+search}>Preeditor</NavLink><NavLink to={"/videa"+search}>Video</NavLink><NavLink to="/video-alati">Video alati</NavLink>
+        <NavLink to={"/projekti"+search}>Projekti</NavLink><NavLink to={"/skripte"+search}>Skripte</NavLink><NavLink to={"/fotografije"+search}>Fotografije</NavLink><NavLink to={"/preeditor"+search}>Preeditor</NavLink><NavLink to={"/videa"+search}>Video</NavLink><NavLink to="/prilagodi-video">Prilagodi video</NavLink><LocalToolLinks/>
       </nav>
       <div className="workspace-theme-slot"/><details className="production-themes"><summary>Teme <Icon name="chevron"/></summary><ThemePicker/></details>
       <AccountMenu/>

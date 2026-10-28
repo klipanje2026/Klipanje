@@ -27,3 +27,21 @@ LOCAL_CHANGES.md
 
 # Private local media-recovery snapshots
 backend/local-recovery/
+
+# Generated local EffectCraft trial media
+/output/storm-crew/
+
+# Separate local VideoGen installation
+/apps/VideoGen/.venv/
+/apps/VideoGen/.runtime/
+/apps/VideoGen/*.sqlite3
+/apps/VideoGen/media/
+/apps/VideoGen/frontend/dist/
+
+# Private local tools: never publish with Klipanje
+/apps/
+/frontend/public/effectcraft/
+/frontend/src/local-tools/
+/7-VIDEOGEN.cmd
+
+/8-MUZICKI-STUDIO.cmd

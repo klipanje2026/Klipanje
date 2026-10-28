@@ -1,3 +1,4 @@
+import {localTools} from './lib/local-tools';
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './components/AuthProvider/AuthProvider';
@@ -20,6 +21,7 @@ import { ChangePassword } from './pages/ChangePassword';
 import { Administration } from './pages/Administration';
 
 const Preeditor = lazy(() => import('./pages/Preeditor').then(module => ({default:module.Preeditor})));
+
 const VideoTools = lazy(() => import('./pages/VideoTools').then(module => ({default:module.VideoTools})));
 const ProductionVideo = lazy(() => import('./pages/ProductionVideo').then(module => ({ default: module.ProductionVideo })));
 
@@ -34,7 +36,7 @@ export default function App() {
           <Route path="/promjena-lozinke" element={<ChangePassword/>}/>
           <Route element={<MainLayout/>}>
             <Route path="/" element={<LocalHome/>}/>
-            <Route path="/video-alati" element={<VideoTools/>}/>
+            <Route path="/video-alati" element={<Navigate to="/prilagodi-video" replace/>}/><Route path="/prilagodi-video" element={<VideoTools/>}/>{localTools.filter(tool => tool.Component).map(({path, Component}) => <Route key={path} path={path} element={Component ? <Component/> : null}/>)}
             <Route path="/projekti" element={<Projects/>}/>
             <Route path="/administracija" element={<Administration/>}/>
             <Route path="/skripte" element={<LocalScripts/>}/>

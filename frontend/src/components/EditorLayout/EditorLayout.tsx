@@ -1,3 +1,4 @@
+import {LocalToolLinks} from '../LocalToolLinks';
 import {LogoMark} from '../LogoMark';
 import {useDismissHeaderMenus} from '../../lib/use-dismiss-header-menus';
 import { useEffect, useState } from 'react';
@@ -30,7 +31,8 @@ export function EditorLayout() {
           <a href={"/fotografije"+location.search}>Fotografije</a>
           <a href={"/preeditor"+location.search}>Preeditor</a>
           <a href={"/videa"+location.search} aria-current={videoEditor ? 'page' : undefined}>Video editor</a>
-          <a href="/video-alati">Video alati</a>
+          <a href="/prilagodi-video">Prilagodi video</a>
+          <LocalToolLinks/>
         </nav>
         <div className="editor-navbar-project" id="workspace-header-project" />
         <div className="editor-navbar-tools" id="workspace-header-tools" />
