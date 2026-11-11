@@ -27,8 +27,8 @@ export function EditorLayout() {
         <a href="/" className="editor-navbar-logo" data-no-tooltip aria-label="Klipanje početna"><LogoMark size={28}/><span>Klipanje</span></a>
         <nav className="workspace-editor-nav" aria-label="Editori">
           <a href="/projekti">Projekti</a>
-          <a href={"/skripte"+location.search}>Skripte</a>
-          <a href={"/fotografije"+location.search}>Generacije</a>
+          <a href={"/skripte"+location.search}>Skripte i naracije</a>
+          <a href={"/fotografije"+location.search}>Generacije elemenata</a>
           <a href={"/preeditor"+location.search}>Preeditor</a>
           <a href={"/videa"+location.search} aria-current={videoEditor ? 'page' : undefined}>Video editor</a>
           <a href="/prilagodi-video">Prilagodi video</a>
