@@ -99,3 +99,11 @@ const detachedAgain=detachStoryLinks(restored,'picture');assert.equal(detachedAg
 assert.equal(JSON.stringify(authored),source,'undo source remains untouched');
 assert.deepEqual(detachedAgain[2],authored[2],'unrelated story remains untouched');
 console.log('Story links: detach hidden groups, delete/replace voice, offset-preserving relink, independent image trim, saved roundtrip and group move passed.');
+const pairedVoice=connectStoryLinks([{id:'voice-only',type:'audio',start:4,inPoint:0,outPoint:5,audioRole:'narration'}],['voice-only'],['paired-caption'],'pair');
+const pairedCaption=[{id:'paired-caption',text:'Offset speech',start:4.4,end:8.7}];
+const translatedPair=moveStoryGroup(pairedVoice,pairedCaption,'voice-only',14);
+assert.equal(translatedPair.clips[0].start,14);assert.equal(translatedPair.segments[0].start,14.4);assert.equal(translatedPair.segments[0].end,18.7);
+const trimmedPair=patchStoryClip(translatedPair.clips,'voice-only',{outPoint:4.5});
+assert.equal(trimmedPair[0].groupId,'pair');assert.equal(trimmedPair[0].preserveLinkedTiming,true);
+assert.equal(trimmedPair[0].narrationSegmentIds[0],'paired-caption');
+console.log('Narration + caption can link without an image, move together with offsets, and retain links when trimmed.');

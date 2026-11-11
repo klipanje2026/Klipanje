@@ -28,11 +28,11 @@ export function EditorLayout() {
         <nav className="workspace-editor-nav" aria-label="Editori">
           <a href="/projekti">Projekti</a>
           <a href={"/skripte"+location.search}>Skripte</a>
-          <a href={"/fotografije"+location.search}>Fotografije</a>
+          <a href={"/fotografije"+location.search}>Generacije</a>
           <a href={"/preeditor"+location.search}>Preeditor</a>
           <a href={"/videa"+location.search} aria-current={videoEditor ? 'page' : undefined}>Video editor</a>
           <a href="/prilagodi-video">Prilagodi video</a>
-          <LocalToolLinks/>
+          <a href={"/prilagodi-zvuk"+location.search}>Prilagodi zvuk</a><LocalToolLinks/>
         </nav>
         <div className="editor-navbar-project" id="workspace-header-project" />
         <div className="editor-navbar-tools" id="workspace-header-tools" />

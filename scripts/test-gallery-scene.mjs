@@ -38,3 +38,8 @@ photos=photos.map(a=>a.id==='two'?{...a,metadata:{...a.metadata,gallery:false}}:
 assert.deepEqual(photoCollections(photos,'story').pending.map(a=>a.id),['two']);
 assert.deepEqual(photoCollections(photos,'story').pictures.map(a=>a.id),['one','three']);
 console.log('Gallery live membership: all same-frame versions retained, moves are exclusive in both directions.');
+const video={...photo('movie',true),name:'scene.mp4',contentType:'video/mp4'};
+const mixed=photoCollections([...photos,video,{...photo('audio',true),contentType:'audio/mpeg'}],'story');
+assert.ok(mixed.pictures.some(a=>a.id==='movie'));assert.ok(!mixed.own.some(a=>a.id==='audio'));
+assert.ok(photoCollections([{...video,metadata:{...video.metadata,gallery:false}}],'story').pending.some(a=>a.id==='movie'));
+console.log('Video clips participate in assigned gallery and generated collections; audio remains excluded.');

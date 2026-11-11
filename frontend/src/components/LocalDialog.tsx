@@ -21,3 +21,14 @@ export function localQuestion({title,message,options}:{title:string;message:stri
  });
 }
 export async function localConfirm(message:string,title='Potvrdi izmjenu',label='Potvrdi',danger=false){return await localQuestion({title,message,options:[{value:'cancel',label:'Odustani'},{value:'confirm',label,primary:true,danger}]})==='confirm';}
+
+/** A named save is only submitted after a nonempty title is entered. */
+export function localPrompt(title:string,initial:string):Promise<string|null>{
+ return new Promise(resolve=>{
+  const previous=document.activeElement as HTMLElement|null,dialog=document.createElement('dialog');dialog.className='local-dialog klipanje-shell';
+  const form=document.createElement('form'),heading=document.createElement('h2'),label=document.createElement('label'),input=document.createElement('input'),footer=document.createElement('footer'),cancel=document.createElement('button'),submit=document.createElement('button');
+  heading.textContent=title;label.textContent='Naslov';input.value=initial;input.required=true;input.maxLength=160;input.setAttribute('aria-label','Naslov');label.append(input);footer.className='local-dialog-actions';cancel.type='button';cancel.textContent='Odustani';submit.type='submit';submit.textContent='Spremi';submit.className='klipanje-primary';let done=false;
+  const finish=(value:string|null)=>{if(done)return;done=true;dialog.close();dialog.remove();previous?.focus();resolve(value);};
+  cancel.onclick=()=>finish(null);dialog.oncancel=e=>{e.preventDefault();finish(null);};form.onsubmit=e=>{e.preventDefault();if(input.value.trim())finish(input.value.trim());else input.focus();};footer.append(cancel,submit);form.append(heading,label,footer);dialog.append(form);document.body.append(dialog);dialog.showModal();input.focus();input.select();
+ });
+}

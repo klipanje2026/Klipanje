@@ -5,12 +5,12 @@ export function heartExitState(clip:HeartExit,time:number){
  return {progress,x:Math.max(0,Math.min(100,clip.heartX??50))/100,y:Math.max(0,Math.min(100,clip.heartY??50))/100};
 }
 /** Opaque black outside a shrinking heart; identical in preview and export. */
-export function drawHeartExit(ctx:CanvasRenderingContext2D,clip:HeartExit,time:number){
+export function drawHeartExit(ctx:CanvasRenderingContext2D,clip:HeartExit,time:number,rect?:{x:number;y:number;width:number;height:number}){
  if(clip.imageExit!=='heart')return;
  const {progress,x,y}=heartExitState(clip,time);if(progress<=0)return;
- const w=ctx.canvas.width,h=ctx.canvas.height,cx=x*w,cy=y*h;
+ const w=rect?.width??ctx.canvas.width,h=rect?.height??ctx.canvas.height,cx=x*w,cy=y*h;
  const radius=5*Math.hypot(w,h)*(1-progress)**3;
- ctx.save();ctx.filter='none';ctx.fillStyle='#000';ctx.beginPath();ctx.rect(0,0,w,h);
+ ctx.save();ctx.translate(rect?.x??0,rect?.y??0);ctx.beginPath();ctx.rect(0,0,w,h);ctx.clip();ctx.filter='none';ctx.fillStyle='#000';ctx.beginPath();ctx.rect(0,0,w,h);
  if(radius>.001){
   const point=(a:number,b:number)=>[cx+a*radius,cy+b*radius] as const;
   ctx.moveTo(...point(0,-.25));

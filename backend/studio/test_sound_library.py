@@ -43,3 +43,22 @@ class SoundLibraryTests(TestCase):
         self.assertEqual(response.json()['fadeIn'],0)
         LibrarySound.objects.filter(pk=response.json()['id']).update(fade_in=.8)
         self.assertEqual(self.client.get('/api/sounds').json()[0]['fadeIn'],.8)
+
+    def test_rename_and_archive_preserve_audio_and_owner(self):
+        response=self.client.post('/api/sounds',{'file':SimpleUploadedFile('waves.wav',b'RIFFtest',content_type='audio/wav')})
+        item=response.json()
+        url='/api/sounds/'+item['id']
+        self.client.force_login(self.other)
+        self.assertEqual(self.client.patch(url,{'name':'Other'},content_type='application/json').status_code,404)
+        self.assertEqual(self.client.delete(url).status_code,404)
+        self.client.force_login(self.owner)
+        self.assertEqual(self.client.patch(url,{'name':'   '},content_type='application/json').status_code,400)
+        renamed=self.client.patch(url,{'name':'Valovi na obali'},content_type='application/json')
+        self.assertEqual(renamed.json()['name'],'Valovi na obali.wav')
+        self.assertEqual(renamed.json()['url'],item['url'])
+        self.assertEqual(self.client.delete(url).status_code,204)
+        self.assertEqual(self.client.get('/api/sounds').json(),[])
+        response=self.client.get(item['url'])
+        self.assertEqual(response.status_code,200)
+        response.close()
+        self.assertEqual(self.client.delete(url).status_code,204)

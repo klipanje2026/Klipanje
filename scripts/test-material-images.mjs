@@ -1,0 +1,7 @@
+import assert from 'node:assert/strict';import {createCanvas,loadImage} from '@napi-rs/canvas';import {loadTestModule} from './test-ts-module.mjs';
+const {resizeImage}=await loadTestModule('lib/material-processing.ts','.local/material-flow/image-tests');
+globalThis.createImageBitmap=async file=>{const image=await loadImage(Buffer.from(await file.arrayBuffer()));image.close=()=>{};return image;};
+globalThis.document={createElement:()=>{const canvas=createCanvas(1,1);canvas.toBlob=(callback,mime,q)=>callback(new Blob([canvas.toBuffer(mime,Math.round(q*100))],{type:mime}));return canvas;}};
+for(const [width,height] of [[2400,1350],[1350,2400],[100,100]]){const c=createCanvas(width,height),ctx=c.getContext('2d');ctx.fillStyle='#537f93';ctx.fillRect(0,0,width,height);ctx.fillStyle='#ffc177';ctx.fillRect(0,height/2,width/2,height/2);const file=new File([c.toBuffer('image/png')],'source.png',{type:'image/png'});const out=await resizeImage(file,1200,500);assert.ok(out.width<=1200&&out.height<=1200);assert.ok(Math.abs(out.width/out.height-width/height)<.002);assert.ok(out.blob.size<=500*1024);assert.equal(out.blob.type,'image/webp');assert.ok(out.width<=width&&out.height<=height);}
+await assert.rejects(resizeImage(new File([''],'x.png'),0,500),/veličina/);
+console.log('Real WebP encoding: landscape, portrait, target size, aspect preservation and no upscaling passed (Node canvas adapter).');

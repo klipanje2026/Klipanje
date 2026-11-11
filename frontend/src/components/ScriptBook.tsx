@@ -4,7 +4,7 @@ import {fitBookPages} from '../lib/book-pagination';
 const parts=(text:string)=>text.split(/(\n[ \t]*\n(?:[ \t]*\n)*|\*\*[^*]+\*\*|\*[^*\n]+\*)/g);
 const isGap=(part:string)=>/^\n[ \t]*\n/.test(part);
 function BookText({text}:{text:string}){return <>{parts(text).map((part,i)=>isGap(part)?<span key={i} className="script-book-paragraph-gap" aria-hidden="true"/>:part.startsWith('**')?<strong key={i}>{part.slice(2,-2)}</strong>:part.startsWith('*')?<em key={i}>{part.slice(1,-1)}</em>:part)}</>;}
-export function ScriptBook({title,content,onClose}:{title:string;content:string;onClose:()=>void}){
+export function ScriptBook({title,content,onClose,onNext,nextLabel}:{title:string;content:string;onClose:()=>void;onNext?:()=>void;nextLabel?:string}){
  const [index,setIndex]=useState(0),[pages,setPages]=useState([content]);
  const paper=useRef<HTMLElement>(null),body=useRef<HTMLDivElement>(null),footer=useRef<HTMLElement>(null);
  useLayoutEffect(()=>{
@@ -34,5 +34,5 @@ export function ScriptBook({title,content,onClose}:{title:string;content:string;
   return()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();document.fonts.removeEventListener('loadingdone',schedule);};
  },[content]);
  const at=Math.min(index,pages.length-1);
- return <LocalDialog title={title} onClose={onClose} className="script-book-dialog"><div className="script-book"><nav aria-label="Stranice skripte"><button disabled={!at} onClick={()=>setIndex(at-1)}>← Prethodna</button><span>Stranica {at+1} / {pages.length}</span><button disabled={at===pages.length-1} onClick={()=>setIndex(at+1)}>Sljedeća →</button></nav><article ref={paper} className="script-book-page"><header>{title}</header><div ref={body}><BookText text={pages[at]||'Napiši svoju priču u tabu Skripte.'}/></div><footer ref={footer}>{at+1}</footer></article><small>Pregled prati izvorni tekst. Tekst za govor i vremena uređuješ u prilagodbi naracije.</small></div></LocalDialog>;
+ return <LocalDialog title={title} onClose={onClose} className="script-book-dialog"><div className="script-book"><nav aria-label="Stranice skripte"><button disabled={!at} onClick={()=>setIndex(at-1)}>← Prethodna</button><span>Stranica {at+1} / {pages.length}</span><button disabled={at===pages.length-1} onClick={()=>setIndex(at+1)}>Sljedeća →</button></nav><article ref={paper} className="script-book-page"><header>{title}</header><div ref={body}><BookText text={pages[at]||'Napiši svoju priču u tabu Skripte.'}/></div><footer ref={footer}>{at+1}</footer></article>{onNext&&<button onClick={onNext}>{nextLabel||'Nastavi →'}</button>}<small>Pregled prati izvorni tekst. Tekst za govor i vremena uređuješ u prilagodbi naracije.</small></div></LocalDialog>;
 }

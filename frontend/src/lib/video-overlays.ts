@@ -1,4 +1,5 @@
-export type Overlay = {id:string; kind:'clock'|'sleep'|'text'|'rect'|'ellipse'|'arrow'|'heart'|'star'; text:string; color:string; background:string; x:number; y:number; width:number; height:number; rotation:number; opacity:number; start:number; end:number; bold:boolean; fontFamily?:string; fontSize?:number; italic?:boolean; underline?:boolean; align?:'left'|'center'|'right'; uppercase?:boolean; lineHeight?:number; strokeColor?:string; strokeWidth?:number; shadowColor?:string; shadowBlur?:number; shadowOffset?:number; verticalAlign?:'top'|'middle'|'bottom'; verticalText?:boolean; letterSpacing?:number; backgroundOpacity?:number; shadowOpacity?:number; shadowDistance?:number; shadowAngle?:number; glow?:boolean; animation?:'none'|'fade'|'rise'|'pop'|'slide'|'typewriter'; animationDuration?:number;sleepSpeed?:number;clockMinutes?:number;clockSpeed?:number};
+import {drawSunlight,type SunlightMotion} from './sunlight-motion';
+export type Overlay = SunlightMotion & {allowOverlap?:boolean;id:string; kind:'lightning'|'sunlight'|'clock'|'sleep'|'text'|'rect'|'ellipse'|'arrow'|'heart'|'star'; text:string; color:string; background:string; x:number; y:number; width:number; height:number; rotation:number; opacity:number; start:number; end:number; bold:boolean; fontFamily?:string; fontSize?:number; italic?:boolean; underline?:boolean; align?:'left'|'center'|'right'; uppercase?:boolean; lineHeight?:number; strokeColor?:string; strokeWidth?:number; shadowColor?:string; shadowBlur?:number; shadowOffset?:number; verticalAlign?:'top'|'middle'|'bottom'; verticalText?:boolean; letterSpacing?:number; backgroundOpacity?:number; shadowOpacity?:number; shadowDistance?:number; shadowAngle?:number; glow?:boolean; animation?:'none'|'fade'|'rise'|'pop'|'slide'|'typewriter'; animationDuration?:number;sleepSpeed?:number;clockMinutes?:number;clockSpeed?:number};
 export type OverlayPreset = {id:string; category:string; name:string; symbol:string; value:Partial<Overlay>};
 export const overlayPresets:OverlayPreset[] = [
  {id:'subtitle',category:'Naslovi',name:'Podnaslov',symbol:'Priča',value:{kind:'text',text:'Mala ideja. Velika priča.',bold:false,height:12}},
@@ -24,15 +25,30 @@ export const overlayPresets:OverlayPreset[] = [
 ];
 export function createOverlay(preset:OverlayPreset,time:number,duration:number):Overlay {
  const start=Math.min(time,Math.max(0,duration-.1));
- return {id:crypto.randomUUID(),kind:'text',text:'Tvoj tekst',color:'#ffffff',background:'transparent',x:50,y:50,width:65,height:18,rotation:0,opacity:100,start,end:Math.min(duration,start+5),bold:true,...preset.value};
+ return {id:crypto.randomUUID(),kind:'text',text:'Tvoj tekst',color:'#ffffff',background:'transparent',x:50,y:50,width:65,height:18,rotation:0,opacity:100,start,end:Math.min(duration,start+(preset.value.kind==='lightning'?.7:5)),bold:true,...preset.value};
 }
 export function restoreOverlays(value:unknown):Overlay[] {
  if(!Array.isArray(value))return [];
- return value.filter((o):o is Overlay=>!!o&&typeof o.id==='string'&&['clock','sleep','text','rect','ellipse','arrow','heart','star'].includes(o.kind)&&typeof o.text==='string'&&typeof o.color==='string'&&typeof o.background==='string'&&[o.x,o.y,o.width,o.height,o.rotation,o.opacity,o.start,o.end].every(Number.isFinite)&&o.width>0&&o.height>0&&o.end>o.start);
+ return value.filter((o):o is Overlay=>!!o&&typeof o.id==='string'&&['lightning','sunlight','clock','sleep','text','rect','ellipse','arrow','heart','star'].includes(o.kind)&&typeof o.text==='string'&&typeof o.color==='string'&&typeof o.background==='string'&&[o.x,o.y,o.width,o.height,o.rotation,o.opacity,o.start,o.end].every(Number.isFinite)&&o.width>0&&o.height>0&&o.end>o.start);
 }
 export function drawOverlays(ctx:CanvasRenderingContext2D,items:Overlay[],time:number) {
  for(const o of items){
   if(time<o.start||time>=o.end)continue;
+  if(o.kind==='lightning'){
+   const phase=(time-o.start)/(o.end-o.start);
+   const {width,height}=ctx.canvas;
+   const glow=ctx.createRadialGradient(width*.65,0,0,width*.65,0,Math.hypot(width,height));
+   glow.addColorStop(0,'#ffffff');
+   glow.addColorStop(.45,'#e1eaff');
+   glow.addColorStop(1,'#a7bde8');
+   ctx.save();
+   ctx.globalAlpha=.94*Math.exp(-phase*6)*o.opacity/100;
+   ctx.fillStyle=glow;
+   ctx.fillRect(0,0,width,height);
+   ctx.restore();
+   continue;
+  }
+  if(o.kind==='sunlight'){drawSunlight(ctx,{...o,sunlight:true,sunlightDelay:0},time-o.start,0,0,ctx.canvas.width,ctx.canvas.height);continue;}
   const w=ctx.canvas.width*o.width/100,h=ctx.canvas.height*o.height/100;
   const motion=overlayMotion(o,time);
   ctx.save();ctx.translate(ctx.canvas.width*(o.x+motion.x)/100,ctx.canvas.height*(o.y+motion.y)/100);ctx.rotate(o.rotation*Math.PI/180);ctx.scale(motion.scale,motion.scale);ctx.globalAlpha=o.opacity/100*motion.alpha;ctx.fillStyle=o.color;

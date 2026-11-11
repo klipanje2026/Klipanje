@@ -1,3 +1,4 @@
+from studio import audio_tools
 from studio import sound_library
 from studio import regional_voices
 from django.http import JsonResponse
@@ -13,6 +14,7 @@ router.register('chapters', scripts.ChapterViewSet, basename='chapters')
 router.register('scripts', scripts.ScriptViewSet, basename='scripts')
 urlpatterns = [
     path('api/sounds', sound_library.sounds),
+    path('api/sounds/<uuid:pk>', sound_library.detail),
     path('api/sounds/<uuid:pk>/content', sound_library.content),
     re_path(r'^admin(?:/.*)?$', administration.entry),
     path('api/administration', administration.overview),
@@ -42,6 +44,7 @@ urlpatterns = [
     path('api/voices', ai.voices),
     path('api/voices/regional', regional_voices.regional),
     path('api/elevenlabs-status', ai.status),
+    path('api/audio/trim', audio_tools.trim_audio),
     path('api/audio/clean', ai.clean_audio),
     path('api/narration', ai.narration),
     path('api/creative/character', creative.generate_character),

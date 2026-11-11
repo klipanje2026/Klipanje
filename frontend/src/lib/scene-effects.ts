@@ -2,6 +2,8 @@ export type SceneFilter = {id:string;start:number;end:number;strength:number};
 export type SceneTransition = {id:string;duration:number};
 export type SceneEffects = {filter?:SceneFilter;transition?:SceneTransition};
 export const sceneFilters = [
+ {id:'dizzy',name:'Vrtoglavica',category:'Pokret',values:[1,1,1,0,0,0]},
+ {id:'snap-awake',name:'Trzaj u javu',category:'Pokret',values:[1,1,1,0,0,0]},
  {id:'blink',name:'Treptanje',category:'Pokret',values:[1,1,1,0,0,0]},
  {id:'warm',name:'Toplo',category:'Film',values:[1.04,1.12,1.15,.22,0,0]},
  {id:'cinema',name:'Kino',category:'Film',values:[.95,1.3,.75,.12,0,0]},
@@ -33,8 +35,36 @@ export function blinkState(filter:SceneFilter|undefined,time:number){
  const strength=Math.max(0,Math.min(1,filter.strength/100));
  return {opening:1-(1-opening)*strength,blur:12*(1-smooth(p))*strength,active:true};
 }
+export function snapAwakeState(filter:SceneFilter|undefined,time:number){
+ const neutral={blur:0,scale:1,x:0,y:0};
+ if(filter?.id!=='snap-awake'||time<filter.start||time>=filter.end)return neutral;
+ const progress=(time-filter.start)/Math.max(.001,filter.end-filter.start);
+ const strength=Math.max(0,Math.min(1,filter.strength/100));
+ const decay=(1-progress)**3*strength;
+ return {blur:10*decay,scale:1+.1*decay,x:Math.sin(progress*Math.PI*8)*.015*decay,y:Math.sin(progress*Math.PI*6)*.006*decay};
+}
+export function dizzyState(filter:SceneFilter|undefined,time:number){
+ const neutral={blur:0,scale:1,x:0,y:0,rotation:0};
+ if(filter?.id!=='dizzy'||time<filter.start||time>=filter.end)return neutral;
+ const duration=Math.max(.001,filter.end-filter.start);
+ const elapsed=time-filter.start;
+ const ramp=Math.min(.4,duration/3);
+ const fade=Math.min(1,elapsed/ramp,(duration-elapsed)/ramp);
+ const envelope=fade*fade*(3-2*fade);
+ const strength=Math.max(0,Math.min(1,filter.strength/100))*envelope;
+ const phase=elapsed*Math.PI*2/1.6;
+ return {
+  blur:(5+3*(.5+.5*Math.sin(phase*1.4)))*strength,
+  scale:1+(.12+.035*Math.sin(phase))*strength,
+  x:Math.sin(phase)*.018*strength,
+  y:Math.sin(phase*.7)*.012*strength,
+  rotation:Math.sin(phase*.85)*.022*strength,
+ };
+}
 export function filterCss(filter:SceneFilter|undefined,sourceTime:number){
  if(!filter||sourceTime<filter.start||sourceTime>=filter.end)return 'none';
+ if(filter.id==='dizzy')return `blur(${dizzyState(filter,sourceTime).blur}px)`;
+ if(filter.id==='snap-awake')return `blur(${snapAwakeState(filter,sourceTime).blur}px)`;
  if(filter.id==='blink')return `blur(${blinkState(filter,sourceTime).blur}px)`;
  const preset=sceneFilters.find(p=>p.id===filter.id);if(!preset)return 'none';
  const t=Math.max(0,Math.min(1,filter.strength/100));const v=preset.values;
@@ -49,8 +79,9 @@ export function transitionState(transition:SceneTransition|undefined,elapsed:num
 }
 export function sceneEffectStyle(effects:SceneEffects,sourceTime:number,elapsed:number,length:number){const t=transitionState(effects.transition,elapsed,length);return {filter:filterCss(effects.filter,sourceTime),opacity:t.opacity,clipPath:t.clip,transform:`translateX(${t.x*100}%) scale(${t.scale})`};}
 export function drawSceneEffects(ctx:CanvasRenderingContext2D,effects:SceneEffects,sourceTime:number,elapsed:number,length:number,x:number,y:number,w:number,h:number,draw:()=>void){
+ const reaction=effects.filter?.id==='dizzy'?dizzyState(effects.filter,sourceTime):{...snapAwakeState(effects.filter,sourceTime),rotation:0};
  const t=transitionState(effects.transition,elapsed,length);ctx.save();ctx.filter=filterCss(effects.filter,sourceTime);ctx.globalAlpha*=t.opacity;
- ctx.translate(x+w/2+t.x*w,y+h/2);ctx.scale(t.scale,t.scale);ctx.translate(-x-w/2,-y-h/2);
+ ctx.translate(x+w/2+(t.x+reaction.x)*w,y+h/2+reaction.y*h);if(reaction.rotation)ctx.rotate(reaction.rotation);ctx.scale(t.scale*reaction.scale,t.scale*reaction.scale);ctx.translate(-x-w/2,-y-h/2);
  if(t.progress<1&&['wipe-left','wipe-up','iris'].includes(t.id||'')){ctx.beginPath();if(t.id==='iris')ctx.arc(x+w/2,y+h/2,Math.hypot(w,h)/2*t.progress,0,Math.PI*2);else if(t.id==='wipe-up')ctx.rect(x,y+h*(1-t.progress),w,h*t.progress);else ctx.rect(x,y,w*t.progress,h);ctx.clip();}
  draw();
  const blink=blinkState(effects.filter,sourceTime);

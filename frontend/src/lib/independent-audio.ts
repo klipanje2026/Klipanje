@@ -1,4 +1,4 @@
-export type AudioRoleClip={type:string;audioRole?:string};
+export type AudioRoleClip={type:string;audioRole?:string;allowOverlap?:boolean};
 export const independentAudio=(clip:AudioRoleClip)=>clip.type==='audio'&&(clip.audioRole==='sound'||clip.audioRole==='music');
 /** Sound-only edits must never enter caption syncing or scene ripple/overlap repair. */
 export function onlyIndependentAudioChanged<T extends AudioRoleClip&{id:string}>(before:T[],after:T[]){
@@ -6,3 +6,6 @@ export function onlyIndependentAudioChanged<T extends AudioRoleClip&{id:string}>
  for(const id of ids){const a=before.find(c=>c.id===id),b=after.find(c=>c.id===id);if(a===b||JSON.stringify(a)===JSON.stringify(b))continue;changed=true;if(a&&!independentAudio(a)||b&&!independentAudio(b))return false;}
  return changed;
 }
+
+/** Kept for existing imports; explicit overlap now applies to any media clip. */
+export const allowsAudioOverlap=(clip:AudioRoleClip)=>clip.allowOverlap===true;

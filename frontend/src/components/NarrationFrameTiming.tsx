@@ -1,0 +1,12 @@
+import {useState,useRef} from 'react';
+import {useAssets} from './ProductionWorkspace';
+import {frameNarration,measuredFrameDuration} from '../lib/frame-timing';
+import {apiJson} from '../lib/api';
+import {NarrationMiniPlayer} from './NarrationMiniPlayer';
+import type {Asset,Script} from '../lib/production';
+type Update={id:string;seconds:number;assetId?:string};
+export function NarrationFrameTiming({script,onDuration,onRefresh,onBusy}:{script:Script;onDuration:(id:string,seconds:number)=>void;onRefresh:(updates:Update[])=>void;onBusy:(busy:boolean)=>void}){
+ const {assets,setAssets,error,loading}=useAssets(script.project),[busy,setBusy]=useState(false),[message,setMessage]=useState('');const running=useRef(false);
+ async function refresh(id?:string){if(running.current)return;running.current=true;setBusy(true);onBusy(true);try{const result=await apiJson<{assets:Asset[]}>(`/api/projects/${script.project}/assets`);setAssets(result.assets);const updates:Update[]=[];for(const s of script.segments.filter(s=>!id||s.id===id)){const take=frameNarration(script,result.assets,s.id);const seconds=take&&measuredFrameDuration(script,take,s.id);if(seconds)updates.push({id:s.id,seconds,assetId:take?.id});}onRefresh(updates);setMessage(updates.length?`Osvježeno ${updates.length} kadrova prema odabranim naracijama. Spremi trajanja.`:'Nema dostupne naracije s trajanjem.');}catch(e){setMessage((e as Error).message);}finally{running.current=false;setBusy(false);onBusy(false);}}
+ return <section className="frame-timing-section"><div className="script-toolbar"><h2>Trajanje kadrova</h2><button disabled={busy||loading} onClick={()=>void refresh()}>Osvježi naracije</button></div>{(message||error)&&<p role="status">{message||error}</p>}<div className="frame-timing-list">{script.segments.map((s,i)=>{const take=frameNarration(script,assets,s.id);return <article className="frame-timing-card" key={s.id}><strong>Kadar {i+1}</strong><p>{s.text}</p><div className="frame-timing-controls"><label>Trajanje kadra (s)<input aria-label={`Trajanje kadra ${i+1}`} type="number" min="0.1" step="0.1" disabled={busy} value={Number((s.end-s.start).toFixed(1))} onChange={e=>onDuration(s.id,Number(e.target.value))}/></label><div>{take?<NarrationMiniPlayer src={take.url} label={`Naracija kadra ${i+1}`}/>:<small>Nema naracije</small>}</div><button disabled={busy||loading} onClick={()=>void refresh(s.id)}>Osvježi naraciju</button></div></article>;})}</div></section>;
+}

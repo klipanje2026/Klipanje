@@ -12,6 +12,8 @@ import { MainLayout } from './components/MainLayout';
 import { LocalHome } from './pages/LocalHome';
 import { LocalScripts } from './pages/LocalScripts';
 import { Projects } from './pages/Projects';
+import {Gallery,ProjectSounds,MaterialProcessing} from './pages/MaterialFlow';
+import {FrameDefinitions} from './pages/FrameDefinitions';
 import { Photos } from './pages/Photos';
 import './components/LocalVideo.scss';
 import { ProductionProvider } from './components/ProductionWorkspace';
@@ -22,6 +24,7 @@ import { Administration } from './pages/Administration';
 
 const Preeditor = lazy(() => import('./pages/Preeditor').then(module => ({default:module.Preeditor})));
 
+const AudioTools = lazy(() => import('./pages/AudioTools').then(module => ({default:module.AudioTools})));
 const VideoTools = lazy(() => import('./pages/VideoTools').then(module => ({default:module.VideoTools})));
 const ProductionVideo = lazy(() => import('./pages/ProductionVideo').then(module => ({ default: module.ProductionVideo })));
 
@@ -36,11 +39,11 @@ export default function App() {
           <Route path="/promjena-lozinke" element={<ChangePassword/>}/>
           <Route element={<MainLayout/>}>
             <Route path="/" element={<LocalHome/>}/>
-            <Route path="/video-alati" element={<Navigate to="/prilagodi-video" replace/>}/><Route path="/prilagodi-video" element={<VideoTools/>}/>{localTools.filter(tool => tool.Component).map(({path, Component}) => <Route key={path} path={path} element={Component ? <Component/> : null}/>)}
+            <Route path="/prilagodi-zvuk" element={<AudioTools/>}/><Route path="/video-alati" element={<Navigate to="/prilagodi-video" replace/>}/><Route path="/prilagodi-video" element={<VideoTools/>}/>{localTools.filter(tool => tool.Component).map(({path, Component}) => <Route key={path} path={path} element={Component ? <Component/> : null}/>)}
             <Route path="/projekti" element={<Projects/>}/>
             <Route path="/administracija" element={<Administration/>}/>
             <Route path="/skripte" element={<LocalScripts/>}/>
-            <Route path="/fotografije" element={<Photos/>}/><Route path="/preeditor" element={<Preeditor/>}/>
+            <Route path="/galerija" element={<Gallery/>}/><Route path="/zvukovi" element={<ProjectSounds/>}/><Route path="/obrada-materijala" element={<MaterialProcessing/>}/><Route path="/definisanje-kadrova" element={<FrameDefinitions/>}/><Route path="/fotografije" element={<Photos/>}/><Route path="/preeditor" element={<Preeditor/>}/>
           </Route>
           <Route element={<EditorLayout />}>
           <Route path="/videa" element={<ProductionVideo/>}/>

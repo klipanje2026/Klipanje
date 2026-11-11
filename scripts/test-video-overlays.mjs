@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
-const code=ts.transpileModule(readFileSync('frontend/src/lib/video-overlays.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const sunCode=ts.transpileModule(readFileSync('frontend/src/lib/sunlight-motion.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const sunUrl=`data:text/javascript;base64,${Buffer.from(sunCode).toString('base64')}`;
+const code=ts.transpileModule(readFileSync('frontend/src/lib/video-overlays.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText.replace(/(['"])\.\/sunlight-motion\1/,JSON.stringify(sunUrl));
 const {retimeOverlay,overlayTimelineLanes,clockMinutesAt,createOverlay,restoreOverlays,drawOverlays,overlayPresets,resizeOverlay,overlayMotion,rotatedOverlayAngle,shadowRgba}=await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
 const item=createOverlay(overlayPresets[0],9,10);
 assert.equal(item.start,9);assert.equal(item.end,10);
@@ -86,3 +88,38 @@ assert.equal(retimeOverlay(timed,'end',-99,10).end,2.1);
 assert.equal(retimeOverlay(timed,'end',99,10).end,10);
 assert.equal(timed.start,2);
 console.log('Animation drag/trim limits and duration preservation passed.');
+
+// Sunlight is a standalone, timed effect, including migration of saved montages.
+const overlayUrl=`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`;
+const migrationCode=ts.transpileModule(readFileSync('frontend/src/lib/sunlight-overlay.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText.replace(/(['"])\.\/video-overlays\1/,JSON.stringify(overlayUrl));
+const {migrateSunlight,sunlightPreset}=await import(`data:text/javascript;base64,${Buffer.from(migrationCode).toString('base64')}`);
+const legacy={id:'scene',start:10,inPoint:2,outPoint:12,playbackRate:2,sunlight:true,sunlightDelay:2,sunlightStrength:.8,sunlightSpeed:1.2};
+const converted=migrateSunlight([legacy],[item]);
+assert.equal(legacy.sunlight,true,'Do not mutate the saved source');
+assert.equal(converted.clips[0].sunlight,false);
+assert.equal(converted.clips[0].start,10);
+const sun=converted.overlays[1];assert.equal(sun.start,12);assert.equal(sun.end,20);assert.equal(sun.sunlightStrength,.8);
+assert.deepEqual(migrateSunlight(converted.clips,converted.overlays),converted,'Migration is idempotent');
+assert.deepEqual(restoreOverlays(JSON.parse(JSON.stringify([sun]))),[sun]);
+const moved=retimeOverlay(sun,'move',3,40);assert.equal(moved.start,15);assert.equal(moved.end,23);
+const shortened=retimeOverlay(sun,'end',-3,40);assert.equal(shortened.end,17);
+const {createCanvas}=await import('@napi-rs/canvas');
+const canvas=createCanvas(320,180),paint=canvas.getContext('2d');
+const frame=time=>{paint.clearRect(0,0,320,180);drawOverlays(paint,[sun],time);return canvas.toBuffer('image/png');};
+const empty=frame(11);assert.deepEqual(frame(20),empty);assert.notDeepEqual(frame(14),empty);
+assert.equal(createOverlay(sunlightPreset,4,20).kind,'sunlight');
+console.log('Sunlight migration, independent timing, duration boundaries, rendering and save/restore passed.');
+const flash = createOverlay({value:{kind:'lightning', text:'Bljesak groma'}}, 1, 4);
+assert.equal(flash.end, 1.7);
+assert.deepEqual(restoreOverlays([flash]), [flash]);
+
+const flashCanvas = createCanvas(64,36).getContext('2d');
+function flashPixel(time) {
+  flashCanvas.clearRect(0,0,64,36);
+  drawOverlays(flashCanvas,[flash],time);
+  return flashCanvas.getImageData(32,18,1,1).data[3];
+}
+assert.equal(flashPixel(.9),0);
+assert.ok(flashPixel(1)>210);
+assert.ok(flashPixel(1.4)<12);
+assert.equal(flashPixel(1.7),0);

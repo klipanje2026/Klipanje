@@ -5,7 +5,7 @@ from rest_framework.response import Response
 import httpx
 from .ai import json_request, missing_key
 
-# Public Voice Library IDs checked 2026-10-23. No samples or credentials are tracked.
+# Public Voice Library IDs checked 2026-10-29. No samples or credentials are tracked.
 CHOICES=[('VB7D8zswiztJjyl8LI3a','Balkanika','Balkanika'),('j96cp162VcYdsYfSp1nc','Ivan','Ivan · muški regionalni'),('7IVTG9LKLYndnFiFDLU2','Milena','Milena · ženski regionalni'),('bduxjXAljl1GoqxNnLeF','Amila','Amila · Calm, Kind, Warm'),('uWuA4P0UhkL94Z85GkOz','Amila','Amila · Warm, Calm, Deep'),('mP6GNwIkel9neaN9zZIg','Jusuf','Jusuf · Calm, Narrative')]
 CHOICES += [
     ('ej3cSsqkJiJFs2EuW9st','Emir','Emir · Patient, Calm'),
@@ -31,6 +31,28 @@ CHOICES += [
     ('PcQ1oUfPHim3ZuyULxyk','Marko','Marko · Upbeat, Punchy Creator'),
     ('XOqEcEeTZy5lYgLrY3MI','Aleksandar','Aleksandar · Bright, Amused Creator'),
     ('5lDS2fR0uHPW5ShjjPzv','Stefan','Stefan · Bright, Playful Creator'),
+]
+
+# Additional male regional narrators verified in the public catalog on 2026-10-29.
+CHOICES += [
+    ('jJ1MUnCKtrOI23TlUUHc', 'Ivan - Clear Croatian Narrator', 'Ivan - Clear Croatian Narrator'),
+    ('ErUfHRm63bBA07FTUPZG', 'Marko - Energetic and lively', 'Marko - Energetic and lively'),
+    ('olecVpv03asgm9w2Vs6l', 'Luka - Pleasant and approachable', 'Luka - Pleasant and approachable'),
+    ('WxQSzlR1UORgKEiMk1n4', 'Branimir - Professional Croatian Studio', 'Branimir - Professional Croatian Studio'),
+    ('jVBTQrP67HZEE22UqQGF', 'Mihael - Croatian Radio TV host', 'Mihael - Croatian Radio TV host'),
+    ('FEuh1dGiuX8Don6bZygL', 'Luka', 'Luka'),
+    ('7rIwwKpExfJ59KPHgRnT', 'Sini - Calm, Clear & Narrative', 'Sini - Calm, Clear & Narrative'),
+    ('pTD8166KADi6ZFJ5FEXi', 'Karlo - Calm, Clear & Friendly ', 'Karlo - Calm, Clear & Friendly '),
+    ('O9XgmQnaZveORWl6mTHm', 'Tomislav - Calm, Clear and Narrative', 'Tomislav - Calm, Clear and Narrative'),
+    ('peXmQaCErbfrWCM5FqjH', 'Marko -  Conversational, Detached', 'Marko -  Conversational, Detached'),
+    ('F2kYsMGahtg8auErVXgY', 'Dylan - Profesional, Warm', 'Dylan - Profesional, Warm'),
+    ('TRnNlYQWHAJwo9K75wNE', 'Fran - Calm, Narrative', 'Fran - Calm, Narrative'),
+    ('kpx2bGcCm6NK1UJ5jxMH', 'Davor - Conversational, Casual', 'Davor - Conversational, Casual'),
+    ('FXFcxnjikw0naYO1PPrU', 'Adnan - Energetic, Educational', 'Adnan - Energetic, Educational'),
+    ('yphrIdMc2DLlL0Ux5uvG', 'Christian - Smooth and Laid-back', 'Christian - Smooth and Laid-back'),
+    ('ZLYZToA7aDsMbHwM9AOr', 'Luka - Calm, Narrative', 'Luka - Calm, Narrative'),
+    ('vFQACl5nAIV0owAavYxE', 'Ivan - Informative, Educational', 'Ivan - Informative, Educational'),
+    ('adxhr4Ei7ASJ3Cz7fxwX', 'Slobodan - Persuasive, Narrative', 'Slobodan - Persuasive, Narrative'),
 ]
 
 @api_view(['GET'])

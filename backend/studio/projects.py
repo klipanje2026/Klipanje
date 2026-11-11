@@ -19,12 +19,14 @@ class ProjectSerializer(serializers.ModelSerializer):
     script_count = serializers.SerializerMethodField()
     image_count = serializers.SerializerMethodField()
     audio_count = serializers.SerializerMethodField()
+    video_count = serializers.SerializerMethodField()
+    def get_video_count(self, project): return project.assets.filter(content_type__startswith='video/').count()
     def get_script_count(self, project): return project.scripts.count()
     def get_image_count(self, project): return project.assets.filter(content_type__startswith='image/').count()
     def get_audio_count(self, project): return project.assets.filter(content_type__startswith='audio/').count()
     class Meta:
         model = Project
-        fields = ['id', 'workspace', 'name', 'kind', 'state', 'brief', 'created_at', 'updated_at', 'script_count', 'image_count', 'audio_count']
+        fields = ['id', 'workspace', 'name', 'kind', 'state', 'brief', 'created_at', 'updated_at', 'script_count', 'image_count', 'audio_count', 'video_count']
         read_only_fields = ['id', 'created_at', 'updated_at']
     def validate_workspace(self, workspace):
         if not workspace.memberships.filter(user=self.context['request'].user).exists():
@@ -77,7 +79,7 @@ def asset_metadata(project, value):
             raise ValidationError('Interval nije dio odabrane skripte.')
     elif value.get('segmentId'):
         raise ValidationError('Interval mora pripadati skripti.')
-    if value.get('purpose','image') not in ['image','reference','narration','audio']:
+    if value.get('purpose','image') not in ['image','reference','narration','audio','video']:
         raise ValidationError('Neispravna vrsta datoteke.')
     return value
 
@@ -97,13 +99,13 @@ def assets(request, pk):
     raster_image = suffix in image_types and upload.content_type == image_types[suffix]
     if not raster_image and (suffix not in allowed or not upload.content_type.startswith(('audio/', 'video/'))):
         return Response({'error': 'Podržani su video, audio i PNG, JPG ili WebP slike.'}, status=400)
-    try: charge_transfer(request.user,'upload',upload.size,uuid4())
-    except CreditError as exc: return Response({'error':str(exc)},status=409)
     asset = MediaAsset(project=project, name=upload.name[:255], content_type=upload.content_type[:100], size=upload.size)
     try:
         asset.metadata = asset_metadata(project, json.loads(request.data.get('metadata','{}')))
     except (ValueError, TypeError):
         return Response({'error':'Neispravni podaci datoteke.'},status=400)
+    try: charge_transfer(request.user,'upload',upload.size,uuid4())
+    except CreditError as exc: return Response({'error':str(exc)},status=409)
     try:
         provider_call(request, settings.STORAGE_BACKEND, 'asset_upload', lambda: asset.file.save(upload.name, upload, save=False), operation_key=asset.pk, input_bytes=upload.size)
         asset.save()
@@ -130,6 +132,19 @@ def asset_content(request, pk):
 def asset_delete(request, pk):
     asset = get_object_or_404(MediaAsset, pk=pk, project__created_by=request.user, project__workspace__memberships__user=request.user)
     if request.method=='PATCH':
+        if 'name' in request.data:
+            name=request.data.get('name')
+            if not asset.content_type.startswith('audio/') or set(request.data)!={'name'}:
+                raise ValidationError('Preimenovanje je dostupno za zvukove.')
+            if not isinstance(name,str) or not name.strip() or len(name.strip())>255:
+                raise ValidationError('Unesi naziv zvuka do 255 znakova.')
+            suffix=Path(asset.name).suffix
+            name=name.strip()
+            if Path(name).suffix.lower()!=suffix.lower():
+                name=name[:255-len(suffix)]+suffix
+            asset.name=name
+            asset.save(update_fields=['name'])
+            return Response(asset_payload(asset))
         update=request.data.get('metadata')
         if not isinstance(update,dict) or set(update)-{'gallery','segmentId','segmentIds','scriptId','fillerAfter'}:raise ValidationError('Neispravna izmjena fotografije.')
         if 'gallery' in update and not isinstance(update['gallery'],bool):raise ValidationError('Neispravan status galerije.')

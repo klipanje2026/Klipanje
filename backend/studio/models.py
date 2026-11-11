@@ -518,6 +518,7 @@ class ImageSpend(models.Model):
 
 
 class LibrarySound(models.Model):
+    archived = models.BooleanField(default=False)
     fade_in = models.FloatField(default=0)
     category = models.CharField(max_length=8, choices=[("sound", "Sound effect"), ("music", "Background music")], default="sound")
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

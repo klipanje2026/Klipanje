@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {loadTestModule} from './test-ts-module.mjs';
+const {syncIntervalText}=await loadTestModule('lib/sync-interval-text.ts','.local/project-script-tests');
+const frames=[{id:'a',text:'Kerim ide prema rijeci.',start:2,end:7,prompt:'retain me'},{id:'b',text:'Ema čeka na obali.',start:8,end:11}];
+const original=structuredClone(frames);
+let result=syncIntervalText(frames,'Kerim polako ide prema rijeci. Ema čeka na obali.');
+assert.equal(result.error,undefined);assert.equal(result.segments[0].text,'Kerim polako ide prema rijeci.');assert.deepEqual(result.segments[1],frames[1]);
+for(let i=0;i<2;i++)assert.deepEqual({...result.segments[i],text:frames[i].text},frames[i]);
+assert.deepEqual(frames,original);
+result=syncIntervalText(frames,'Kerim ide prema moru. Ema čeka na obali.');assert.equal(result.segments[0].text,'Kerim ide prema moru.');
+assert.equal(syncIntervalText(frames,'').segments,frames);
+assert.ok(syncIntervalText(frames,'Kerim ide prema rijeci.').error);
+const {frameNarration,measuredFrameDuration}=await loadTestModule('lib/frame-timing.ts','.local/project-script-tests');
+const script={id:'script',segments:frames,photo_settings:{narrationPlan:{scenes:{a:{assetId:'voice'},b:{assetId:'voice'}}}}};
+const take={id:'voice',contentType:'audio/wav',created_at:'2020',metadata:{scriptId:'script',audioRole:'narration',segmentIds:['a','b'],narration:{text:'Changed pronunciation',segmentIds:['a','b'],duration:10,words:[],sync:true}}};
+const newer={...take,id:'new',created_at:'2030'};
+assert.equal(frameNarration(script,[take,newer],'a'),take);
+const first=measuredFrameDuration(script,take,'a'),second=measuredFrameDuration(script,take,'b');assert.equal(first+second,10);assert.ok(first>0&&second>0);
+assert.equal(frameNarration(script,[{...take,metadata:{...take.metadata,archived:true}}],'a'),undefined);
+console.log('Interval text, timing, chosen/shared narration and immutability checks passed');
+
+const manual=[{...frames[0],text:'Kerim lagano ide prema rijeci.'},frames[1]];
+const preserved=syncIntervalText(manual,'Kerim ide prema rijeci. Ema čeka kraj mora.','Kerim ide prema rijeci. Ema čeka na obali.');
+assert.equal(preserved.segments[0].text,manual[0].text);assert.equal(preserved.segments[1].text,'Ema čeka kraj mora.');
+console.log('Unrelated manual interval text is preserved');
+
+const {updateScriptInterval}=await loadTestModule('lib/sync-interval-text.ts','.local/project-script-tests');
+assert.equal(updateScriptInterval('*More*\nKerim ide prema rijeci.\n\nEma čeka na obali.',frames,'b','Ema se smije.'),'*More*\nKerim ide prema rijeci.\n\nEma se smije.');
+assert.equal(updateScriptInterval('Druga priča.',frames,'a','Novo.'),undefined);
+console.log('Reverse text sync preserves surrounding scene descriptions');

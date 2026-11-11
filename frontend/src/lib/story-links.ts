@@ -16,3 +16,8 @@ export function patchStoryClip<T extends Clip>(clips:T[],id:string,patch:Partial
  const timing=Object.prototype.hasOwnProperty.call(patch,'inPoint')||Object.prototype.hasOwnProperty.call(patch,'outPoint');
  return clips.map(c=>c.id===id?{...c,...patch,...timing?{preserveLinkedTiming:true}:{}}:c);
 }
+
+/** Remove every explicit/legacy media link without changing any timing or media. */
+export function detachAllStoryLinks<T extends Clip>(clips:T[]):T[]{
+ return clips.map(c=>({...c,groupId:undefined,captionId:undefined,segmentIds:undefined,narrationSegmentIds:undefined,sceneSlice:undefined,frameStrength:undefined,preserveLinkedTiming:undefined,linksDetached:true}));
+}

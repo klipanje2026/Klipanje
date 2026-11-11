@@ -1,0 +1,5 @@
+import type {StillMotion} from './still-scenes';
+import type {SceneEffects} from './scene-effects';
+export type DecorationKind='filter'|'entry'|'exit'|'motion';
+export function removeDecoration(kind:DecorationKind):Partial<StillMotion&SceneEffects>{return kind==='filter'?{filter:undefined}:kind==='entry'?{imageTransition:'cut',imageAnimationsLinked:false}:kind==='exit'?{imageExit:'cut',imageAnimationsLinked:false}:{motion:'none'};}
+export function decorationRange(c:StillMotion&SceneEffects&{start:number;inPoint:number;outPoint:number},kind:DecorationKind){const length=Math.max(.1,c.outPoint-c.inPoint);if(kind==='filter'&&c.filter)return {start:c.start+Math.max(0,c.filter.start-c.inPoint),length:Math.max(.1,Math.min(c.outPoint,c.filter.end)-Math.max(c.inPoint,c.filter.start))};if(kind==='entry')return {start:c.start,length:Math.min(length,c.imageTransitionDuration??.5)};if(kind==='exit'){const duration=Math.min(length,c.imageExitDuration??.5);return {start:c.start+length-duration,length:duration};}return {start:c.start,length};}

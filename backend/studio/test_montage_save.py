@@ -163,3 +163,30 @@ class MontageSaveTests(TestCase):
         stranger=get_user_model().objects.create_user(username='preeditor-stranger')
         self.client.force_login(stranger)
         self.assertEqual(self.client.get(self.url+'/preeditor-versions').status_code,404)
+
+    def test_named_save_and_version_round_trip_keeps_authored_timeline(self):
+        doc=deepcopy(self.doc)
+        doc['title']='Moja završna montaža'
+        doc['data']['clips']=[{'id':'voice','type':'audio','start':9.4,'inPoint':0.2,'outPoint':3.8,'narrationSegmentIds':['caption'],'groupId':'pair','preserveLinkedTiming':True}]
+        doc['data']['captions']['__script']['segments']=[{'id':'caption','text':'Sačuvani tekst','start':9.8,'end':12.9}]
+        doc['data']['overlays']=[{'id':'sun','kind':'sunlight','start':10.1,'end':11.9}]
+        saved=self.save(doc).json()
+        version=self.client.post(self.url+'/versions',{'title':'Finalna verzija','expectedStoryboardRevision':saved['storyboardRevision']},content_type='application/json')
+        self.assertEqual(version.status_code,201)
+        self.assertEqual(self.client.get(self.url+'/versions').json()[0]['title'],'Finalna verzija')
+        self.client.patch(self.url,{'segments':[{'id':'different','text':'Druga skripta','start':0,'end':1}]},content_type='application/json')
+        self.assertEqual(self.stored_document(),doc)
+        changed=deepcopy(doc);changed['data']['clips']=[]
+        latest=self.save(changed,saved['storyboardRevision']).json()
+        restored=self.client.post(self.url+'/versions/'+version.json()['id']+'/restore',{'expectedStoryboardRevision':latest['storyboardRevision']},content_type='application/json')
+        self.assertEqual(restored.status_code,200)
+        self.assertEqual(self.stored_document(),doc)
+
+    def test_overlapping_montage_saves_without_rewriting_source_intervals(self):
+        source=[{'id':'a','text':'First','start':0,'end':2},{'id':'b','text':'Second','start':2,'end':4}]
+        self.client.patch(self.url,{'segments':source},content_type='application/json')
+        doc=deepcopy(self.doc)
+        doc['data']['captions']['__script']['segments']=[{'id':'a','text':'First','start':1,'end':5},{'id':'b','text':'Second','start':3,'end':6}]
+        self.assertEqual(self.save(doc).status_code,200)
+        self.assertEqual(self.stored_document(),doc)
+        self.assertEqual(self.client.get(self.url).json()['segments'],source)

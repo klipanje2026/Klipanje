@@ -70,6 +70,31 @@ class ProjectTests(TestCase):
         self.project = Project.objects.create(workspace=self.workspace, created_by=self.owner, name='Test', kind='subtitles')
     def upload(self, name='video.mp4', content=b'test-video-bytes', content_type='video/mp4'):
         return self.client.post(f'/api/projects/{self.project.pk}/assets', {'file': SimpleUploadedFile(name, content, content_type)}, format='multipart')
+    def test_video_gallery_import_with_script_metadata(self):
+        from .models import LocalScript
+        script = LocalScript.objects.create(owner=self.owner, project=self.project, title='Obala')
+        metadata = {'gallery': True, 'purpose': 'video', 'scriptId': str(script.pk)}
+        response = self.client.post(f'/api/projects/{self.project.pk}/assets', {
+            'file': SimpleUploadedFile('obala.mp4', b'video-bytes', 'video/mp4'),
+            'metadata': json.dumps(metadata),
+        }, format='multipart')
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(response.data['metadata'], metadata)
+        self.assertEqual(response.data['contentType'], 'video/mp4')
+        asset = MediaAsset.objects.get(pk=response.data['id'])
+        with asset.file.open('rb') as video:
+            self.assertEqual(video.read(), b'video-bytes')
+
+    def test_invalid_asset_metadata_is_not_charged(self):
+        with patch('studio.projects.charge_transfer') as charge:
+            response = self.client.post(f'/api/projects/{self.project.pk}/assets', {
+                'file': SimpleUploadedFile('obala.mp4', b'video-bytes', 'video/mp4'),
+                'metadata': json.dumps({'purpose': 'invalid'}),
+            }, format='multipart')
+        self.assertEqual(response.status_code, 400)
+        charge.assert_not_called()
+        self.assertFalse(self.project.assets.exists())
+
     def test_project_save_restore_and_file_roundtrip(self):
         uploaded = self.upload()
         self.assertEqual(uploaded.status_code, 201, uploaded.data)

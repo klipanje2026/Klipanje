@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {loadTestModule} from './test-ts-module.mjs';
+const {moveTimelineClip,editOverlayTiming,rippleFromOverlay}=await loadTestModule('lib/timeline-arrangement.ts','work/ripple-scope-tests');
+const {rippleTimingEdit}=await loadTestModule('lib/scene-ripple.ts','work/ripple-scope-tests');
+const {adjustTimelineGap}=await loadTestModule('lib/timeline-gap.ts','work/ripple-scope-tests');
+const c=(id,start,type='video',role,extra={})=>({id,type,layer:1,audioRole:role,start,inPoint:0,outPoint:2,...extra});
+const clips=[c('v1',0),c('v2',5,'video',undefined,{groupId:'g',segmentIds:['s']}),c('n1',0,'audio','narration'),c('n2',5,'audio','narration',{groupId:'g',narrationSegmentIds:['s']}),c('fx1',0,'audio','sound'),c('fx2',5,'audio','sound'),c('music',5,'audio','music'),c('exempt',5,'audio','sound',{allowOverlap:true})];
+const caps=[{id:'s',start:5,end:7,text:'S',words:[{text:'S',start:5,end:6}]}];
+const fx=[{id:'o1',kind:'sunlight',start:0,end:2},{id:'o2',kind:'sunlight',start:5,end:7},{id:'a',kind:'clock',start:5,end:7}];
+const original=JSON.stringify({clips,caps,fx});
+for(const noOverlap of [false,true]){
+ const sound=moveTimelineClip(clips,caps,'fx1',1,true,noOverlap,0,'lane');
+ assert.deepEqual(sound.clips.map(c=>c.start),[0,5,0,5,1,6,5,5]);assert.deepEqual(sound.segments,caps);
+ const video=moveTimelineClip(clips,caps,'v1',1,true,noOverlap,0,'lane');
+ assert.deepEqual(video.clips.map(c=>c.start),[1,6,0,5,0,5,5,5]);assert.deepEqual(video.segments,caps);
+ const linked=moveTimelineClip(clips,caps,'v2',6,true,noOverlap,0,'lane');assert.equal(linked.clips[3].start,5);assert.deepEqual(linked.segments,caps);
+}
+const all=moveTimelineClip(clips,caps,'v1',1,true,false,0,'all');assert.deepEqual(all.clips.map(c=>c.start),[1,6,0,6,0,6,6,5]);assert.equal(all.segments[0].start,6);
+const resized=rippleTimingEdit(clips,clips.map(c=>c.id==='fx1'?{...c,outPoint:3}:c),caps,caps,true,true,0,'lane');assert.deepEqual(resized.clips.map(c=>c.start),[0,5,0,5,0,6,5,5]);assert.deepEqual(resized.segments,caps);
+let added=adjustTimelineGap(clips,caps,fx,{clipId:'fx1'},'add');assert.equal(added.clips[5].start,5.1);assert.deepEqual(added.segments,caps);assert.deepEqual(added.overlays,fx);assert.equal(added.clips[7].start,5);
+const step=adjustTimelineGap(clips,caps,fx,{clipId:'v1'},'step');assert.equal(step.clips[1].start,4.9);assert.equal(step.clips[3].start,5);
+const closed=adjustTimelineGap(clips,caps,fx,{clipId:'v1'},'close');assert.equal(closed.clips[1].start,2);assert.equal(closed.clips[3].start,5);
+const closeAll=adjustTimelineGap(clips,caps,fx,{clipId:'v1'},'close','all');assert.equal(closeAll.clips[1].start,2);assert.equal(closeAll.clips[3].start,2);assert.equal(closeAll.segments[0].start,2);assert.equal(closeAll.overlays[1].start,2);assert.equal(closeAll.clips[7].start,5);
+const tiny=clips.map(c=>c.id==='v2'?{...c,start:2.04}:c);assert.equal(adjustTimelineGap(tiny,caps,fx,{clipId:'v1'},'step').clips[1].start,2);
+assert.equal(adjustTimelineGap(clips,caps,fx,{clipId:'v2'},'add').delta,0);
+const captionStep=adjustTimelineGap(clips,[{id:'s0',start:0,end:2,text:'S0'},...caps],fx,{captionId:'s0'},'step');assert.equal(captionStep.segments[1].start,4.9);assert.deepEqual(captionStep.clips,clips);
+const overlayStep=adjustTimelineGap(clips,caps,fx,{overlayId:'o1'},'step');assert.equal(overlayStep.overlays[1].start,4.9);assert.equal(overlayStep.overlays[2].start,5);
+const next=fx.map(o=>o.id==='o1'?{...o,start:1,end:3}:o);
+assert.deepEqual(editOverlayTiming(fx,next,true,false,'lane').map(o=>o.start),[1,6,5]);assert.deepEqual(editOverlayTiming(fx,next,true,false,'all').map(o=>o.start),[1,6,6]);assert.equal(rippleFromOverlay(fx,next,clips,caps).clips[1].start,6);
+assert.equal(JSON.stringify({clips,caps,fx}),original);
+console.log('Lane/all movement, linked solo isolation, sound resize, gap add/step/hold, small/absent gaps, captions/overlays, exemptions and immutable undo passed.');

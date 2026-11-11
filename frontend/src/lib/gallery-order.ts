@@ -57,6 +57,6 @@ export function galleryFrameGroups(ids:string[],segments:Script['segments']){
 
 /** Gallery membership is per asset, never per frame. Keep all versions visible. */
 export function photoCollections(assets:Asset[],scriptId:string){
- const own=assets.filter(a=>!a.metadata.archived&&a.metadata.scriptId===scriptId&&a.contentType.startsWith('image/'));
+ const own=assets.filter(a=>!a.metadata.archived&&a.metadata.scriptId===scriptId&&(a.contentType.startsWith('image/')||a.contentType.startsWith('video/')));
  return {own,pending:own.filter(a=>a.metadata.gallery===false),pictures:own.filter(a=>a.metadata.gallery!==false)};
 }

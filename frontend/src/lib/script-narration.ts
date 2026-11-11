@@ -1,6 +1,6 @@
 import type {Interval} from './production';
 import {narrationText} from './narration-sync';
-export type SceneVoice={speaker?:string;model?:string;tone?:string;speed?:number;assetId?:string};
+export type SceneVoice={text?:string;speaker?:string;model?:string;tone?:string;speed?:number;assetId?:string};
 export type NarrationPlan={defaults?:Pick<SceneVoice,'model'|'tone'|'speed'>;voiceNames?:Record<string,string>;mode?:'narration'|'dialogue';voices:Record<string,string>;scenes:Record<string,SceneVoice>;backgrounds:string[]};
 export const emptyNarrationPlan=():NarrationPlan=>({voices:{},scenes:{},backgrounds:[]});
 export function spokenScene(text:string,speaker:string,keepQuotes:boolean){
