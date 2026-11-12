@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="bs">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EffectCraft · Prilagodi i spremi</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><div><a href="/slike-s-pokretima" class="back">← EffectCraft</a><h1>Prilagodi i spremi video</h1><p>Gotovi kadrovi na jednom mjestu.</p></div><button id="theme">Tamna tema</button></header>
+<section class="settings">
+  <div class="heading"><div><h2>Folder za gotove videe</h2><p>Odaberi gdje želiš spremati svoje EffectCraft videe.</p></div><span class="badge">Na tvom računaru</span></div>
+  <div class="folder-choice"><div><strong id="folderPath">Folder još nije odabran.</strong><p id="folderHint">Odabrani folder pamti se za sljedeće videe.</p></div><button id="chooseFolder" class="primary">Odaberi folder</button></div>
+  <p id="folderMessage" role="status" class="hint"></p>
+  <div class="settings-row"><label>Zadana brzina<input id="speed" type="number" min="0.1" max="3" step="0.1" list="speeds" value="1"></label><p>Do 1200 px · bez zvuka · 1× = normalna brzina</p></div>
+  <datalist id="speeds"><option value="0.5"><option value="0.75"><option value="1"><option value="1.2"><option value="1.5"><option value="2"></datalist>
+  <div class="checks"><label><input type="checkbox" id="autoProcess" checked>Automatski obradi novi izvoz</label><label><input type="checkbox" id="autoDownload" checked>Spremi obrađeni video u odabrani folder</label></div>
+  <p class="hint">Nazivi gotovih videa · leon-gleda-rijeku-effect.mp4</p>
+  <p id="login" hidden>Za spremanje u folder <a href="/login" target="_blank" rel="noopener">prijavi se u Klipanje</a>, pa klikni Osvježi.</p>
+</section>
+<section class="library"><div class="heading"><div><h2>Gotovi videi</h2><p>Za svaki video možeš izabrati brzinu i ponoviti obradu.</p></div><div class="actions"><button id="refresh">Osvježi</button><button id="import" class="primary">Uvezi MP4</button><input id="files" hidden type="file" accept="video/*,.mp4,.mov,.webm,.m4v" multiple></div></div>
+<p id="notice" role="status" class="notice" hidden></p><div id="outputs"></div><div id="empty" class="empty"><strong>Ovdje će se pojaviti novi izvozi iz EffectCrafta.</strong><p>Za već preuzet video klikni Uvezi MP4.</p></div></section>
+<footer>Za automatsku obradu ostavi EffectCraft ili ovu stranicu otvorenu. Nakon zatvaranja preglednika nedovršena obrada nastavlja se kad ponovo otvoriš ovu stranicu.</footer>
+</main><script type="module" src="app.js"></script></body></html>

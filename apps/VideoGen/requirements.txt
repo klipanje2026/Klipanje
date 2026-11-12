@@ -1,0 +1,6 @@
+Django>=5.2,<5.3
+modal>=1.2,<2
+python-dotenv>=1.1,<2
+Pillow>=11,<13
+imageio>=2.37,<3
+imageio-ffmpeg>=0.6,<0.7

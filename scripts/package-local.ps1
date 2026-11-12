@@ -7,8 +7,10 @@ if ($LASTEXITCODE -ne 0) { throw 'Ne mogu procitati spisak izvornog koda.' }
 $rootFiles = @('.env.example','.gitignore','.gitattributes','AGENTS.md','README.md','PRIJEDLOZI.txt','CISCENJE-I-PRENOS.txt','package.json','package-lock.json','1-INSTALIRAJ.cmd','3-POKRENI.cmd','4-ADMIN.cmd','5-PROMIJENI-LOZINKU.cmd','6-PAKET-ZA-DRUGI-RACUNAR.cmd')
 $files = @($candidates | Sort-Object -Unique | Where-Object {
     $name = $_
-    $allowed = ($rootFiles -contains $name) -or $name -match '^(frontend/(src/|public/|[^/]+\.(json|ts|js|html))|backend/(studio/|config/|templates/|manage\.py$|requirements[^/]*\.txt$)|scripts/|docs/)'
+    $allowed = ($rootFiles -contains $name) -or $name -in @('7-VIDEOGEN.cmd','9-POKRENI-PAKET.cmd') -or $name -match '^(apps/VideoGen/|frontend/(src/|public/|[^/]+\.(json|ts|js|html))|backend/(studio/|config/|templates/|manage\.py$|requirements[^/]*\.txt$)|scripts/|docs/)'
     $blocked = $name -match '(^|/)(node_modules|__pycache__|dist|work|media|\.local|\.git)(/|$)|\.(pyc|sqlite3|zip|log)$|(^|/)\.env$' -or $name -match '^tools/'
+    $blocked = $blocked -or $name -match '(^|/)(\.venv|\.runtime)(/|$)|(^|/)\.env\.(?!example$)|-job/|^apps/VideoGen/(LOKALNO|VODIC-ZA-IZBOR-MODELA)\.md$'
+    $blocked = $blocked -or $name -match '^apps/VideoGen/frontend/public/(analysis-data\.json|generation-archive\.|reports/)'
     $allowed -and -not $blocked -and (Test-Path -LiteralPath (Join-Path $packageRoot $name) -PathType Leaf)
 })
 if ($files.Count -lt 20) { throw 'Spisak za paket je nepotpun.' }

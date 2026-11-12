@@ -4,6 +4,8 @@ Lokalna Django + React aplikacija za skripte, fotografije, naraciju, titlove i m
 
 ## Instalacija i pokretanje
 
+Paket sada uključuje **VideoGen i EffectCraft**, povezane s projektima i medijima Klipanja. Za sva tri alata pokreni **9-POKRENI-PAKET.cmd** nakon instalacije. [Upute za povezani paket](docs/POVEZANI-PAKET.md). Suno nije uključen.
+
 Potreban je Python 3.12+ i Node.js 22.13+. Nakon preuzimanja repozitorija pokreni **1-INSTALIRAJ.cmd**, a zatim **3-POKRENI.cmd**. Instalacija priprema zavisnosti, lokalnu bazu i račune. Za administratora koristi **4-ADMIN.cmd**.
 
 - Aplikacija: http://127.0.0.1:5175/

@@ -38,12 +38,19 @@ backend/local-recovery/
 /apps/VideoGen/media/
 /apps/VideoGen/frontend/dist/
 
-# Private local tools: never publish with Klipanje
-/apps/
-/frontend/public/effectcraft/
-/frontend/src/local-tools/
-/7-VIDEOGEN.cmd
+# Publish application code, never personal tool data.
+/apps/*
+!/apps/VideoGen/
+/apps/VideoGen/LOKALNO.md
+/apps/VideoGen/VODIC-ZA-IZBOR-MODELA.md
+/apps/VideoGen/frontend/public/analysis-data.json
+/apps/VideoGen/frontend/public/generation-archive.*
+/apps/VideoGen/frontend/public/reports/
+/frontend/public/effectcraft/**/*-job/
+/frontend/src/local-tools/MotionImages.tsx
+/frontend/src/local-tools/MotionImages.scss
 
 /8-MUZICKI-STUDIO.cmd
 
-/backend/studio/local_effectcraft/
+# Private staging connector is not part of this package.
+/tools/edita-staging-mcp/

@@ -57,3 +57,14 @@ urlpatterns = [
     path('api/subscription/export', billing.export_usage),
     path('api/', include(router.urls)),
 ]
+
+# EffectCraft folder exports are available only in the local application.
+from django.conf import settings
+from importlib.util import find_spec
+
+if settings.DEBUG and getattr(settings, 'LOCAL_APP', False) and find_spec('studio.local_effectcraft') is not None:
+    from studio.local_effectcraft import downloads as effectcraft_downloads
+    urlpatterns += [
+        path('api/local-effectcraft/download-directory', effectcraft_downloads.directory),
+        path('api/local-effectcraft/save', effectcraft_downloads.save_video),
+    ]

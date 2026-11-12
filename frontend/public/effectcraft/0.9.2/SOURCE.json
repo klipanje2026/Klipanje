@@ -1,0 +1,17 @@
+{
+  "name": "EffectCraft",
+  "version": "0.9.2",
+  "url": "https://github.com/storytold/effectcraft/releases/download/v0.9.2/effectcraft-web-0.9.2.zip",
+  "sha256": "09e4a278652fb389725f991c12ea4fb667599c19d0b2b3d2fded31d662bc1ad9",
+  "source": "Pinned version in user-provided Titlovi-main.zip deploy/tool-engines.json",
+  "licenses": [
+    "LICENSE-MIT",
+    "LICENSE-APACHE"
+  ],
+  "localPatches": {
+    "index.html": "Normalize compatible launch: cpu=1, nogpuworkers=1, frameworkers=1, nosw=1. No storage deletion or session reset. Load local output/theme bridge and dispatch ready after engine startup.",
+    "effectcraft_web.js": "CPU compatibility flag hides WebGPU only from WASM GPU capability import, selecting bundled fallback backend. Browser GPU settings unchanged. Narrow anchor download hook copies exports to the local library without suppressing original downloads.",
+    "klipanje-bridge.js": "Same-origin parent theme API and blob download retention; see KLIPANJE-PATCHES.md.",
+    "klipanje-library.js": "Separate local IndexedDB output library, no engine session data changes."
+  }
+}
