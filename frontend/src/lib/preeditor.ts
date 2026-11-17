@@ -34,7 +34,7 @@ export function initialStoryPlan(script:Script,assets:Asset[]):StoryPlan{
   blocks.push({id:crypto.randomUUID(),sourceIds:ids,imageIds:photos.map(a=>a.id),audioIds:take?[take.a.id]:[],captionIds:take?ids:[],filler:!take,duration:3});
  }
  for(const {asset} of orderedGallery(images.filter(a=>a.metadata.filler),script,'')){const row={id:crypto.randomUUID(),sourceIds:[],imageIds:[asset.id],audioIds:[],captionIds:[],filler:true,duration:3};const index=blocks.findLastIndex(b=>b.sourceIds.includes(asset.metadata.fillerAfter||'')||b.id==='after:'+asset.metadata.fillerAfter);if(index<0)blocks.push(row);else{let at=index+1;while(at<blocks.length&&blocks[at].filler&&!blocks[at].sourceIds.length)at++;blocks.splice(at,0,row);}}
- return {version:1,selectionKey:selectionKey(script),blocks,entryEnabled:true,exitEnabled:false,entry:'crossfade',exit:'fade',animationDuration:.5,spacing:.2,spacingMode:'overlap'};
+ return {version:1,selectionKey:selectionKey(script),blocks,entryEnabled:true,exitEnabled:true,entry:'crossfade',exit:'crossfade',animationDuration:.5,spacing:.2,spacingMode:'overlap'};
 }
 export function compileStoryPlan(plan:StoryPlan,script:Script,assets:Asset[],durations:Record<string,number>){
  assets=resolvedFrameAssets(script,assets);

@@ -1,5 +1,5 @@
 import {drawSunlight,type SunlightMotion} from './sunlight-motion';
-export type Overlay = SunlightMotion & {allowOverlap?:boolean;id:string; kind:'lightning'|'sunlight'|'clock'|'sleep'|'text'|'rect'|'ellipse'|'arrow'|'heart'|'star'; text:string; color:string; background:string; x:number; y:number; width:number; height:number; rotation:number; opacity:number; start:number; end:number; bold:boolean; fontFamily?:string; fontSize?:number; italic?:boolean; underline?:boolean; align?:'left'|'center'|'right'; uppercase?:boolean; lineHeight?:number; strokeColor?:string; strokeWidth?:number; shadowColor?:string; shadowBlur?:number; shadowOffset?:number; verticalAlign?:'top'|'middle'|'bottom'; verticalText?:boolean; letterSpacing?:number; backgroundOpacity?:number; shadowOpacity?:number; shadowDistance?:number; shadowAngle?:number; glow?:boolean; animation?:'none'|'fade'|'rise'|'pop'|'slide'|'typewriter'; animationDuration?:number;sleepSpeed?:number;clockMinutes?:number;clockSpeed?:number};
+export type Overlay = SunlightMotion & {sourceOffset?:number;sourceDuration?:number;allowOverlap?:boolean;id:string; kind:'lightning'|'sunlight'|'clock'|'sleep'|'text'|'rect'|'ellipse'|'arrow'|'heart'|'star'; text:string; color:string; background:string; x:number; y:number; width:number; height:number; rotation:number; opacity:number; start:number; end:number; bold:boolean; fontFamily?:string; fontSize?:number; italic?:boolean; underline?:boolean; align?:'left'|'center'|'right'; uppercase?:boolean; lineHeight?:number; strokeColor?:string; strokeWidth?:number; shadowColor?:string; shadowBlur?:number; shadowOffset?:number; verticalAlign?:'top'|'middle'|'bottom'; verticalText?:boolean; letterSpacing?:number; backgroundOpacity?:number; shadowOpacity?:number; shadowDistance?:number; shadowAngle?:number; glow?:boolean; animation?:'none'|'fade'|'rise'|'pop'|'slide'|'typewriter'; animationDuration?:number;sleepSpeed?:number;clockMinutes?:number;clockSpeed?:number};
 export type OverlayPreset = {id:string; category:string; name:string; symbol:string; value:Partial<Overlay>};
 export const overlayPresets:OverlayPreset[] = [
  {id:'subtitle',category:'Naslovi',name:'Podnaslov',symbol:'Priča',value:{kind:'text',text:'Mala ideja. Velika priča.',bold:false,height:12}},
@@ -35,7 +35,7 @@ export function drawOverlays(ctx:CanvasRenderingContext2D,items:Overlay[],time:n
  for(const o of items){
   if(time<o.start||time>=o.end)continue;
   if(o.kind==='lightning'){
-   const phase=(time-o.start)/(o.end-o.start);
+   const phase=overlayElapsed(o,time)/(o.sourceDuration??(o.end-o.start));
    const {width,height}=ctx.canvas;
    const glow=ctx.createRadialGradient(width*.65,0,0,width*.65,0,Math.hypot(width,height));
    glow.addColorStop(0,'#ffffff');
@@ -48,7 +48,7 @@ export function drawOverlays(ctx:CanvasRenderingContext2D,items:Overlay[],time:n
    ctx.restore();
    continue;
   }
-  if(o.kind==='sunlight'){drawSunlight(ctx,{...o,sunlight:true,sunlightDelay:0},time-o.start,0,0,ctx.canvas.width,ctx.canvas.height);continue;}
+  if(o.kind==='sunlight'){drawSunlight(ctx,{...o,sunlight:true,sunlightDelay:0},overlayElapsed(o,time),0,0,ctx.canvas.width,ctx.canvas.height);continue;}
   const w=ctx.canvas.width*o.width/100,h=ctx.canvas.height*o.height/100;
   const motion=overlayMotion(o,time);
   ctx.save();ctx.translate(ctx.canvas.width*(o.x+motion.x)/100,ctx.canvas.height*(o.y+motion.y)/100);ctx.rotate(o.rotation*Math.PI/180);ctx.scale(motion.scale,motion.scale);ctx.globalAlpha=o.opacity/100*motion.alpha;ctx.fillStyle=o.color;
@@ -69,7 +69,7 @@ export function drawOverlays(ctx:CanvasRenderingContext2D,items:Overlay[],time:n
    const speed=Number.isFinite(o.sleepSpeed)?Math.max(.25,Math.min(3,o.sleepSpeed!)):1;
    ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
    for(let i=0;i<4;i++){
-    const p=(((time-o.start)*speed/2.4+i/4)%1+1)%1;
+    const p=((overlayElapsed(o,time)*speed/2.4+i/4)%1+1)%1;
     ctx.save();ctx.globalAlpha*=Math.min(1,p*7,(1-p)*5);
     const size=Math.min(w*.48,h*.38)*(.65+p*.55);
     ctx.font=`700 ${size}px sans-serif`;ctx.strokeStyle='#292338';ctx.lineWidth=Math.max(1,size*.055);
@@ -137,8 +137,8 @@ export function resizeOverlay(o:Overlay,edge:OverlayHandle,dx:number,dy:number,s
 /** Time-based animation shared by preview, selection bounds and export. */
 export function overlayMotion(o:Overlay,time:number) {
  const animation=o.animation||(o.kind==='text'?'fade':'none');
- const duration=Math.max(.1,Math.min(o.animationDuration||.6,o.end-o.start));
- const p=Math.max(0,Math.min(1,(time-o.start)/duration)),ease=1-Math.pow(1-p,3);
+ const duration=Math.max(.1,Math.min(o.animationDuration||.6,o.sourceDuration??(o.end-o.start)));
+ const p=Math.max(0,Math.min(1,overlayElapsed(o,time)/duration)),ease=1-Math.pow(1-p,3);
  return {alpha:animation==='none'||animation==='typewriter'?1:ease,
   x:animation==='slide'?-8*(1-ease):0,y:animation==='rise'?6*(1-ease):0,
   scale:animation==='pop'?.65+.35*ease:1,
@@ -154,7 +154,7 @@ export function rotatedOverlayAngle(rotation:number,startAngle:number,nextAngle:
  return Math.round(((rotation+delta+180)%360+360)%360-180);
 }
 
-export function clockMinutesAt(o:Overlay,time:number){const start=Number.isFinite(o.clockMinutes)?o.clockMinutes!:540;const speed=Number.isFinite(o.clockSpeed)?Math.max(0,Math.min(240,o.clockSpeed!)):30;return start+Math.max(0,time-o.start)*speed;}
+export function clockMinutesAt(o:Overlay,time:number){const start=Number.isFinite(o.clockMinutes)?o.clockMinutes!:540;const speed=Number.isFinite(o.clockSpeed)?Math.max(0,Math.min(240,o.clockSpeed!)):30;return start+Math.max(0,overlayElapsed(o,time))*speed;}
 
 /** Reuse a timeline row once its previous element has ended; keep render order untouched. */
 export function overlayTimelineLanes(items:Overlay[]):Overlay[][] {
@@ -173,3 +173,7 @@ export function retimeOverlay(item:Overlay,mode:'move'|'start'|'end',delta:numbe
  if(mode==='start')return {...item,start:Math.max(0,Math.min(item.end-.1,round(item.start+delta)))};
  return {...item,end:Math.min(limit,Math.max(item.start+.1,round(item.end+delta)))};
 }
+
+/** Source phase is retained when scissors divide an animated overlay. */
+export function overlayElapsed(o:Overlay,time:number){return time-o.start+(o.sourceOffset||0);}
+export function splitOverlaysAt(items:Overlay[],time:number):Overlay[]{return items.flatMap(o=>time>o.start+.099&&time<o.end-.099?[{...o,end:time,sourceDuration:o.sourceDuration??(o.end-o.start)},{...o,id:crypto.randomUUID(),start:time,sourceOffset:(o.sourceOffset||0)+time-o.start,sourceDuration:o.sourceDuration??(o.end-o.start)}]:[o]);}

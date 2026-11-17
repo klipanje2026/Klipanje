@@ -1,9 +1,10 @@
+import {resolvedFrameAssets} from './frame-definitions';
 import type {Asset,Script} from './production';
 import {galleryScene} from './gallery-order';
 import {narrationCoverage} from './narration-coverage';
 /** Choose the selected narration, otherwise newest exact take; never import every revision. */
 export function completedFrames(assets:Asset[],script:Script,importedIds:string[]=[]){
- const own=assets.filter(a=>!a.metadata.archived&&a.metadata.scriptId===script.id);
+ const own=resolvedFrameAssets(script,assets).filter(a=>!a.metadata.archived&&a.metadata.scriptId===script.id);
  const images=own.filter(a=>a.contentType.startsWith('image/')&&a.metadata.gallery!==false&&!a.metadata.filler);
  const takes=own.filter(a=>a.contentType.startsWith('audio/')).map(a=>({asset:a,...narrationCoverage(a,script)})).filter(t=>!t.approximate&&t.ids.length).sort((a,b)=>(b.asset.created_at||'').localeCompare(a.asset.created_at||'')||b.asset.id.localeCompare(a.asset.id));
  const photosFor=(id:string)=>images.filter(a=>(a.metadata.segmentIds||[a.metadata.segmentId]).includes(id)||!a.metadata.manualFrames&&script.segments[galleryScene(a,script)]?.id===id);

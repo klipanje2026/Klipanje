@@ -256,3 +256,21 @@
 .video-studio-main:fullscreen .studio-player.has-media .studio-player-media {margin-top:0;transform:translate(-50%,-50%);}
 
 .video-studio-main:fullscreen button[aria-label="Video preko cijelog ekrana"] {position:fixed;top:3%;right:3%;z-index:30;}
+
+/* Consistent timeline hit areas; optical alignment matches compact clip badges. */
+.local-edita-video .local-timeline-options button,.local-edita-video .video-timeline-actions button {width:30px;min-width:30px;height:30px;padding:5px;display:inline-flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
+.local-edita-video .local-timeline-options,.local-edita-video .video-timeline-actions {align-items:center;gap:5px;}
+.local-edita-video .video-studio-timeline button .studio-icon {transform:translate(-1px,-1px);}
+.local-edita-video .local-caption-tabs[aria-label="Vrsta efekata"] button {flex:0 0 38px;height:32px;padding:6px;display:grid;place-items:center;}
+.local-edita-video .caption-timing-select {display:flex;align-items:center;padding-block:0!important;}
+.local-edita-video .caption-timing-clip.active .caption-timing-select {padding-bottom:13px!important;}
+.local-edita-video .caption-timing-select span {margin:0;}
+.tool-detach-mark {position:absolute;right:1px;bottom:0;font-size:12px;line-height:12px;background:var(--ui-panel);}
+.timeline-manual-group {position:absolute;right:3px;top:2px;z-index:4;border-radius:3px;background:var(--ui-accent);color:var(--ui-text);}
+.timeline-manual-group svg {width:13px;height:13px;}
+/* The fullscreen player is nested in a wrapping flex item, not a direct child. */
+.video-studio-app .video-studio-main:fullscreen .video-stage-wrap {position:relative;flex:1 1 auto;width:100%;height:100%;min-height:0;display:flex;}
+.video-studio-app .video-studio-main:fullscreen .video-stage-wrap .studio-player {flex:1 1 auto!important;width:100%;height:100%!important;container-type:normal;}
+
+.fullscreen-preview-exit {display:none;}
+.video-studio-main:fullscreen .fullscreen-preview-exit {display:grid;place-items:center;position:absolute;right:12px;top:12px;z-index:20;width:34px;height:34px;border-radius:6px;background:var(--ui-panel);color:var(--ui-text);border:1px solid var(--ui-border);cursor:pointer;}

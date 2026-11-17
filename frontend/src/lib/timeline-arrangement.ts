@@ -1,7 +1,7 @@
 import type {Segment} from '../config/captions/presets';
 import {shiftSegment} from './local-timeline';
 import {separateSceneOverlaps} from './scene-ripple';
-type Clip={id:string;type:string;audioRole?:string;layer:number;start:number;inPoint:number;outPoint:number;allowOverlap?:boolean;groupId?:string;captionId?:string;segmentIds?:string[];narrationSegmentIds?:string[]};
+type Clip={timelineGroupId?:string;id:string;type:string;audioRole?:string;layer:number;start:number;inPoint:number;outPoint:number;allowOverlap?:boolean;groupId?:string;captionId?:string;segmentIds?:string[];narrationSegmentIds?:string[]};
 type Timed={id:string;kind:string;start:number;end:number;allowOverlap?:boolean};
 const ids=(c:Clip)=>[...c.segmentIds||[],...c.narrationSegmentIds||[],...c.captionId?[c.captionId]:[]];
 const lane=(c:Clip)=>c.type==='video'?'video:'+c.layer:'audio:'+(c.audioRole||c.layer);
@@ -18,10 +18,11 @@ export function moveTimelineClip<T extends Clip>(clips:T[],segments:Segment[],id
  }}
  const offsets=new Map<string,number>();
  for(const c of clips)if(members.has(c.id)||ripple&&!chosen.allowOverlap&&!c.allowOverlap&&c.start>chosen.start+.00001&&(scope==='all'||lane(c)===lane(chosen)))offsets.set(c.id,delta);
+ const manualOffsets=new Map<string,number>();for(const c of clips)if(c.timelineGroupId&&offsets.has(c.id))manualOffsets.set(c.timelineGroupId,offsets.get(c.id)!);for(const c of clips)if(c.timelineGroupId&&manualOffsets.has(c.timelineGroupId))offsets.set(c.id,manualOffsets.get(c.timelineGroupId)!);
  const captionOffsets=new Map<string,number>(),protectedCaptions=new Set(clips.filter(c=>c.allowOverlap&&!members.has(c.id)).flatMap(ids));
  for(const c of clips)if(offsets.has(c.id))for(const s of ids(c))captionOffsets.set(s,delta);
  const next=clips.map(c=>offsets.has(c.id)?{...c,start:Math.max(0,c.start+delta)}:c);
- const captions=scope==='lane'?segments:segments.map(s=>{if(protectedCaptions.has(s.id)||protectedCaptions.has(s.sourceSceneId||''))return s;const d=captionOffsets.get(s.id)??captionOffsets.get(s.sourceSceneId||'')??(ripple&&!chosen.allowOverlap&&s.start>chosen.start+.00001?delta:0);return d?shiftSegment(s,d):s;});
+ const captions=segments.map(s=>{if(s.timelineGroupId&&manualOffsets.has(s.timelineGroupId))return shiftSegment(s,manualOffsets.get(s.timelineGroupId)!);if(scope==='lane')return s;if(protectedCaptions.has(s.id)||protectedCaptions.has(s.sourceSceneId||''))return s;const d=captionOffsets.get(s.id)??captionOffsets.get(s.sourceSceneId||'')??(ripple&&!chosen.allowOverlap&&s.start>chosen.start+.00001?delta:0);return d?shiftSegment(s,d):s;});
  const repaired=noOverlap&&!chosen.allowOverlap?separateSceneOverlaps(scope==='lane'?next.filter(c=>lane(c)===lane(chosen)).map(c=>({...c,groupId:undefined,captionId:undefined,segmentIds:undefined,narrationSegmentIds:undefined})):next,scope==='lane'?[]:captions,gap):null;
  const result=repaired?scope==='lane'?{clips:next.map(c=>{const r=repaired.clips.find(r=>r.id===c.id);return r&&r.start!==c.start?{...c,start:r.start}:c;}),segments:captions}:repaired:{clips:next,segments:captions};
  return {...result,delta};

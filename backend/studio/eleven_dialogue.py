@@ -2,20 +2,39 @@
 import base64
 import io
 import json
+import logging
 import math
 import subprocess
 import time
 import wave
 from websockets.sync.client import connect
-from websockets.exceptions import WebSocketException
+from websockets.exceptions import WebSocketException, InvalidStatus
 from imageio_ffmpeg import get_ffmpeg_exe
 
 RATE = 24000
+logger = logging.getLogger(__name__)
 URL = ('wss://api.elevenlabs.io/v1/text-to-dialogue/stream-input'
        '?model_id=eleven_v4_turbo&output_format=pcm_24000&sync_alignment=true&language_code=bs')
 
 class DialogueError(Exception):
     pass
+
+
+def open_dialogue(key):
+    # Only retry establishing the connection. No text has been sent at this point.
+    for attempt in range(2):
+        try:
+            return connect(URL, additional_headers={'xi-api-key': key}, open_timeout=15,
+                           close_timeout=5, max_size=16 * 1024 * 1024, proxy=None)
+        except (OSError, TimeoutError, WebSocketException) as exc:
+            status = getattr(getattr(exc, 'response', None), 'status_code', None)
+            transient = isinstance(exc, (OSError, TimeoutError)) or (
+                isinstance(exc, InvalidStatus) and status in (502, 503, 504))
+            logger.warning('Narration connection failed attempt=%s type=%s status=%s',
+                           attempt + 1, type(exc).__name__, status)
+            if attempt or not transient:
+                raise DialogueError('Veza s ElevenLabsom nije uspostavljena. Tekst nije poslan na generisanje; pokušaj ponovo.') from exc
+            time.sleep(.4)
 
 
 def collect_audio(socket):
@@ -55,12 +74,16 @@ def collect_audio(socket):
 
 
 def synthesize(key, data):
+    phase = 'connect'
     try:
-        with connect(URL, additional_headers={'xi-api-key': key}, open_timeout=15, close_timeout=5, max_size=16 * 1024 * 1024, proxy=None) as socket:
+        with open_dialogue(key) as socket:
+            phase = 'send'
             socket.send(json.dumps({'voices': [data['voiceId']]}))
             socket.send(json.dumps({'inputs': [{'text': data['text'], 'voice_id': data['voiceId'], 'new_turn': False}]}))
             socket.send(json.dumps({'close_socket': True}))
+            phase = 'receive'
             pcm, alignment = collect_audio(socket)
+        phase = 'convert'
         speed = data['speed']
         if speed != 1:
             converted = subprocess.run([get_ffmpeg_exe(), '-nostdin', '-v', 'error', '-f', 's16le', '-ar', str(RATE), '-ac', '1', '-i', 'pipe:0', '-af', f'atempo={speed}', '-f', 's16le', '-ar', str(RATE), '-ac', '1', 'pipe:1'], input=pcm, capture_output=True, timeout=60, check=True)
@@ -78,4 +101,5 @@ def synthesize(key, data):
     except DialogueError:
         raise
     except (WebSocketException, OSError, TimeoutError, ValueError, TypeError, subprocess.SubprocessError) as exc:
-        raise DialogueError('V4 Turbo naracija nije završena. Provjeri vezu i pristup modelu prije ponovnog generisanja.') from exc
+        logger.warning('Narration failed phase=%s type=%s', phase, type(exc).__name__)
+        raise DialogueError('V4 Turbo nije vratio potpun snimak. Zahtjev nije automatski ponovljen jer je tekst već poslan. Postojeće naracije su sačuvane.') from exc

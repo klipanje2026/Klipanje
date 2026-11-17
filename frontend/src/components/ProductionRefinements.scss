@@ -897,3 +897,42 @@ video.photo-full-preview{width:100%;max-height:70dvh;object-fit:contain}
 @media(max-width:800px){.frame-definition-columns{grid-template-columns:1fr}.frame-definition-disclosure>summary{flex-wrap:wrap}.frame-heading-choices{margin-left:0}}
 
 .material-video-preview{width:100%;max-height:260px;object-fit:contain;flex-basis:100%}.material-drop small{display:block;margin-top:8px;font-size:11px}.frame-definition-disclosure{scroll-margin-top:80px}
+/* Workflow polish: controls align by their fields, not label margins. */
+:root[data-theme][data-palette] .project-overview-tabs{justify-content:flex-end;}
+:root[data-theme][data-palette] .klipanje-shell .frame-timing-controls>label{margin:0!important;gap:6px;}
+:root[data-theme][data-palette] .klipanje-shell .frame-timing-controls input{height:42px;box-sizing:border-box;margin:0;}
+:root[data-theme][data-palette] .klipanje-shell .frame-timing-controls>div,:root[data-theme][data-palette] .klipanje-shell .frame-timing-controls>button{height:42px;margin:0;align-self:end;}
+:root[data-theme][data-palette] .klipanje-shell .narration-row{grid-template-columns:24px minmax(100px,1fr) auto;}
+.photo-selected-prompts:not([open])>summary .prompt-heading-actions svg{transform:none!important;}
+.generation-subtabs{display:flex;gap:8px;flex-wrap:wrap;padding:4px 0 18px;margin-bottom:14px;border-bottom:1px solid var(--k-border);}
+.generation-subtabs a{padding:9px 13px;border:1px solid var(--k-border);border-radius:7px;font-size:12px;text-decoration:none;color:var(--k-ink);}
+.generation-subtabs a[aria-current]{background:var(--k-soft);border-color:var(--k-accent);}
+:root[data-theme][data-palette] .klipanje-shell .frame-heading-choices{display:grid;grid-template-columns:repeat(3,max-content);gap:7px;}
+.frame-heading-choices>span{grid-column:1/-1;}
+:root[data-theme][data-palette] .klipanje-shell .frame-heading-choices label{flex-direction:row!important;padding:7px 10px;border:1px solid var(--k-border);border-radius:6px;cursor:pointer;}
+.frame-heading-choices label:has(input:checked){background:var(--k-soft);border-color:var(--k-accent)!important;}
+.frame-heading-choices input[type=radio]{appearance:none;border:1px solid var(--k-border);border-radius:3px;background:var(--k-card);display:grid;place-items:center;}
+.frame-heading-choices input:checked{background:var(--k-accent);border-color:var(--k-accent);}
+.frame-heading-choices input:checked:after{content:'✓';color:var(--k-button-ink);font-size:11px;}
+.gallery-change-choice{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:6px 12px!important;border-radius:6px;text-decoration:none;}
+.sound-selection-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin:18px 0;}
+.sound-selection-columns>section{min-width:0;}.sound-selection-columns h2{font-size:16px;}
+.sound-selection-row{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:8px;padding:12px 0;border-bottom:1px solid var(--k-border);}
+.sound-selection-row strong{font-size:12px;overflow-wrap:anywhere;align-self:center;}.sound-selection-row audio{grid-column:1/-1;width:100%;height:34px;}
+:root[data-theme][data-palette] .klipanje-shell .material-settings{margin-bottom:22px;}
+:root[data-theme][data-palette] .klipanje-shell .material-settings>label{margin:0!important;}
+:root[data-theme][data-palette] .klipanje-shell .material-settings>button,:root[data-theme][data-palette] .klipanje-shell .material-settings>label>select{height:42px;box-sizing:border-box;margin:0;}
+:root .local-edita-video .all-narration-takes{border:0;border-radius:0;background:transparent;}
+:root .local-edita-video .all-narration-takes>summary{border:0;border-bottom:1px solid var(--ui-border);border-radius:0;background:transparent;padding:10px 4px;}
+/* Match the unchanged upper toolbar: 10px outer inset + 3px inner inset. */
+:root[data-theme][data-palette] .local-edita-video .local-timeline-options{padding:6px 13px!important;gap:3px!important;box-sizing:border-box;}
+:root[data-theme][data-palette] .local-edita-video .local-timeline-options button{margin:0;flex:0 0 30px;width:30px;height:30px;min-width:30px;min-height:30px;padding:0;}
+:root[data-theme][data-palette] .local-edita-video .local-timeline-options button .studio-icon{width:17px;height:17px;transform:none;}
+@media(max-width:700px){.sound-selection-columns{grid-template-columns:1fr;}.frame-heading-choices{max-width:100%;}}
+@container (max-width:800px){:root[data-theme][data-palette] .local-edita-video .local-timeline-options{padding-inline:3px!important;}}
+
+/* Compact application sound library: fixed action columns at the row end. */
+.sound-selection-columns .sound-library-item.sound-gallery-actions{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,32px);gap:5px;align-items:center;padding:5px 0;}
+.sound-selection-columns .sound-library-item>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}
+:root[data-theme] .klipanje-shell .sound-selection-columns .sound-library-item>button{display:inline-flex;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;min-height:32px;box-sizing:border-box;padding:6px;margin:0;}
+.sound-selection-columns .sound-library-item>button svg{width:16px;height:16px;display:block;}

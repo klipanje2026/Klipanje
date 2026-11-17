@@ -31,6 +31,8 @@ U korisničkom meniju dostupno je dvanaest tema: šest svijetlih i šest tamnih.
 
 ## Podaci i API ključevi
 
+Tačan spisak podataka za novi računar: [lokalne `.env` postavke](docs/ENV-LOKALNA-INSTALACIJA.md).
+
 Baza je `backend/db.sqlite3`, a datoteke su u `backend/media/`. Aktivna aplikacija koristi lokalnu pohranu; nema Cloudflare/R2, Backblaze ni udaljene baze. Projekti i datoteke dostupni su prijavljenom vlasniku.
 
 Instalacija priprema i privatni `workspace/` s korisničkim folderima `Abdullah`, `Rijad` i `Nihad`. Projektni folderi nose naziv projekta, npr. `workspace/Rijad/Sarajevska priča/`; ponovljeni nazivi dobijaju dodatak `(2)`, `(3)`. Spremanje osvježava `projekat.json`, `skripte.json` i kopije u `mediji/`. Promjena naziva preimenuje lokalni projektni folder. Baza i originalni mediji ostaju glavni izvor; JSON kopije se ne uvoze automatski. Cijeli workspace je izuzet iz Gita. Postojeće kopije i stare UUID foldere osvježi komandom `node scripts/backend.mjs sync_workspace`.

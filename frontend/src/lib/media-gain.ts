@@ -10,3 +10,6 @@ export function setMediaGain(media:HTMLMediaElement,volume:number){
  if(node.gain.value!==gain)node.gain.value=gain;
  if(!media.paused&&context?.state==='suspended')void context.resume().catch(()=>{});
 }
+
+/** Called directly from the playback gesture, before media starts advancing. */
+export async function resumeMediaAudio(){if(context?.state==='suspended')await context.resume().catch(()=>{});}

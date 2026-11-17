@@ -5,6 +5,7 @@
 .narration-chevron[aria-expanded=true] svg,.narration-sounds-heading[aria-expanded=true] svg{transform:rotate(180deg)}
 .narration-reveal{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .5s ease,opacity .5s ease}
 .narration-reveal[data-open=true]{grid-template-rows:1fr;opacity:1}
+.script-panel .narration-reveal[data-open=true] .script-generation-message + .script-takes{border-top-color:transparent}
 .narration-reveal>div{min-height:0;overflow:hidden}
 .script-panel .script-narration-studio .narration-reveal .script-compact-scene{grid-template-columns:minmax(180px,1fr) repeat(3,minmax(90px,auto));margin-top:8px}
 .script-narration-studio .narration-sounds-heading{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 0;border:0;background:transparent;text-align:left}

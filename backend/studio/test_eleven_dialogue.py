@@ -11,6 +11,33 @@ def frame(text='A', size=RATE * 2):
     return json.dumps({'audio': base64.b64encode(b'\x01\x00' * (size // 2)).decode(), 'alignment': {'chars': [text], 'char_start_times_ms': [100], 'char_durations_ms': [200]}})
 
 class DialogueTests(SimpleTestCase):
+    def test_connection_timeout_retries_before_sending_only_once(self):
+        socket = MagicMock()
+        socket.recv.side_effect = [frame(), json.dumps({'is_final': True})]
+        connection = MagicMock()
+        connection.__enter__.return_value = socket
+        with patch('studio.eleven_dialogue.connect', side_effect=[TimeoutError(), connection]) as connect, patch('studio.eleven_dialogue.time.sleep'):
+            result = synthesize('test-key', {'voiceId': 'test-voice', 'text': 'A', 'speed': 1})
+        self.assertTrue(result['audio_base64'])
+        self.assertEqual(connect.call_count, 2)
+        self.assertEqual(socket.send.call_count, 3)
+
+    def test_receive_failure_never_resends_paid_generation(self):
+        socket = MagicMock()
+        socket.recv.side_effect = TimeoutError()
+        with patch('studio.eleven_dialogue.connect') as connect:
+            connect.return_value.__enter__.return_value = socket
+            with self.assertRaises(DialogueError):
+                synthesize('test-key', {'voiceId': 'test-voice', 'text': 'A', 'speed': 1})
+        connect.assert_called_once()
+        self.assertEqual(socket.send.call_count, 3)
+
+    def test_connection_retries_are_bounded(self):
+        with patch('studio.eleven_dialogue.connect', side_effect=TimeoutError()) as connect, patch('studio.eleven_dialogue.time.sleep'):
+            with self.assertRaisesRegex(DialogueError, 'Tekst nije poslan'):
+                synthesize('test-key', {'voiceId': 'test-voice', 'text': 'A', 'speed': 1})
+        self.assertEqual(connect.call_count, 2)
+
     def test_chunk_offsets_and_final_audio(self):
         socket = MagicMock()
         socket.recv.side_effect = [frame('A'), frame('B'), json.dumps({'is_final': True})]

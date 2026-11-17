@@ -1,7 +1,7 @@
 import {allowsAudioOverlap} from './independent-audio';
 import type {Segment} from '../config/captions/presets';
 import {shiftSegment} from './local-timeline';
-type SceneClip={id:string;type:string;audioRole?:string;allowOverlap?:boolean;layer:number;linksDetached?:boolean;groupId?:string;captionId?:string;segmentIds?:string[];narrationSegmentIds?:string[];start:number;inPoint:number;outPoint:number};
+type SceneClip={timelineGroupId?:string;id:string;type:string;audioRole?:string;allowOverlap?:boolean;layer:number;linksDetached?:boolean;groupId?:string;captionId?:string;segmentIds?:string[];narrationSegmentIds?:string[];start:number;inPoint:number;outPoint:number};
 const links=(c:SceneClip)=>[...c.segmentIds||[],...c.narrationSegmentIds||[],...c.captionId?[c.captionId]:[]];
 /** Move each bundle exactly once, from the drag-start snapshot. Background audio stays put. */
 function applyOffsets<T extends SceneClip>(clips:T[],segments:Segment[],offsets:Map<string,number>){
@@ -35,7 +35,7 @@ export function separateSceneOverlaps<T extends SceneClip>(clips:T[],segments:Se
  const active=clips.filter(c=>!allowsAudioOverlap(c)),parent=new Map(active.map(c=>[c.id,c.id]));
  const root=(id:string):string=>{const p=parent.get(id)!;if(p===id)return id;const r=root(p);parent.set(id,r);return r;};
  const owner=new Map<string,string>();
- for(const c of active)for(const key of [...(c.groupId?['group:'+c.groupId]:[]),...links(c).map(id=>'caption:'+id)]){const other=owner.get(key);if(other)parent.set(root(c.id),root(other));else owner.set(key,c.id);}
+ for(const c of active)for(const key of [...(c.groupId?['group:'+c.groupId]:[]),...(c.timelineGroupId?['manual:'+c.timelineGroupId]:[]),...links(c).map(id=>'caption:'+id)]){const other=owner.get(key);if(other)parent.set(root(c.id),root(other));else owner.set(key,c.id);}
  const bundles=new Map<string,T[]>();for(const c of active){const key=root(c.id);bundles.set(key,[...bundles.get(key)||[],c]);}
  const ends=new Map<string,number>(),offsets=new Map<string,number>();
  for(const bundle of [...bundles.values()].sort((a,b)=>Math.min(...a.map(c=>c.start))-Math.min(...b.map(c=>c.start)))){
@@ -44,9 +44,10 @@ export function separateSceneOverlaps<T extends SceneClip>(clips:T[],segments:Se
   const delta=Math.max(0,...bundle.map(c=>(ends.get(collisionLane(c))??0)-local.get(c.id)!));
   for(const c of bundle){const at=local.get(c.id)!+delta;offsets.set(c.id,at-c.start);const key=collisionLane(c);ends.set(key,Math.max(ends.get(key)||0,at+c.outPoint-c.inPoint+(c.type==='video'?Math.max(0,gap):0)));}
  }
- const sceneOffsets=new Map<string,number>();
+ const sceneOffsets=new Map<string,number>(),manualOffsets=new Map<string,number>();
+ for(const c of clips)if(c.timelineGroupId&&offsets.has(c.id))manualOffsets.set(c.timelineGroupId,offsets.get(c.id)!);
  for(const c of [...clips].sort((a,b)=>Number(a.type==='audio')-Number(b.type==='audio')))for(const id of links(c))sceneOffsets.set(id,offsets.get(c.id)||0);
- return {clips:clips.map(c=>offsets.get(c.id)?{...c,start:c.start+offsets.get(c.id)!}:c),segments:segments.map(s=>{const delta=sceneOffsets.get(s.id)??sceneOffsets.get(s.sourceSceneId||'')??0;return delta?shiftSegment(s,delta):s;})};
+ return {clips:clips.map(c=>offsets.get(c.id)?{...c,start:c.start+offsets.get(c.id)!}:c),segments:segments.map(s=>{const delta=(s.timelineGroupId?manualOffsets.get(s.timelineGroupId):undefined)??sceneOffsets.get(s.id)??sceneOffsets.get(s.sourceSceneId||'')??0;return delta?shiftSegment(s,delta):s;})};
 }
 
 /** Carry a timing edit through following clips without shifting already-synchronised links twice. */

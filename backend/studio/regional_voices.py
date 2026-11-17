@@ -55,6 +55,50 @@ CHOICES += [
     ('adxhr4Ei7ASJ3Cz7fxwX', 'Slobodan - Persuasive, Narrative', 'Slobodan - Persuasive, Narrative'),
 ]
 
+# American young-adult narration candidates verified in Voice Library, 2026-11-15.
+AMERICAN_CHOICES = [
+    ('G7bJ0cnNDezf2z9EA3FB', 'Joel - Smooth & Natural', 'Joel - Smooth & Natural'),
+    ('Exv6tD1bSqqEOJlb8Ez7', 'Ben Chamsou - Narrator & Storyteller', 'Ben Chamsou - Narrator & Storyteller'),
+    ('jnqK4oKgAruCsCiylRIB', 'Matt Marlow - Easygoing American', 'Matt Marlow - Easygoing American'),
+    ('AgWmGPmoY5bWqnxOVd0j', 'Hurker - Confident, Playful & Warm', 'Hurker - Confident, Playful & Warm'),
+    ('WkcegOqOPWAl2ZRFBEaw', 'Dime - Conversational', 'Dime - Conversational'),
+    ('5vDXugCfjV5wh807ijcC', 'Shelby - Warm, Calm & Magnetic', 'Shelby - Warm, Calm & Magnetic'),
+]
+CHOICES += AMERICAN_CHOICES
+
+# Requested WoW character voices verified in Voice Library, 2026-11-16.
+WOW_CHOICES = [
+    ('NOpBlnGInO9m6vDvFkFC', 'Spuds Oxley - Grandpa', 'Spuds Oxley - Grandpa'),
+    ('e0K1gavG8dJdPZiwQ7Np', 'Matthew Schmitz', 'Matthew Schmitz'),
+    ('j9qIyycr9PcZ7d4yj21f', 'Grimble – Twitchy & Sneaky creature', 'Grimble – Twitchy & Sneaky creature'),
+    ('KFcKSkKkWqMVhCbLkuvh', 'Kassandra  - Strange and Tricky', 'Kassandra  - Strange and Tricky'),
+    ('chQx45TGebwefgePtdqT', 'Matthew Schmitz - Creepy Liminal Entity', 'Matthew Schmitz - Creepy Liminal Entity'),
+    ('0SpgpJ4D3MpHCiWdyTg3', 'Matthew Schmitz - Elitist, Arrogant, Conniving Tyrant', 'Matthew Schmitz - Elitist, Arrogant, Conniving Tyrant'),
+]
+CHOICES += WOW_CHOICES
+
+# Additional Matthew Schmitz variants requested 2026-11-16.
+MATTHEW_CHOICES = [
+    ('4Vl3K2x290GidNvuaLm7', 'Matthew Schmitz', 'Matthew Schmitz - Old Pirate Captain'),
+    ('Ho7fjSHAC1BzucANXMRy', 'Matthew Schmitz', 'Matthew Schmitz - African Tribal Warrior'),
+    ('dWi43pgmQOjZTMYtl9lg', 'Matthew Schmitz', 'Matthew Schmitz - Old Outlaw Cowboy'),
+    ('4QLC5fepxZkYmdD2IGRU', 'Matthew Schmitz', 'Matthew Schmitz - Scriptures, Bible & Religious readings'),
+    ('HAvvFKatz0uu0Fv55Riy', 'Matthew Schmitz', 'Matthew Schmitz - Ancient Sage Dragon Wizard'),
+    ('xYWUvKNK6zWCgsdAK7Wi', 'Matthew Schmitz', 'Matthew Schmitz - Hissing and Sinister'),
+    ('FYZl5JbWOAm6O1fPKAOu', 'Matthew Schmitz', 'Matthew Schmitz - Casual, Chill and Deep'),
+    ('Tj9l48J9AJbry5yCP5eW', 'Matthew Schmitz', 'Matthew Schmitz - Ancient Vampire Lord'),
+    ('Q4oILuo4P8VeXtE6FMLI', 'Matthew Schmitz', 'Matthew Schmitz - Warm Mountain Man'),
+    ('JlPfrZoXeAKnNaogINHc', 'Matthew Schmitz', 'Matthew Schmitz - Robotic and Deadpan'),
+    ('uCAKWh24Y93ESUjKwRGP', 'Matthew Schmitz', 'Matthew Schmitz - The Whispering Spirit of the Gentle Calm'),
+    ('rCYFsCX2waxtHCgVD0e8', 'Matthew Schmitz', 'Matthew Schmitz - Unholy, Wicked Demon'),
+    ('bwCXcoVxWNYMlC6Esa8u', 'Matthew Schmitz', 'Matthew Schmitz - Gravel, Deep Anti-Hero'),
+    ('dWlo9A8YyLspmlvHk1dB', 'Matthew Schmitz', 'Matthew Schmitz - Late Night Mystic'),
+    ('B52raBK48m23qWYbwchQ', 'Matthew Schmitz', 'Matthew Schmitz - Rich,Old Storyteller'),
+    ('3nDq4c7a9Pk3q5rxbMJH', 'Matthew Schmitz', 'Matthew - Friendly, Warm and Resonant'),
+    ('RDSy0QN68yhrjuOgqzQ4', 'Matthew Schmitz', 'Dr. Quibble - Nerdy Cartoon Scientist'),
+]
+CHOICES += MATTHEW_CHOICES
+
 @api_view(['GET'])
 def regional(request):
     missing=missing_key()
@@ -86,10 +130,10 @@ def regional(request):
                 voice=next((v for v in matches if v.get('voice_id')==identifier),None)
                 if not voice:continue
                 cache.set('regional-voice-'+identifier,voice,300)
-            preview=next((v.get('preview_url') for v in voice.get('verified_languages',[]) if v.get('language') in ['hr','sr','bs'] and v.get('preview_url')),None) or voice.get('preview_url','')
+            preview=next((v.get('preview_url') for v in voice.get('verified_languages',[]) if v.get('language') in ([voice['language']] if voice.get('language') in ['en','de'] else ['hr','sr','bs']) and v.get('preview_url')),None) or voice.get('preview_url','')
             paid=tier is not None and tier!='free'
             language=voice.get('language','hr')
-            label={'bs':'bosanski','hr':'regionalni · hrvatski','sr':'regionalni · srpski'}.get(language,language)
+            label={'de':'njemački','bs':'bosanski','hr':'regionalni · hrvatski','sr':'regionalni · srpski','en':'američki · engleski' if voice.get('accent') == 'american' else 'engleski'}.get(language,language)
             voices.append({'id':identifier,'name':f'{name} · {label}','gender':voice.get('gender','voice'),'language':language,'description':voice.get('description',''),'previewUrl':preview,'available':paid,'reason':'' if paid else 'Za Voice Library preko API-ja potrebna je plaćena pretplata.' if tier=='free' else 'Status plana nije potvrđen. Ponovo učitaj glasove.'})
         return Response({'voices':voices,'tier':tier},headers={'Cache-Control':'no-store'})
     except (httpx.HTTPError,ValueError,TypeError,AttributeError):return Response({'error':'Regionalni glasovi trenutno nisu dostupni.'},status=502)

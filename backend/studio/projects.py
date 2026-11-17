@@ -79,8 +79,11 @@ def asset_metadata(project, value):
             raise ValidationError('Interval nije dio odabrane skripte.')
     elif value.get('segmentId'):
         raise ValidationError('Interval mora pripadati skripti.')
-    if value.get('purpose','image') not in ['image','reference','narration','audio','video']:
+    if value.get('purpose','image') not in ['image','reference','character-sheet','narration','audio','video']:
         raise ValidationError('Neispravna vrsta datoteke.')
+    if value.get('purpose') == 'character-sheet':
+        if not any(c.get('id') == value.get('characterId') for c in project.brief.get('characters', [])):
+            raise ValidationError('Prvo spremi lika u ovom projektu.')
     return value
 
 @api_view(['GET', 'POST'])
@@ -104,6 +107,16 @@ def assets(request, pk):
         asset.metadata = asset_metadata(project, json.loads(request.data.get('metadata','{}')))
     except (ValueError, TypeError):
         return Response({'error':'Neispravni podaci datoteke.'},status=400)
+    if asset.metadata.get('purpose') == 'character-sheet':
+        from .character_sheet import png_size, default_boxes
+        try:
+            if not raster_image or upload.content_type != 'image/png':
+                raise ValueError('List lika mora biti PNG slika.')
+            width,height=png_size(upload.read())
+            if min(width,height)<64:raise ValueError('List mora imati najmanje 64 px po strani.')
+            asset.metadata={**asset.metadata,'sheetWidth':width,'sheetHeight':height,'cropBoxes':default_boxes(width,height),'gallery':False}
+        except ValueError as exc:return Response({'error':str(exc)},status=400)
+        finally:upload.seek(0)
     try: charge_transfer(request.user,'upload',upload.size,uuid4())
     except CreditError as exc: return Response({'error':str(exc)},status=409)
     try:

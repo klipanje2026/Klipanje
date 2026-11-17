@@ -1,7 +1,17 @@
 import type { CSSProperties } from 'react';
 
-export function StudioIcon({ name, style }: { name: 'link' | 'heart' | 'eye' | 'save' | 'cut' | 'music' | 'reset' | 'alignLeft' | 'alignCenter' | 'alignRight' | 'devices' | 'underline' | 'behindPerson' | 'letterCase' | 'splitWords' | 'joinWords' | 'filters' | 'transitions' | 'sticker' | 'text' | 'elements' | 'mute' | 'sound' | 'language' | 'search' | 'plus' | 'newVideo' | 'newCaptions' | 'copy' | 'trash' | 'download' | 'frame' | 'skipStart' | 'voice' | 'timelineShow' | 'timelineHide' | 'hand' | 'pointer' | 'undo' | 'redo' | 'ratio' | 'arrow' | 'back' | 'play' | 'pause' | 'captions' | 'video' | 'spark' | 'check' | 'menu' | 'close' | 'chevron' | 'settings'; style?: CSSProperties }) {
+export function StudioIcon({ name, style }: { name: 'snapMagnet' | 'magnet' | 'magnetAll' | 'noOverlap' | 'swap' | 'unlink' | 'group' | 'ungroup' | 'captionVoice' | 'linkAll' | 'link' | 'heart' | 'eye' | 'save' | 'cut' | 'music' | 'reset' | 'alignLeft' | 'alignCenter' | 'alignRight' | 'devices' | 'underline' | 'behindPerson' | 'letterCase' | 'splitWords' | 'joinWords' | 'filters' | 'transitions' | 'sticker' | 'text' | 'elements' | 'mute' | 'sound' | 'language' | 'search' | 'plus' | 'newVideo' | 'newCaptions' | 'copy' | 'trash' | 'download' | 'frame' | 'skipStart' | 'voice' | 'timelineShow' | 'timelineHide' | 'hand' | 'pointer' | 'undo' | 'redo' | 'ratio' | 'arrow' | 'back' | 'play' | 'pause' | 'captions' | 'video' | 'spark' | 'check' | 'menu' | 'close' | 'chevron' | 'settings'; style?: CSSProperties }) {
   const paths = {
+    snapMagnet:<><path d="M5 3v11a7 7 0 0 0 14 0V3h-5v11a2 2 0 0 1-4 0V3ZM5 8h5m4 0h5"/></>,
+    magnet:<><path d="M19 5H9a7 7 0 0 0 0 14h10v-5H9a2 2 0 0 1 0-4h10ZM15 5v5m0 4v5M22 8h-1m1 8h-1"/></>,
+    magnetAll:<><path d="M16 3H7a5 5 0 0 0 0 10h9v-3H7a2 2 0 0 1 0-4h9ZM13 3v3m0 4v3M20 14h-9a2 2 0 0 0 0 4h9v3h-9a5 5 0 0 1-5-5m11-2v4m6-2h-1"/></>,
+    noOverlap:<><rect x="2" y="5" width="8" height="14" rx="2"/><rect x="14" y="5" width="8" height="14" rx="2"/><path d="M12 2v20" strokeDasharray="2 3"/></>,
+    swap:<><path d="M3 7h17m-4-4 4 4-4 4M21 17H4m4-4-4 4 4 4"/></>,
+    unlink:<><path d="m2 2 20 20M9 6l3-3a5 5 0 0 1 7 7l-1 1M15 18l-3 3a5 5 0 0 1-7-7l1-1M10 14l4-4"/></>,
+    group:<><path d="M8 2H2v6m14-6h6v6M2 16v6h6m14-6v6h-6"/><rect x="6" y="6" width="12" height="12" rx="2"/></>,
+    ungroup:<><path d="M8 2H2v6m14-6h6v6M2 16v6h6m14-6v6h-6M3 3l18 18"/><path d="M12 6h6v6M6 12v6h6"/></>,
+    captionVoice:<><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 7h6m-6 3h4m11-5v8a3 3 0 0 1-6 0V8m-3 5a6 6 0 0 0 12 0m-6 6v3m-3 0h6"/></>,
+    linkAll:<><rect x="2" y="2" width="13" height="10" rx="2"/><path d="m4 10 3-4 3 3 2-2M3 16h7m-7 4h7m9-14v7a3 3 0 0 1-6 0v-3m-2 4a5 5 0 0 0 10 0m-5 5v3"/></>,
     link:<><path d="m9 15 6-6M7 14l-1 1a4 4 0 0 0 6 6l3-3a4 4 0 0 0 0-6M17 10l1-1a4 4 0 0 0-6-6L9 6a4 4 0 0 0 0 6"/></>,
     eye:<><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></>,
     heart:<path d="M12 21 3.5 12.5C-3 5 7-1 12 6c5-7 15-1 8.5 6.5Z"/>,

@@ -190,3 +190,21 @@ class MontageSaveTests(TestCase):
         self.assertEqual(self.save(doc).status_code,200)
         self.assertEqual(self.stored_document(),doc)
         self.assertEqual(self.client.get(self.url).json()['segments'],source)
+
+    def test_manual_groups_and_cut_effect_phase_survive_version_restore(self):
+        doc=deepcopy(self.doc)
+        doc['data']['clips']=[{'id':'image','start':2,'inPoint':0,'outPoint':8,'timelineGroupId':'g','linksDetached':True,'preserveLinkedTiming':True,'allowOverlap':True}, {'id':'voice','start':3,'inPoint':4,'outPoint':7,'timelineGroupId':'g'}]
+        doc['data']['captions']['__script']['segments']=[{'id':'caption','text':'Test','start':2,'end':10,'timelineGroupId':'g','independentTiming':True}]
+        doc['data']['overlays']=[{'id':'sun','kind':'sunlight','start':5,'end':8,'sourceOffset':3,'sourceDuration':6}]
+        saved=self.save(doc).json()
+        version=self.client.post(self.url+'/versions',{'title':'Groups','expectedStoryboardRevision':saved['storyboardRevision']},content_type='application/json')
+        self.assertEqual(version.status_code,201)
+        self.assertEqual(self.stored_document(),doc)
+        detached=deepcopy(doc)
+        detached['data']['clips'][0].pop('timelineGroupId')
+        detached['data']['clips'][0]['start']=5
+        latest=self.save(detached,saved['storyboardRevision']).json()
+        self.assertEqual(self.stored_document(),detached)
+        restored=self.client.post(self.url+'/versions/'+version.json()['id']+'/restore',{'expectedStoryboardRevision':latest['storyboardRevision']},content_type='application/json')
+        self.assertEqual(restored.status_code,200)
+        self.assertEqual(self.stored_document(),doc)
