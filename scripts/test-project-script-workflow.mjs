@@ -9,7 +9,13 @@ for(let i=0;i<2;i++)assert.deepEqual({...result.segments[i],text:frames[i].text}
 assert.deepEqual(frames,original);
 result=syncIntervalText(frames,'Kerim ide prema moru. Ema čeka na obali.');assert.equal(result.segments[0].text,'Kerim ide prema moru.');
 assert.equal(syncIntervalText(frames,'').segments,frames);
-assert.ok(syncIntervalText(frames,'Kerim ide prema rijeci.').error);
+result=syncIntervalText(frames,'Kerim ide prema rijeci.');
+assert.deepEqual(result.retained,['b']);
+assert.deepEqual(result.segments,frames);
+const mixed=syncIntervalText(frames,'Kerim ide prema moru.');
+assert.deepEqual(mixed.retained,['b']);
+assert.equal(mixed.segments[0].text,'Kerim ide prema moru.');
+assert.deepEqual(mixed.segments[1],frames[1]);
 const {frameNarration,measuredFrameDuration}=await loadTestModule('lib/frame-timing.ts','.local/project-script-tests');
 const script={id:'script',segments:frames,photo_settings:{narrationPlan:{scenes:{a:{assetId:'voice'},b:{assetId:'voice'}}}}};
 const take={id:'voice',contentType:'audio/wav',created_at:'2020',metadata:{scriptId:'script',audioRole:'narration',segmentIds:['a','b'],narration:{text:'Changed pronunciation',segmentIds:['a','b'],duration:10,words:[],sync:true}}};
@@ -28,3 +34,16 @@ const {updateScriptInterval}=await loadTestModule('lib/sync-interval-text.ts','.
 assert.equal(updateScriptInterval('*More*\nKerim ide prema rijeci.\n\nEma čeka na obali.',frames,'b','Ema se smije.'),'*More*\nKerim ide prema rijeci.\n\nEma se smije.');
 assert.equal(updateScriptInterval('Druga priča.',frames,'a','Novo.'),undefined);
 console.log('Reverse text sync preserves surrounding scene descriptions');
+
+const story=[
+ 'Raghun opened his eyes, but for a few moments he could see nothing.',
+ 'Something hard and cold pressed against his back.',
+ 'He tried to move.',
+ 'Cloth caught beneath his shoulder, and his fingers scraped stone.',
+];
+const intervals=story.map((text,i)=>({id:String(i+1),start:i*4,end:i*4+3.8,text}));
+const latest=[story[0],story[1],story[3].replace('scraped','touched')].join(' ');
+const mixedStory=syncIntervalText(intervals,latest,story.join(' '));
+assert.deepEqual(mixedStory.retained,['3']);
+assert.deepEqual(mixedStory.segments.slice(0,3),intervals.slice(0,3));
+assert.deepEqual(mixedStory.segments[3],{...intervals[3],text:story[3].replace('scraped','touched')});

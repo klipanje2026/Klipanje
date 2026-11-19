@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import ts from 'typescript';
 import {loadTestModule} from './test-ts-module.mjs';
-const {syncScriptDocument,scriptSourceKey,scriptChoices}=await loadTestModule('lib/script-montage-sync.ts','work/sync-tests');
+const {reconcileSavedCaptions,syncScriptDocument,scriptSourceKey,scriptChoices}=await loadTestModule('lib/script-montage-sync.ts','work/sync-tests');
 const {swapSceneBundles}=await loadTestModule('lib/scene-swap.ts','work/sync-tests');
 const {rippleMove}=await loadTestModule('lib/local-timeline.ts','work/sync-tests');
 const {resizeCaptionRipple}=await loadTestModule('lib/caption-timing.ts','work/sync-tests');
@@ -56,3 +56,16 @@ const grouped=[{id:'image1',type:'video',groupId:'g1',start:0,inPoint:0,outPoint
 const groupSwap=swapSceneBundles(grouped,[{id:'s1',text:'One',start:0,end:2},{id:'s2',text:'Two',start:3,end:5}],'image1','image2');
 assert.equal(groupSwap.clips.find(c=>c.id==='audio1').start,3);assert.equal(groupSwap.segments[0].start,3);assert.equal(groupSwap.segments[1].start,0);
 console.log('Grouped image, audio and caption swap together through audio scene links.');
+
+const planned={...data,preeditor:{version:1},captionSettings:{},captions:{__script:{...data.captions.__script,segments:[
+ {...old[0],sourceSceneId:'a',text:'manual A',start:4,end:6},
+ {...old[1],sourceSceneId:'b',start:8,end:11,group:{id:'authored'}}]}}};
+const edited={...script,segments:[old[0],segment('b',2,5,'New B')]};
+const aligned=reconcileSavedCaptions(planned,edited);
+assert.equal(aligned.captions.__script.segments[0].text,'manual A');
+assert.deepEqual(aligned.captions.__script.segments[1].words.map(w=>w.text),['New','B']);
+assert.equal(aligned.captions.__script.segments[1].start,8);
+assert.deepEqual(aligned.captions.__script.segments[1].group,{id:'authored'});
+assert.equal(reconcileSavedCaptions(planned,script),planned);
+assert.equal(reconcileSavedCaptions(planned,script,true).captions.__script.segments[0].text,'a');
+console.log('Saved montage updates only changed captions and preserves authored offsets and groups.');

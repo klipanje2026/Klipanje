@@ -1,3 +1,4 @@
+import {flushSync} from 'react-dom';
 import {narrationDeletionRebase,removeNarrationReferences} from '../lib/narration-delete-rebase';
 import {syncIntervalText,updateScriptInterval} from '../lib/sync-interval-text';
 import {NarrationFrameTiming} from '../components/NarrationFrameTiming';
@@ -14,7 +15,7 @@ import {narrationParts,estimateSpeech} from '../lib/local-timeline';
 import {useEffect,useRef,useState} from 'react';
 import {Link,useNavigate,useSearchParams} from 'react-router-dom';
 import {ProjectTree,useSelection} from '../components/ProductionWorkspace';
-import {LocalDialog,localConfirm,localQuestion} from '../components/LocalDialog';
+import {LocalDialog,localConfirm} from '../components/LocalDialog';
 import {CreativeTutorial} from '../components/CreativeTutorial';
 import {WorkflowSteps} from '../components/WorkflowSteps';
 import {ActionIcon,SelectField} from '../components/CreativeControls';
@@ -46,14 +47,23 @@ function ScriptEditor({script}:{script:Script}){
  useEffect(()=>{const onKey=(event:KeyboardEvent)=>{const target=event.target as HTMLElement|null;if(target?.closest('input,textarea,select,[contenteditable="true"]'))return;if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'&&!event.shiftKey&&history.canUndo&&!aiBusy&&!narrationBusy){event.preventDefault();history.undo();}};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[history,aiBusy,narrationBusy]);
  const cursors=useRef<Record<string,number>>({});
  const scriptRevision=useRef(script.updated_at),savedScript=useRef(script);
- const syncedContent=useRef(script.content),savedVoiceTexts=useRef(Object.fromEntries(Object.entries(narrationPlan.scenes).map(([id,v])=>[id,v.text])));
- const [syncReview,setSyncReview]=useState<Interval[]|null>(null),[syncError,setSyncError]=useState('');
- const syncResolve=useRef<((value:Interval[]|null)=>void)|null>(null);
- function reviewSync(items:Interval[],text:string):Promise<Interval[]|null>{const result=syncIntervalText(items,narrationText(text,keepQuotes),text!==syncedContent.current?narrationText(syncedContent.current,keepQuotes):undefined);setSyncError(result.error||'');setSyncReview(result.segments);return new Promise(resolve=>{syncResolve.current=resolve;});}
- function finishSync(value:Interval[]|null){setSyncReview(null);syncResolve.current?.(value);syncResolve.current=null;}
+ const syncedContent=useRef(script.content);
+ const [syncReport,setSyncReport]=useState<{note:string;rows:{id:string;number:number;before:string;after:string;retained:boolean}[]}|null>(null);
+ function alignIntervals(items:Interval[],text:string){
+  const result=syncIntervalText(items,narrationText(text,keepQuotes),text===syncedContent.current?undefined:narrationText(syncedContent.current,keepQuotes));
+  const rows=result.segments.flatMap((item,i)=>{
+   const retained=result.retained?.includes(item.id)===true;
+   return retained||item.text!==items[i].text?[{id:item.id,number:i+1,before:items[i].text,after:item.text,retained}]:[];
+  });
+  const changed=rows.filter(row=>!row.retained).length;
+  const kept=rows.length-changed;
+  const note=result.error||(!rows.length?'Tekst intervala je već usklađen.':`Izmijenjeni kadrovi: ${changed}.${kept?' Zadržan raniji tekst zbog praznog intervala: '+kept+'.':''}`);
+  setSyncReport({note,rows});
+  return result.segments;
+ }
  const saved=useLocalSave({title,content,segments,photo_settings:{...script.photo_settings,keepQuotes,speakingWpm,narrationPlan,frameDurationOverrides},chapter:chapter||null},async data=>{
   let next=data;
-  if(data.segments.length&&data.content!==syncedContent.current){const approved=await reviewSync(data.segments,data.content);if(!approved)throw new Error('Spremanje je otkazano. Izmjene su ostale na ekranu.');next={...data,segments:approved};setSegments(approved);}
+  if(data.segments.length&&data.content!==syncedContent.current){const approved=alignIntervals(data.segments,data.content);next={...data,segments:approved};setSegments(approved);}
   let result:Script;
   try{result=await apiJson<Script>(`/api/scripts/${script.id}`,jsonBody({...next,expectedScriptUpdatedAt:scriptRevision.current},'PATCH'));}
   catch(error){
@@ -65,14 +75,26 @@ function ScriptEditor({script}:{script:Script}){
    result=await apiJson<Script>(`/api/scripts/${script.id}`,jsonBody({...next,expectedScriptUpdatedAt:remote.updated_at},'PATCH'));
    history.update(old=>({...old,narrationPlan:removeNarrationReferences({narrationPlan:old.narrationPlan},removed).narrationPlan!}));
   }
-  savedScript.current=result;scriptRevision.current=result.updated_at;syncedContent.current=data.content;savedVoiceTexts.current=Object.fromEntries(Object.entries(data.photo_settings.narrationPlan.scenes).map(([id,v])=>[id,v.text]));w.putScript(result);
+  savedScript.current=result;scriptRevision.current=result.updated_at;syncedContent.current=data.content;w.putScript(result);
  },{auto:false,guardNavigation:false});
- const voiceDirty=Object.keys({...savedVoiceTexts.current,...narrationPlan.scenes}).some(id=>savedVoiceTexts.current[id]!==narrationPlan.scenes[id]?.text);
- async function leaveNarration(){if(!voiceDirty)return true;const choice=await localQuestion({title:'Spremiti tekst za izgovor?',message:'Tekst naracije se razlikuje od spremljenog teksta za izgovor. Skripta i intervali ostaju zasebni.',options:[{value:'cancel',label:'Ostani'},{value:'discard',label:'Odbaci izmjene izgovora'},{value:'save',label:'Spremi naracije',primary:true}]});if(choice==='save')return saved.save();if(choice==='discard'){history.update(old=>({...old,narrationPlan:{...old.narrationPlan,scenes:Object.fromEntries(Object.entries(old.narrationPlan.scenes).map(([id,v])=>[id,{...v,text:savedVoiceTexts.current[id]}]))}}));await new Promise(resolve=>setTimeout(resolve,0));return true;}return false;}
+ async function leaveNarration(){return !saved.dirty||saved.save();}
+ async function saveFrameCaption(id:string,spoken:string){
+  const text=spoken.replace(/\[[^\]\r\n]+\]/g,'').trim();
+  if(!text)return false;
+  if(!await saved.save())return false;
+  const current=savedScript.current;
+  const contentWithEdit=updateScriptInterval(current.content,current.segments,id,text);
+  if(contentWithEdit===undefined){setMessage('Kadar nije pronađen u tekstu skripte. Prvo uskladi intervale.');return false;}
+  flushSync(()=>{history.update(old=>({...old,content:contentWithEdit,segments:old.segments.map(s=>s.id===id?{...s,text}:s)}));});
+  syncedContent.current=contentWithEdit;
+  return saved.save();
+ }
  async function changeTab(next:string){if(narrationBusy||next===tab)return;if(tab==='generate'&&!await leaveNarration())return;setTab(next);}
- const navigationGuard=useRef(async()=>true);navigationGuard.current=async()=>{if(narrationBusy)return false;if(!await leaveNarration())return false;return saved.save();};
+ const navigationGuard=useRef(async()=>true);navigationGuard.current=async()=>{if(narrationBusy)return false;return saved.save();};
  useEffect(()=>{const click=(event:MouseEvent)=>{if(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey)return;const link=(event.target as Element)?.closest('a[href]') as HTMLAnchorElement|null;if(!link||link.target==='_blank'||link.hasAttribute('download')||link.origin!==location.origin)return;event.preventDefault();event.stopPropagation();void navigationGuard.current().then(ok=>{if(ok)navigate(link.pathname+link.search+link.hash);});};document.addEventListener('click',click,true);return()=>document.removeEventListener('click',click,true);},[navigate]);
- async function synchronize(){const approved=await reviewSync(segments,content);if(approved){setSegments(approved);syncedContent.current=content;setMessage('Tekst intervala je usklađen. Vremena i veze su sačuvani. Spremi izmjene.');}}
+ function synchronize(){
+  setSegments(alignIntervals(segments,content));syncedContent.current=content;
+ }
 
  const round=(n:number)=>Math.round(n*10)/10;
  const patch=(id:string,values:Partial<Interval>)=>history.update(old=>{
@@ -90,9 +112,9 @@ function ScriptEditor({script}:{script:Script}){
  {tab==='preview'&&<ScriptBook title={title} content={content} onClose={()=>setTab('text')} onNext={()=>void changeTab('intervals')} nextLabel="Idi u podjelu intervala →"/>}
  {tab==='timing'&&<NarrationFrameTiming script={{...script,segments,photo_settings:{...script.photo_settings,narrationPlan,frameDurationOverrides}}} onBusy={setNarrationBusy} onDuration={(id,seconds)=>{if(!Number.isFinite(seconds)||seconds<.1)return;history.update(old=>({...old,segments:fitSceneDuration(old.segments,id,seconds),frameDurationOverrides:{...old.frameDurationOverrides,[id]:seconds}}));}} onRefresh={updates=>history.update(old=>{let next=old.segments;const overrides={...old.frameDurationOverrides};for(const item of updates){next=fitSceneDuration(next,item.id,item.seconds);delete overrides[item.id];}return {...old,segments:next,frameDurationOverrides:overrides};})}/>}
  {tab==='music'&&<ScriptMusic script={script} plan={narrationPlan} onPlan={history.field('narrationPlan')} onBusy={setNarrationBusy}/>}
- {tab==='generate'&&<ScriptNarrationStudio script={{...script,title,content,segments,photo_settings:{...script.photo_settings,keepQuotes,speakingWpm,narrationPlan}}} characters={w.project?.brief.characters||[]} plan={narrationPlan} onPlan={history.field('narrationPlan')} onText={(id,text)=>history.update(old=>({...old,narrationPlan:{...old.narrationPlan,scenes:{...old.narrationPlan.scenes,[id]:{...old.narrationPlan.scenes[id],text}}}}))} onDuration={(id,seconds)=>setSegments(items=>fitSceneDuration(items,id,seconds))} onResult={(id,asset)=>history.update(old=>({...old,narrationPlan:{...old.narrationPlan,scenes:{...old.narrationPlan.scenes,[id]:{...old.narrationPlan.scenes[id],assetId:asset.id}}},segments:fitSceneDuration(old.segments,id,asset.metadata.narration?.duration||0)}))} beforeGenerate={saved.save} onBusy={setNarrationBusy}/>}
+ {tab==='generate'&&<ScriptNarrationStudio onSaveCaption={saveFrameCaption} script={{...script,title,content,segments,photo_settings:{...script.photo_settings,keepQuotes,speakingWpm,narrationPlan}}} characters={w.project?.brief.characters||[]} plan={narrationPlan} onPlan={history.field('narrationPlan')} onText={(id,text)=>history.update(old=>({...old,narrationPlan:{...old.narrationPlan,scenes:{...old.narrationPlan.scenes,[id]:{...old.narrationPlan.scenes[id],text}}}}))} onDuration={(id,seconds)=>setSegments(items=>fitSceneDuration(items,id,seconds))} onResult={(id,asset)=>history.update(old=>({...old,narrationPlan:{...old.narrationPlan,scenes:{...old.narrationPlan.scenes,[id]:{...old.narrationPlan.scenes[id],assetId:asset.id}}},segments:fitSceneDuration(old.segments,id,asset.metadata.narration?.duration||0)}))} beforeGenerate={saved.save} onBusy={setNarrationBusy}/>}
  {tab==='text'?<><div className="script-ai-actions"><button onClick={()=>{setMessage('');setAiOpen(true);}}>AI prijedlog skripte</button><button onClick={()=>setTutorial(true)}>Pravila i upute</button></div><label>Tekst<textarea ref={scriptTextArea} className="production-script-text" value={content} maxLength={100000} onChange={e=>setContent(e.target.value)} placeholder="Unesi tekst skripte…"/></label><div className="production-row"><span className="production-muted">{content.trim().split(/\s+/).filter(Boolean).length} riječi</span><button disabled={!content.trim()} onClick={split}>Podijeli u intervale</button><button disabled={!segments.length||!content.trim()} onClick={()=>void synchronize()}>Uskladi tekst · zadrži intervale</button><button type="button" disabled={!segments.length||narrationBusy||aiBusy} onClick={openContinuation}>Dodaj nastavak u intervale</button><button onClick={()=>downloadBlob(new Blob([content],{type:'text/plain;charset=utf-8'}),title+'.txt')}>Preuzmi TXT</button></div></>:tab==='intervals'?<><div className="script-toolbar script-interval-toolbar"><button type="button" className="script-undo-button" title="Poništi zadnji korak (Ctrl+Z izvan polja za tekst)" disabled={!history.canUndo||aiBusy||narrationBusy} onClick={history.undo}><StudioIcon name="undo"/>Poništi zadnji korak</button><button disabled={!segments.length||!content.trim()} onClick={()=>void synchronize()}>Uskladi tekst iz skripte</button><small>Podjela na mjestu kursora</small><button onClick={()=>insert(0)}><ActionIcon name="plus"/>Dodaj na početak</button></div><div className="narration-rows">{segments.map((s,i)=><article className="narration-row" key={s.id}><span className="row-number">{String(i+1).padStart(2,'0')}</span><textarea aria-label={`Naracija ${i+1}`} rows={2} maxLength={10000} value={s.text} onSelect={e=>{cursors.current[s.id]=e.currentTarget.selectionStart;}} onChange={e=>patch(s.id,{text:e.target.value})}/><div className="interval-actions"><button title="Podijeli na mjestu kursora" onClick={()=>splitOne(i)}><ActionIcon name="split"/></button><button title="Dupliciraj interval" onClick={()=>insert(i+1,true)}><ActionIcon name="copy"/></button><button title="Spoji sa sljedećim" disabled={i===segments.length-1} onClick={()=>merge(i)}><ActionIcon name="merge"/></button><button title="Dodaj interval ispod" onClick={()=>insert(i+1)}><ActionIcon name="plus"/></button><button title="Obriši interval" onClick={()=>setSegments(items=>items.filter(item=>item.id!==s.id))}><ActionIcon name="trash"/></button></div></article>)}</div><div className="production-row"><button onClick={()=>insert(segments.length)}><ActionIcon name="plus"/>Dodaj interval</button><button type="button" disabled={!segments.length||narrationBusy||aiBusy} onClick={openContinuation}>Dodaj nastavak u intervale</button><button disabled={!content.trim()} onClick={split}>Podijeli tekst ponovo</button></div></>:null}
- {syncReview&&<LocalDialog title="Uskladi tekst uz postojeće intervale" onClose={()=>finishSync(null)}><p>Vremena, brojevi kadrova, promptovi i veze ostaju. Pregledaj tekst prije primjene.</p>{syncError&&<p role="alert">{syncError}</p>}<div className="script-sync-preview">{syncReview.map((item,i)=><article key={item.id}><strong>Kadar {i+1} · {item.start.toFixed(1)} – {item.end.toFixed(1)} s</strong><p>Prije: {segments[i]?.text}</p><textarea aria-label={`Novi tekst kadra ${i+1}`} value={item.text} onChange={e=>setSyncReview(items=>items!.map(s=>s.id===item.id?{...s,text:e.target.value}:s))}/></article>)}</div><div className="local-dialog-actions"><button onClick={()=>finishSync(null)}>Odustani</button><button onClick={()=>finishSync(segments)}>Zadrži postojeći tekst intervala</button><button className="klipanje-primary" disabled={!!syncError||syncReview.some(s=>!s.text.trim())} onClick={()=>finishSync(syncReview)}>Primijeni pregledani tekst</button></div></LocalDialog>}
+ {syncReport&&(tab==='text'||tab==='intervals')&&<section aria-label="Rezultat usklađivanja"><p role="status">{syncReport.note}</p>{syncReport.rows.length>0&&<details><summary>Pogledaj izmjene po kadrovima</summary><div className="script-sync-preview">{syncReport.rows.map(row=><article key={row.id}><strong>Kadar {row.number}</strong>{row.retained?<p>U skripti nema teksta za ovaj kadar. Zadržano: {row.before}</p>:<><p>Prije: {row.before}</p><p>Sada: {row.after}</p></>}</article>)}</div></details>}</section>}
  {continuation!==null&&<LocalDialog title="Dodaj nastavak u intervale" onClose={()=>setContinuation(null)}>
  <p>Novi intervali nastavljaju se iza posljednjeg postojećeg intervala. Sačuvani su tekst, vremena, promptovi i veze postojećih kadrova.</p>
  <label>Tekst nastavka<textarea rows={8} maxLength={100000} value={continuation} onChange={event=>setContinuation(event.target.value)} placeholder="Zalijepi samo nastavak priče…"/></label>
