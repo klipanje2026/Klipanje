@@ -42,3 +42,18 @@ assert.equal(compositionBoxes(4,'grid',6,35)[1].x,35);
 assert.equal(compositionBoxes(4,'strips',6,50,'horizontal')[3].y,75);
 assert.equal(compositionBoxes(4,'strips',6,50,'horizontal')[3].w,100);
 console.log('Grid split and horizontal strip controls use the shared composition geometry.');
+
+const fiveItems=[...value.items.map(item=>({...item,at:0})),{assetId:'0',at:0}];
+ctx.clearRect(0,0,400,400);
+drawComposition(ctx,images,{...value,items:fiveItems},0);
+assert.deepEqual([65,200,335].map(x=>pixel(x,100)),[[255,0,0,255],[0,255,0,255],[0,0,255,255]]);
+assert.deepEqual([100,300].map(x=>pixel(x,300)),[[255,255,0,255],[255,0,0,255]]);
+console.log('Five timeline images, including a reused asset, appear together in two rows.');
+
+const timingSource=ts.transpileModule(readFileSync('frontend/src/lib/frame-voice-start.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext}}).outputText;
+const {frameVoiceStart}=await import(`data:text/javascript;base64,${Buffer.from(timingSource).toString('base64')}`);
+const voice={type:'audio',audioRole:'narration',start:3,inPoint:0,outPoint:7,narrationSegmentIds:['a','b']};
+const captions=[{id:'a',start:2},{id:'b',start:6.4}];
+assert.equal(frameVoiceStart({start:2,segmentIds:['a']},[voice],captions),3);
+assert.equal(frameVoiceStart({start:6,segmentIds:['b']},[voice],captions),6.4);
+assert.equal(frameVoiceStart({start:12,segmentIds:['c']},[voice],captions),12);

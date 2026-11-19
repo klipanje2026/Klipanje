@@ -3,7 +3,8 @@ export function compositionBoxes(count:number,layout:ImageComposition['layout'],
  const split=layout==='grid'?Math.max(25,Math.min(75,gridSplit)):50;
  const amount=Math.max(0,Math.min(20,overlap))/2;
  return Array.from({length:count},(_,i)=>{
-  const box=layout==='strips'?(stripDirection==='horizontal'?{x:0,y:i*100/count,w:100,h:100/count}:{x:i*100/count,y:0,w:100/count,h:100}):count===2?{x:i?split:0,y:0,w:i?100-split:split,h:100}:count===3&&i===2?{x:0,y:50,w:100,h:50}:{x:i%2?split:0,y:Math.floor(i/2)*50,w:i%2?100-split:split,h:50};
+  const five=i<3?{x:i*100/3,y:0,w:100/3,h:50}:{x:i===3?0:split,y:50,w:i===3?split:100-split,h:50};
+  const box=layout==='strips'?(stripDirection==='horizontal'?{x:0,y:i*100/count,w:100,h:100/count}:{x:i*100/count,y:0,w:100/count,h:100}):count===5?five:count===2?{x:i?split:0,y:0,w:i?100-split:split,h:100}:count===3&&i===2?{x:0,y:50,w:100,h:50}:{x:i%2?split:0,y:Math.floor(i/2)*50,w:i%2?100-split:split,h:50};
   if(layout!=='overlap')return box;
   const left=Math.max(0,box.x-amount),top=Math.max(0,box.y-amount);
   return {x:left,y:top,w:Math.min(100,box.x+box.w+amount)-left,h:Math.min(100,box.y+box.h+amount)-top};
