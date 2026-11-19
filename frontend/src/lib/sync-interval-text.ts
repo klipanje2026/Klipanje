@@ -49,3 +49,10 @@ export function updateScriptInterval(content:string,items:Interval[],id:string,t
  }
  return undefined;
 }
+
+/** Only remove an empty frame when its original text belonged to the last saved script. */
+export function deletedScriptIntervals(result:ReturnType<typeof syncIntervalText>,items:Interval[],before:string,after:string){
+ const normalize=(value:string)=>value.trim().replace(/\s+/g,' ');
+ const verified=!result.error&&before!==after&&normalize(items.map(s=>s.text).join(' '))===normalize(before);
+ return new Set(verified?result.retained:[]);
+}

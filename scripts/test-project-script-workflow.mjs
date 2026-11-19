@@ -47,3 +47,10 @@ const mixedStory=syncIntervalText(intervals,latest,story.join(' '));
 assert.deepEqual(mixedStory.retained,['3']);
 assert.deepEqual(mixedStory.segments.slice(0,3),intervals.slice(0,3));
 assert.deepEqual(mixedStory.segments[3],{...intervals[3],text:story[3].replace('scraped','touched')});
+
+const {deletedScriptIntervals}=await loadTestModule('lib/sync-interval-text.ts','.local/project-script-tests');
+const before=frames.map(s=>s.text).join(' ');
+const shortened=frames[0].text;
+assert.deepEqual([...deletedScriptIntervals(syncIntervalText(frames,shortened,before),frames,before,shortened)],['b']);
+assert.equal(deletedScriptIntervals(syncIntervalText(frames,shortened),frames,'Manually diverged.',shortened).size,0);
+assert.equal(updateScriptInterval(before,frames,'a','').trim(),frames[1].text);

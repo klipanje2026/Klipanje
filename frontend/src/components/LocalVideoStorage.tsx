@@ -1,3 +1,6 @@
+import {syncFrameImages} from '../lib/sync-frame-images';
+import {galleryFrameGroups} from '../lib/gallery-order';
+import {narrationCoverage} from '../lib/narration-coverage';
 import {StudioIcon} from './StudioIcon/StudioIcon';
 import {scriptSourceKey,scriptTextKey,scriptChoices,reconcileSavedCaptions,syncScriptDocument} from '../lib/script-montage-sync';
 import {localConfirm,localQuestion,localPrompt} from './LocalDialog';
@@ -34,11 +37,21 @@ export function LocalVideoStorage({script,snapshot,restore,saveHandle,changeKey,
    const files=new Map(snap.files.map(f=>[f.key,f.file]));
    const refs=snap.files.flatMap(f=>{const id=remoteFiles.get(f.file);return id?[{id,key:f.key}]:[];});
    await syncNarrations(next,previous,fresh,list.assets,files,refs,true);
+   const ambiguous=await syncFrameImages(next,fresh,list.assets,async asset=>{
+    const existing=refs.find(r=>r.id===asset.id);
+    if(existing)return existing.key;
+    const response=await apiFetch(asset.url);
+    if(!response.ok)throw new Error('Slika nije dostupna: '+asset.name);
+    const file=new File([await response.blob()],asset.name,{type:asset.contentType}),key=crypto.randomUUID();
+    rememberRemoteFile(file,asset.id);files.set(key,file);refs.push({key,id:asset.id});
+    (next.assets as unknown[]).push({id:key,name:asset.name,type:'image',duration:5,aspectRatio:1});
+    return key;
+   });
    await latest.current.restore(next,files);
    savedKey.current='';
    sourceState.current=scriptSourceKey(fresh);choiceState.current=scriptChoices(fresh);sourceText.current=scriptTextKey(fresh.segments);
    latest.current.script=fresh;latest.current.putScript(fresh);
-   setMessage('Titlovi i odabrane naracije su usklađeni.');return true;
+   setMessage('Titlovi, naracije i povezane slike su usklađeni.'+(ambiguous?' Više slika za isti kadar: '+ambiguous+'. Izbor provjeri u galeriji.':''));return true;
   }catch(e){saveError.current=(e as Error).message;setMessage(saveError.current);if(!ready.current)setBlocked(true);return false;}finally{syncing.current=false;if(manual)setOpening(false);}
  }
  const refreshRef=useRef(refreshSource);refreshRef.current=refreshSource;
@@ -90,7 +103,7 @@ export function LocalVideoStorage({script,snapshot,restore,saveHandle,changeKey,
       if(!active)return;await latest.current.restore(saved,files);lastSaved.current=JSON.stringify(saved);baselinePending.current=!changed;if(changed)savedKey.current='';}}else if(active){const snap=await latest.current.snapshot(),list=await apiJson<{assets:Asset[]}>(`/api/projects/${script.project}/assets`);const next=syncScriptDocument(snap.data,fresh),files=new Map(snap.files.map(f=>[f.key,f.file]));await syncNarrations(next,snap.data,fresh,list.assets,files,[]);if(!active)return;await latest.current.restore(next,files);}if(active){sourceState.current=scriptSourceKey(fresh);choiceState.current=scriptChoices(fresh);sourceText.current=scriptTextKey(fresh.segments);ready.current=true;setMessage(doc.editor==='edita'?`Spremljeno · ${new Date(String(fresh.storyboard.savedAt||fresh.updated_at)).toLocaleString('hr-HR')}`:'Još nije spremljeno');}}catch(e){if(active){saveError.current=(e as Error).message;setMessage(saveError.current);setBlocked(true);}}finally{if(active)setOpening(false);}})();return()=>{active=false;};},[script.id,reload]);
  useEffect(()=>{if(!opening&&ready.current&&changeKey&&baselinePending.current){savedKey.current=changeKey;baselinePending.current=false;}},[opening,changeKey]);
  useEffect(()=>{if(opening||disabled||busy||blocked||!changeKey||changeKey===savedKey.current||changeKey===failedKey.current)return;setMessage('Nespremljene izmjene');},[changeKey,opening,disabled,busy,blocked]);
- return <><EditorHeaderPortal slot="project"><div className="local-video-save"><strong>{String(script.storyboard.title||script.title)}</strong><small role="status">{opening?'Učitavanje…':message}</small>{blocked&&<button disabled={busy||opening} onClick={async()=>{if(await localConfirm('Ponovo učitati posljednju spremljenu montažu? Trenutne nespremljene izmjene bit će zamijenjene.','Ponovno učitavanje','Učitaj spremljeno')){ready.current=false;setOpening(true);setBlocked(false);setReload(value=>value+1);}}}>Ponovo učitaj montažu</button>}<button className="local-save-icon" title="Uskladi sa skriptom · titlovi i naracije" aria-label="Uskladi sa skriptom" disabled={busy||opening||blocked||disabled} onClick={()=>void refreshSource(true)}><StudioIcon name="reset"/></button><button className="local-save-icon" title="Spremi video" aria-label="Spremi video" disabled={busy||opening||disabled||blocked} onClick={()=>void manualSave()}><StudioIcon name="save"/></button><button className="local-save-icon" aria-label="Spremljeni videi" title="Spremljeni videi i verzije" disabled={busy||opening} onClick={()=>window.dispatchEvent(new Event('klipanje-saved-videos'))}><StudioIcon name="menu"/></button></div></EditorHeaderPortal>{opening&&<div className="local-video-opening" role="status">Učitavanje montaže…</div>}</>;
+ return <><EditorHeaderPortal slot="project"><div className="local-video-save"><strong>{String(script.storyboard.title||script.title)}</strong><small role="status">{opening?'Učitavanje…':message}</small>{blocked&&<button disabled={busy||opening} onClick={async()=>{if(await localConfirm('Ponovo učitati posljednju spremljenu montažu? Trenutne nespremljene izmjene bit će zamijenjene.','Ponovno učitavanje','Učitaj spremljeno')){ready.current=false;setOpening(true);setBlocked(false);setReload(value=>value+1);}}}>Ponovo učitaj montažu</button>}<button className="local-save-icon" title="Uskladi sa skriptom · titlovi, naracije i slike" aria-label="Uskladi sa skriptom" disabled={busy||opening||blocked||disabled} onClick={()=>void refreshSource(true)}><StudioIcon name="reset"/></button><button className="local-save-icon" title="Spremi video" aria-label="Spremi video" disabled={busy||opening||disabled||blocked} onClick={()=>void manualSave()}><StudioIcon name="save"/></button><button className="local-save-icon" aria-label="Spremljeni videi" title="Spremljeni videi i verzije" disabled={busy||opening} onClick={()=>window.dispatchEvent(new Event('klipanje-saved-videos'))}><StudioIcon name="menu"/></button></div></EditorHeaderPortal>{opening&&<div className="local-video-opening" role="status">Učitavanje montaže…</div>}</>;
 }
 
 async function syncNarrations(data:Record<string,unknown>,prior:Record<string,unknown>,script:Script,assets:Asset[],files:Map<string,File>,refs:{key:string;id:string}[],force=false){
@@ -103,7 +116,9 @@ async function syncNarrations(data:Record<string,unknown>,prior:Record<string,un
   const asset=assets.find(a=>a.id===assetId),scene=script.segments.find(s=>s.id===sceneId);if(!asset||!scene)continue;
   const existing=refs.find(r=>r.id===assetId);
   if(existing&&clips.some(c=>c.assetId===existing.key&&c.narrationSegmentIds?.includes(sceneId)))continue;
-  const selectedIds=Object.keys(choices).filter(id=>choices[id]===assetId);
+  const coverage=narrationCoverage(asset,script).ids;
+  if(!coverage.includes(sceneId))continue;
+  const selectedIds=galleryFrameGroups(coverage.filter(id=>choices[id]===assetId),script.segments).find(group=>group.includes(sceneId))!;
   const related=clips.filter(c=>{if(c.audioRole!=='narration')return false;const original=assets.find(a=>a.id===refs.find(r=>r.key===c.assetId)?.id);const ids=c.narrationSegmentIds?.length?c.narrationSegmentIds:original?.metadata.segmentIds||[original?.metadata.segmentId||''];return ids.some(id=>selectedIds.includes(id));});
   const newer=asset.created_at&&asset.created_at>String((script.storyboard as {savedAt?:string}).savedAt||'');
   // An unchanged choice deliberately removed from the timeline stays removed.
