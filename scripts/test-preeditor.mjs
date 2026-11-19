@@ -77,3 +77,15 @@ assert.throws(()=>compileStoryPlan(plan,script,assets.filter(a=>a.id!=='p1'),{n1
 assert.throws(()=>compileStoryPlan(plan,script,assets.filter(a=>a.id!=='n1'),{n1:2,n2:3}),/Blok 1 · Zvuk: n1/);
 assert.throws(()=>compileStoryPlan(plan,script,assets.map(a=>a.id==='p1'?{...a,metadata:{...a.metadata,archived:true}}:a),{n1:2,n2:3}),/Blok 1 · Slika: p1.png/);
 console.log('Existing image links survive gallery moves; missing/archived media errors identify block, image/audio and filename.');
+
+const {imageMontage}=await loadTestModule('lib/image-montage.ts','work/image-workflow-tests');
+const story={...script,segments:script.segments.slice(0,2)};
+const linked={...image('still'),metadata:{scriptId:'s',gallery:false,segmentIds:['a','b']}};
+const take={...audio('voice',['a']),metadata:{...audio('voice',['a']).metadata,mediaDuration:2.5}};
+const imageDoc=await imageMontage(story,[linked,take]);
+assert.equal(imageDoc.data.timelineFloor,3.5);
+assert.deepEqual(imageDoc.data.captions.__script.segments.map(s=>[s.id,s.start,s.end]),[['a',0,2.5],['b',2.5,3.5]]);
+assert.deepEqual(imageDoc.data.clips.filter(c=>c.type==='video').map(c=>c.assetId),['still','still']);
+assert.equal(linked.metadata.gallery,false);
+await assert.rejects(imageMontage(story,[{...linked,contentType:'video/mp4'}]),/kadrom 1/);
+console.log('Image workflow: shared still, narration, silent subtitle interval and missing image checked.');

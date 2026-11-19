@@ -1,3 +1,4 @@
+import {useSelection} from '../ProductionWorkspace';
 import {LocalToolLinks} from '../LocalToolLinks';
 import {LogoMark} from '../LogoMark';
 import {useDismissHeaderMenus} from '../../lib/use-dismiss-header-menus';
@@ -13,6 +14,7 @@ import '../MainLayout.scss';
 
 export function EditorLayout() {
   useDismissHeaderMenus();
+  const images=useSelection().project?.brief.workflow==='images';
   const location = useLocation();
   const videoEditor = ['/video-editor','/videa'].includes(location.pathname);
   const [picker, setPicker] = useState<ProjectKind | null>(null);
@@ -29,10 +31,10 @@ export function EditorLayout() {
           <a href="/projekti">Projekti</a>
           <a href={"/skripte"+location.search}>Skripte i naracije</a>
           <a href={"/fotografije"+location.search}>Generacije elemenata</a>
-          <a href={"/preeditor"+location.search}>Preeditor</a>
+          {!images&&<><a href={"/preeditor"+location.search}>Preeditor</a></>}
           <a href={"/videa"+location.search} aria-current={videoEditor ? 'page' : undefined}>Video editor</a>
-          <a href="/prilagodi-video">Prilagodi video</a>
-          <a href={"/prilagodi-zvuk"+location.search}>Prilagodi zvuk</a><LocalToolLinks/>
+          {!images&&<><a href="/prilagodi-video">Prilagodi video</a>
+          <a href={"/prilagodi-zvuk"+location.search}>Prilagodi zvuk</a><LocalToolLinks/></>}
         </nav>
         <div className="editor-navbar-project" id="workspace-header-project" />
         <div className="editor-navbar-tools" id="workspace-header-tools" />

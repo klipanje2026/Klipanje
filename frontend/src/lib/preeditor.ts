@@ -36,7 +36,7 @@ export function initialStoryPlan(script:Script,assets:Asset[]):StoryPlan{
  for(const {asset} of orderedGallery(images.filter(a=>a.metadata.filler),script,'')){const row={id:crypto.randomUUID(),sourceIds:[],imageIds:[asset.id],audioIds:[],captionIds:[],filler:true,duration:3};const index=blocks.findLastIndex(b=>b.sourceIds.includes(asset.metadata.fillerAfter||'')||b.id==='after:'+asset.metadata.fillerAfter);if(index<0)blocks.push(row);else{let at=index+1;while(at<blocks.length&&blocks[at].filler&&!blocks[at].sourceIds.length)at++;blocks.splice(at,0,row);}}
  return {version:1,selectionKey:selectionKey(script),blocks,entryEnabled:true,exitEnabled:true,entry:'crossfade',exit:'crossfade',animationDuration:.5,spacing:.2,spacingMode:'overlap'};
 }
-export function compileStoryPlan(plan:StoryPlan,script:Script,assets:Asset[],durations:Record<string,number>){
+export function compileStoryPlan(plan:StoryPlan,script:Script,assets:Asset[],durations:Record<string,number>,allowSilentCaptions=false){
  assets=resolvedFrameAssets(script,assets);
  const backgrounds=script.photo_settings.narrationPlan?.backgrounds||[];
  const available=new Map(assets.filter(a=>!a.metadata.archived&&(a.metadata.scriptId===script.id||backgrounds.includes(a.id))).map(a=>[a.id,a]));
@@ -49,9 +49,9 @@ export function compileStoryPlan(plan:StoryPlan,script:Script,assets:Asset[],dur
  plan.blocks.forEach((block,index)=>{
   if(!block.imageIds.length)throw new Error(`Blok ${index+1}: odaberi generaciju (fotografiju ili video) ili ukloni blok.`);
   const selected=block.filler?[]:block.captionIds.map(id=>{const source=script.segments.find(s=>s.id===id);if(!source)throw new Error(`Blok ${index+1}: kadar više ne postoji.`);if(usedCaptions.has(id))throw new Error(`Kadar ${script.segments.indexOf(source)+1} je u više blokova. Spoji ga u jedan blok.`);usedCaptions.add(id);return {...source,text:spokenText(source.text),sourceSceneId:id};}).filter(s=>s.text);
-  if(!block.filler&&!block.audioIds.length)throw new Error(`Blok ${index+1}: dodaj naraciju ili uključi Filler.`);
+  if(!block.filler&&!block.audioIds.length&&!allowSilentCaptions)throw new Error(`Blok ${index+1}: dodaj naraciju ili uključi Filler.`);
   if(!block.filler&&!selected.length)throw new Error(`Blok ${index+1}: odaberi titlove.`);
-  const length=block.filler?block.duration:block.audioIds.reduce((sum,id)=>{register(id,'audio',index+1);const n=durations[id];if(!Number.isFinite(n)||n<=0)throw new Error('Nije moguće očitati trajanje naracije.');const r=block.audioRanges?.[id]||{from:0,to:1};if(!Number.isFinite(r.from)||!Number.isFinite(r.to)||r.from<0||r.to>1||r.to<=r.from)throw new Error('Neispravan dio naracije.');return sum+n*(r.to-r.from);},0);
+  const length=block.filler||!block.audioIds.length?block.duration:block.audioIds.reduce((sum,id)=>{register(id,'audio',index+1);const n=durations[id];if(!Number.isFinite(n)||n<=0)throw new Error('Nije moguće očitati trajanje naracije.');const r=block.audioRanges?.[id]||{from:0,to:1};if(!Number.isFinite(r.from)||!Number.isFinite(r.to)||r.from<0||r.to>1||r.to<=r.from)throw new Error('Neispravan dio naracije.');return sum+n*(r.to-r.from);},0);
   if(!Number.isFinite(length)||length<.1||length>21600)throw new Error(`Blok ${index+1}: neispravno trajanje.`);
   const groupId=block.id,captionIds=selected.map(s=>s.id);let audioAt=cursor;
   let fitted:VideoCaptions['segments']=[];

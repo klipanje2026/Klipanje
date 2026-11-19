@@ -1,3 +1,4 @@
+import {useSelection} from './ProductionWorkspace';
 import {LocalToolLinks} from './LocalToolLinks';
 import {LogoMark} from './LogoMark';
 import {useDismissHeaderMenus} from '../lib/use-dismiss-header-menus';
@@ -11,12 +12,13 @@ import {useLocation} from 'react-router-dom';
 
 export function MainLayout() {
   useDismissHeaderMenus();
+  const images=useSelection().project?.brief.workflow==='images';
   const {search}=useLocation();
   return <div className="klipanje-shell">
     <header className="klipanje-header">
       <Link to="/" className="klipanje-brand"><LogoMark size={34}/>Klipanje</Link>
       <nav aria-label="Glavna navigacija">
-        <NavLink to={"/projekti"+search}>Projekti</NavLink><NavLink to={"/skripte"+search}>Skripte i naracije</NavLink><NavLink to={"/fotografije"+search}>Generacije elemenata</NavLink><NavLink to={"/preeditor"+search}>Preeditor</NavLink><NavLink to={"/videa"+search}>Video editor</NavLink><NavLink to="/prilagodi-video">Prilagodi video</NavLink><NavLink to={"/prilagodi-zvuk"+search}>Prilagodi zvuk</NavLink><LocalToolLinks/>
+        <NavLink to={"/projekti"+search}>Projekti</NavLink><NavLink to={"/skripte"+search}>Skripte i naracije</NavLink><NavLink to={"/fotografije"+search}>Generacije elemenata</NavLink>{!images&&<><NavLink to={"/preeditor"+search}>Preeditor</NavLink></>}<NavLink to={"/videa"+search}>Video editor</NavLink>{!images&&<><NavLink to="/prilagodi-video">Prilagodi video</NavLink><NavLink to={"/prilagodi-zvuk"+search}>Prilagodi zvuk</NavLink><LocalToolLinks/></>}
       </nav>
       <div className="workspace-theme-slot"/><details className="production-themes"><summary>Teme <Icon name="chevron"/></summary><ThemePicker/></details>
       <AccountMenu/>
