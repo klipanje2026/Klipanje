@@ -20,7 +20,7 @@ paint.fillStyle='#254b65';paint.fillRect(0,0,320,180);paint.fillStyle='#efae62';
 Object.assign(source,{naturalWidth:320,naturalHeight:180,videoWidth:320,videoHeight:180,currentTime:0});
 const images=new Map([['a',source]]);
 let count=0;
-const effects=[...['none','zoom-in','zoom-out','pan','pan-up','pan-down','breathe','shake','surprise','wind'].map(motion=>({motion})),...['fade','crossfade','slide-left','slide-right','slide-up','slide-down'].flatMap(id=>[{imageTransition:id},{imageExit:id}]),{imageExit:'heart'},{sunlight:true},{filter:{id:'blink',start:3,end:5,strength:100}}];
+const effects=[...['none','zoom-in','zoom-out','pan','pan-left','pan-up','pan-down','breathe','shake','surprise','wind'].map(motion=>({motion})),...['fade','crossfade','slide-left','slide-right','slide-up','slide-down'].flatMap(id=>[{imageTransition:id},{imageExit:id}]),{motion:'shake',motionDuration:1},{imageExit:'heart'},{sunlight:true},{filter:{id:'blink',start:3,end:5,strength:100}}];
 for(const effect of effects)for(const elapsed of [.1,.4,1,2.5,4.8]){
  const clip={assetId:'a',start:10,inPoint:3,outPoint:8,layer:0,...effect};
  const a=createCanvas(320,180),b=createCanvas(320,180);
@@ -30,3 +30,13 @@ for(const effect of effects)for(const elapsed of [.1,.4,1,2.5,4.8]){
 }
 assert(needsVideoScene({motion:'zoom-in'}));assert(needsVideoScene({imageTransition:'crossfade'}));assert(!needsVideoScene({motion:'none'}));
 console.log(`Video/image motion parity: ${count} matching rendered frames, all motion modes, entries/exits, heart, blink and sunlight.`);
+
+function renderMotion(motion,time,motionDuration){
+ const canvas=createCanvas(320,180);
+ drawStillScene(canvas.getContext('2d'),images,{assetId:'a',start:10,inPoint:3,outPoint:8,layer:0,motion,motionDuration},10+time,16/9);
+ return canvas.toBuffer('image/png');
+}
+assert.deepEqual(renderMotion('pan-left',1),renderMotion('pan',4));
+assert.notDeepEqual(renderMotion('pan-left',1),renderMotion('pan',1));
+assert.notDeepEqual(renderMotion('shake',.5,1),renderMotion('none',.5));
+for(const time of [1,1.5,4])assert.deepEqual(renderMotion('shake',time,1),renderMotion('none',time));
